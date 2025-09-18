@@ -10,7 +10,7 @@ class ControlsDisplay extends PositionComponent with HasGameRef {
     await super.onLoad();
 
     // Position in top-right corner for landscape
-    position = Vector2(gameRef.size.x - 200, 20);
+    position = Vector2(gameRef.size.x - 20, 20);
 
     // Keyboard controls text
     keyboardText = TextComponent(
@@ -29,7 +29,7 @@ class ControlsDisplay extends PositionComponent with HasGameRef {
           ],
         ),
       ),
-      position: Vector2(0, 0),
+      position: Vector2.zero(),
       anchor: Anchor.topRight,
     );
 

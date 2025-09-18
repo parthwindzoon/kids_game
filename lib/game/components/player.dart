@@ -5,26 +5,33 @@ import 'package:flutter/services.dart';
 
 class Player extends CircleComponent with HasGameRef, CollisionCallbacks, KeyboardHandler {
   static const double _speed = 200.0;
-  static const double _radius = 16.0; // Adjusted for better visibility
+  static const double _radius = 16.0;
 
   Vector2 direction = Vector2.zero();
   Vector2 velocity = Vector2.zero();
   final Set<LogicalKeyboardKey> _keysPressed = <LogicalKeyboardKey>{};
+  final JoystickComponent? joystick;
 
-  Player({required Vector2 position})
+  Player({required Vector2 position, this.joystick})
       : super(
     radius: _radius,
     position: position,
     anchor: Anchor.center,
+    // CRITICAL: Explicit paint configuration for visibility
+    paint: Paint()
+      ..color = Colors.blue.shade700
+      ..style = PaintingStyle.fill,
   );
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
-    priority = 900;
+    priority = 100; // High priority to render above map
+
+    // Ensure paint is properly configured
     paint = Paint()
-      ..color = Colors.blue
+      ..color = Colors.blue.shade700
       ..style = PaintingStyle.fill;
 
     add(CircleHitbox());
@@ -34,7 +41,10 @@ class Player extends CircleComponent with HasGameRef, CollisionCallbacks, Keyboa
   void update(double dt) {
     super.update(dt);
 
+    // Handle both keyboard and joystick input
     _updateDirectionFromKeyboard();
+    _updateDirectionFromJoystick();
+
     velocity = direction * _speed;
     final previousPosition = position.clone();
     position += velocity * dt;
@@ -71,6 +81,16 @@ class Player extends CircleComponent with HasGameRef, CollisionCallbacks, Keyboa
     }
   }
 
+  void _updateDirectionFromJoystick() {
+    if (joystick != null && joystick!.direction != JoystickDirection.idle) {
+      // Use joystick's relativeDelta for smooth movement
+      direction = joystick!.relativeDelta;
+    } else if (joystick != null && joystick!.direction == JoystickDirection.idle && _keysPressed.isEmpty) {
+      // Stop moving when joystick is idle and no keys are pressed
+      direction = Vector2.zero();
+    }
+  }
+
   void _clampToMapBounds() {
     const mapWidth = 40 * 32.0;
     const mapHeight = 40 * 32.0;
@@ -96,10 +116,35 @@ class Player extends CircleComponent with HasGameRef, CollisionCallbacks, Keyboa
 
   @override
   void render(Canvas canvas) {
-    canvas.drawCircle(Offset.zero, _radius,
+    // Custom render method to ensure visibility
+    canvas.drawCircle(
+      Offset.zero,
+      _radius,
+      Paint()
+        ..color = Colors.blue.shade700
+        ..style = PaintingStyle.fill,
+    );
+
+    // Add a white border for better visibility
+    canvas.drawCircle(
+      Offset.zero,
+      _radius,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0,
+    );
+
+    // Debug mode - show direction indicator
+    if (gameRef.debugMode && direction.length > 0) {
+      canvas.drawLine(
+        Offset.zero,
+        Offset(direction.x * _radius * 2, direction.y * _radius * 2),
         Paint()
-          ..color = Colors.blue.shade700
-          ..style = PaintingStyle.fill);
+          ..color = Colors.red
+          ..strokeWidth = 3.0,
+      );
+    }
   }
 
   @override

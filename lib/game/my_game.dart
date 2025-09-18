@@ -17,7 +17,7 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
   late PositionIndicator positionIndicator;
 
   @override
-  bool get debugMode => false; // Set to true to see collision boxes
+  bool get debugMode => true; // Temporarily enabled for debugging camera bounds
 
   @override
   Future<void> onLoad() async {
@@ -65,38 +65,8 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     // Set up camera to follow player with smooth movement
     camera.follow(player);
 
-    // Calculate map size
-    final mapSize = Vector2(
-      mapComponent.tileMap.map.width * mapComponent.tileMap.destTileSize.x,
-      mapComponent.tileMap.map.height * mapComponent.tileMap.destTileSize.y,
-    );
-
-    // Get viewport size accounting for zoom
-    final viewportSize = camera.viewport.size / camera.viewfinder.zoom;
-
-    // Calculate camera bounds to prevent seeing beyond map edges
-    final halfViewportWidth = viewportSize.x / 2;
-    final halfViewportHeight = viewportSize.y / 2;
-
-    // Set camera bounds - camera center cannot go beyond these limits
-    final cameraMinX = halfViewportWidth;
-    final cameraMinY = halfViewportHeight;
-    final cameraMaxX = mapSize.x - halfViewportWidth;
-    final cameraMaxY = mapSize.y - halfViewportHeight;
-
-    // Ensure bounds are valid (in case map is smaller than viewport)
-    final validMinX = cameraMinX.clamp(0.0, mapSize.x);
-    final validMinY = cameraMinY.clamp(0.0, mapSize.y);
-    final validMaxX = cameraMaxX.clamp(validMinX, mapSize.x);
-    final validMaxY = cameraMaxY.clamp(validMinY, mapSize.y);
-
-    // Set camera viewport bounds to prevent going outside the map
-    camera.setBounds(Rectangle.fromLTWH(
-      validMinX,
-      validMinY,
-      validMaxX - validMinX,
-      validMaxY - validMinY,
-    ));
+    // Setup camera bounds will be called after the first frame when viewport size is known
+    _setupCameraBounds();
   }
 
   Vector2 _getPlayerSpawnPoint() {
@@ -105,11 +75,73 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     if (objectGroup != null) {
       for (final obj in objectGroup.objects) {
         if (obj.name == 'player_spawn') {
-          return Vector2(obj.x, obj.y);
+          // Use the spawn point from the map, but ensure it's visible
+          final spawnX = obj.x.clamp(100.0, 1180.0); // Keep away from edges
+          final spawnY = obj.y.clamp(100.0, 1180.0); // Keep away from edges
+          return Vector2(spawnX, spawnY);
         }
       }
     }
-    // Default spawn if not found - center of map
+    // Default spawn if not found - center of map (safe position)
     return Vector2(640, 640);
+  }
+
+  void _setupCameraBounds() {
+    // Wait for next frame to ensure viewport is properly sized
+    Future.delayed(Duration.zero, () {
+      if (!isLoaded) return;
+
+      // Calculate map size
+      final mapSize = Vector2(
+        mapComponent.tileMap.map.width * mapComponent.tileMap.destTileSize.x,
+        mapComponent.tileMap.map.height * mapComponent.tileMap.destTileSize.y,
+      );
+
+      // Get actual viewport size accounting for zoom
+      final viewportSize = size / camera.viewfinder.zoom;
+
+      // Calculate camera bounds to prevent seeing beyond map edges
+      final halfViewportWidth = viewportSize.x / 2;
+      final halfViewportHeight = viewportSize.y / 2;
+
+      // Set camera bounds - camera center cannot go beyond these limits
+      final cameraMinX = halfViewportWidth;
+      final cameraMinY = halfViewportHeight;
+      final cameraMaxX = mapSize.x - halfViewportWidth;
+      final cameraMaxY = mapSize.y - halfViewportHeight;
+
+      // Ensure bounds are valid (in case map is smaller than viewport)
+      final validMinX = cameraMinX.clamp(0.0, mapSize.x);
+      final validMinY = cameraMinY.clamp(0.0, mapSize.y);
+      final validMaxX = cameraMaxX.clamp(validMinX, mapSize.x);
+      final validMaxY = cameraMaxY.clamp(validMinY, mapSize.y);
+
+      // Only set bounds if they are valid
+      if (validMaxX > validMinX && validMaxY > validMinY) {
+        camera.setBounds(Rectangle.fromLTWH(
+          validMinX,
+          validMinY,
+          validMaxX - validMinX,
+          validMaxY - validMinY,
+        ));
+      }
+
+      // Debug output
+      if (debugMode) {
+        print('Map Size: $mapSize');
+        print('Viewport Size: $viewportSize');
+        print('Camera Bounds: ($validMinX, $validMinY, ${validMaxX - validMinX}, ${validMaxY - validMinY})');
+      }
+    });
+  }
+
+  @override
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+
+    // Recalculate camera bounds when screen size changes
+    if (isLoaded) {
+      _setupCameraBounds();
+    }
   }
 }

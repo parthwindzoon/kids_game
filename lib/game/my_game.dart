@@ -13,8 +13,8 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
   late TiledComponent mapComponent;
   late Player player;
   late JoystickComponent joystick;
-  late ControlsDisplay controlsDisplay;
-  late PositionIndicator positionIndicator;
+  // late ControlsDisplay controlsDisplay;
+  // late PositionIndicator positionIndicator;
 
   @override
   bool get debugMode => true; // Temporarily enabled for debugging camera bounds
@@ -24,12 +24,12 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     await super.onLoad();
 
     // Load the tiled map first
-    mapComponent = await TiledComponent.load('Main-Map.tmx', Vector2.all(32));
+    mapComponent = await TiledComponent.load('test-map.tmx', Vector2.all(64));
     world.add(mapComponent);
 
     // Create larger, more visible joystick using Flame's built-in component
-    final knobPaint = BasicPalette.blue.withAlpha(200).paint();
-    final backgroundPaint = BasicPalette.gray.withAlpha(100).paint();
+    final knobPaint = Paint()..color = Colors.white.withValues(alpha :0.5);
+    final backgroundPaint = Paint()..color = Colors.grey.withValues(alpha: 0.3);
 
     joystick = JoystickComponent(
       knob: CircleComponent(radius: 25, paint: knobPaint),
@@ -50,14 +50,14 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     camera.viewport.add(joystick);
 
     // Add controls display
-    controlsDisplay = ControlsDisplay();
-    controlsDisplay.priority = 200;
-    camera.viewport.add(controlsDisplay);
-
-    // Add position indicator
-    positionIndicator = PositionIndicator(player: player);
-    positionIndicator.priority = 200;
-    camera.viewport.add(positionIndicator);
+    // controlsDisplay = ControlsDisplay();
+    // controlsDisplay.priority = 200;
+    // camera.viewport.add(controlsDisplay);
+    //
+    // // Add position indicator
+    // positionIndicator = PositionIndicator(player: player);
+    // positionIndicator.priority = 200;
+    // camera.viewport.add(positionIndicator);
 
     // Set camera zoom first (changed from 0.5 to 1 as requested)
     camera.viewfinder.zoom = 1.0;

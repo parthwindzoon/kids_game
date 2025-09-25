@@ -17,14 +17,14 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
   // late PositionIndicator positionIndicator;
 
   @override
-  bool get debugMode => true; // Temporarily enabled for debugging camera bounds
+  bool get debugMode => false; // Temporarily enabled for debugging camera bounds
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
     // Load the tiled map first
-    mapComponent = await TiledComponent.load('test-map.tmx', Vector2.all(64));
+    mapComponent = await TiledComponent.load('Main-Map.tmx', Vector2.all(32));
     world.add(mapComponent);
 
     // Create larger, more visible joystick using Flame's built-in component

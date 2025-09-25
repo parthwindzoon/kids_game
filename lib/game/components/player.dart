@@ -1,9 +1,9 @@
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kids_game/game/my_game.dart';
 
-class Player extends SpriteAnimationComponent with HasGameRef, CollisionCallbacks, KeyboardHandler {
+class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, CollisionCallbacks, KeyboardHandler {
   static const double _speed = 200.0;
   static const double _playerWidth = 42.0; // Adjust based on your sprite size
   static const double _playerHeight = 42.0; // Adjust based on your sprite size
@@ -71,7 +71,7 @@ class Player extends SpriteAnimationComponent with HasGameRef, CollisionCallback
     super.update(dt);
 
     // Handle both keyboard and joystick input
-    _updateDirectionFromKeyboard();
+    // _updateDirectionFromKeyboard();
     _updateDirectionFromJoystick();
 
     // Check if player is moving
@@ -98,35 +98,35 @@ class Player extends SpriteAnimationComponent with HasGameRef, CollisionCallback
 
     _clampToMapBounds();
 
-    if (_checkBuildingCollision()) {
-      position.setFrom(previousPosition);
-    }
+    // if (_checkBuildingCollision()) {
+    //   position.setFrom(previousPosition);
+    // }
   }
 
-  void _updateDirectionFromKeyboard() {
-    Vector2 keyboardDirection = Vector2.zero();
-
-    if (_keysPressed.contains(LogicalKeyboardKey.arrowLeft) ||
-        _keysPressed.contains(LogicalKeyboardKey.keyA)) {
-      keyboardDirection.x -= 1;
-    }
-    if (_keysPressed.contains(LogicalKeyboardKey.arrowRight) ||
-        _keysPressed.contains(LogicalKeyboardKey.keyD)) {
-      keyboardDirection.x += 1;
-    }
-    if (_keysPressed.contains(LogicalKeyboardKey.arrowUp) ||
-        _keysPressed.contains(LogicalKeyboardKey.keyW)) {
-      keyboardDirection.y -= 1;
-    }
-    if (_keysPressed.contains(LogicalKeyboardKey.arrowDown) ||
-        _keysPressed.contains(LogicalKeyboardKey.keyS)) {
-      keyboardDirection.y += 1;
-    }
-
-    if (keyboardDirection.length > 0) {
-      direction = keyboardDirection..normalize();
-    }
-  }
+  // void _updateDirectionFromKeyboard() {
+  //   Vector2 keyboardDirection = Vector2.zero();
+  //
+  //   if (_keysPressed.contains(LogicalKeyboardKey.arrowLeft) ||
+  //       _keysPressed.contains(LogicalKeyboardKey.keyA)) {
+  //     keyboardDirection.x -= 1;
+  //   }
+  //   if (_keysPressed.contains(LogicalKeyboardKey.arrowRight) ||
+  //       _keysPressed.contains(LogicalKeyboardKey.keyD)) {
+  //     keyboardDirection.x += 1;
+  //   }
+  //   if (_keysPressed.contains(LogicalKeyboardKey.arrowUp) ||
+  //       _keysPressed.contains(LogicalKeyboardKey.keyW)) {
+  //     keyboardDirection.y -= 1;
+  //   }
+  //   if (_keysPressed.contains(LogicalKeyboardKey.arrowDown) ||
+  //       _keysPressed.contains(LogicalKeyboardKey.keyS)) {
+  //     keyboardDirection.y += 1;
+  //   }
+  //
+  //   if (keyboardDirection.length > 0) {
+  //     direction = keyboardDirection..normalize();
+  //   }
+  // }
 
   void _updateDirectionFromJoystick() {
     if (joystick != null && joystick!.direction != JoystickDirection.idle) {
@@ -145,26 +145,26 @@ class Player extends SpriteAnimationComponent with HasGameRef, CollisionCallback
     position.y = position.y.clamp(_playerHeight / 2, mapHeight - _playerHeight / 2);
   }
 
-  bool _checkBuildingCollision() {
-    final tileX = (position.x / 32).floor();
-    final tileY = (position.y / 32).floor();
-    return _isBuildingTile(tileX, tileY);
-  }
+  // bool _checkBuildingCollision() {
+  //   final tileX = (position.x / 64).floor();
+  //   final tileY = (position.y / 64).floor();
+  //   return _isBuildingTile(tileX, tileY);
+  // }
 
-  bool _isBuildingTile(int tileX, int tileY) {
-    if (tileX >= 2 && tileX <= 7 && tileY >= 2 && tileY <= 7) return true;
-    if (tileX >= 30 && tileX <= 37 && tileY >= 2 && tileY <= 9) return true;
-    if (tileX >= 2 && tileX <= 10 && tileY >= 16 && tileY <= 25) return true;
-    if (tileX >= 32 && tileX <= 37 && tileY >= 16 && tileY <= 22) return true;
-    if (tileX >= 17 && tileX <= 22 && tileY >= 32 && tileY <= 36) return true;
-    if (tileX >= 33 && tileX <= 38 && tileY >= 33 && tileY <= 37) return true;
-    return false;
-  }
+  // bool _isBuildingTile(int tileX, int tileY) {
+  //   if (tileX >= 2 && tileX <= 7 && tileY >= 2 && tileY <= 7) return true;
+  //   if (tileX >= 30 && tileX <= 37 && tileY >= 2 && tileY <= 9) return true;
+  //   if (tileX >= 2 && tileX <= 10 && tileY >= 16 && tileY <= 25) return true;
+  //   if (tileX >= 32 && tileX <= 37 && tileY >= 16 && tileY <= 22) return true;
+  //   if (tileX >= 17 && tileX <= 22 && tileY >= 32 && tileY <= 36) return true;
+  //   if (tileX >= 33 && tileX <= 38 && tileY >= 33 && tileY <= 37) return true;
+  //   return false;
+  // }
 
-  @override
-  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    _keysPressed.clear();
-    _keysPressed.addAll(keysPressed);
-    return true;
-  }
+  // @override
+  // bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+  //   _keysPressed.clear();
+  //   _keysPressed.addAll(keysPressed);
+  //   return true;
+  // }
 }

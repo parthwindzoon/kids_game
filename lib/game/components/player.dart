@@ -1,19 +1,19 @@
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/services.dart';
+import 'package:flame_tiled/flame_tiled.dart';
 import 'package:kids_game/game/my_game.dart';
 
 class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, CollisionCallbacks, KeyboardHandler {
   static const double _speed = 200.0;
-  static const double _playerWidth = 42.0; // Adjust based on your sprite size
-  static const double _playerHeight = 42.0; // Adjust based on your sprite size
+  static const double _playerWidth = 42.0;
+  static const double _playerHeight = 42.0;
 
   Vector2 direction = Vector2.zero();
   Vector2 velocity = Vector2.zero();
   final Set<LogicalKeyboardKey> _keysPressed = <LogicalKeyboardKey>{};
   final JoystickComponent? joystick;
 
-  // Animation states
   late SpriteAnimation idleAnimation;
   late SpriteAnimation walkAnimation;
 
@@ -30,7 +30,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   Future<void> onLoad() async {
     await super.onLoad();
 
-    priority = 100; // High priority to render above map
+    priority = 100;
 
     // Load idle animation (10 frames)
     final idleSprites = <Sprite>[];
@@ -40,7 +40,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     }
     idleAnimation = SpriteAnimation.spriteList(
       idleSprites,
-      stepTime: 0.1, // 100ms per frame for smooth animation
+      stepTime: 0.1,
       loop: true,
     );
 
@@ -52,17 +52,16 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     }
     walkAnimation = SpriteAnimation.spriteList(
       walkSprites,
-      stepTime: 0.08, // Slightly faster for walk animation
+      stepTime: 0.08,
       loop: true,
     );
 
-    // Start with idle animation
     animation = idleAnimation;
 
-    // Add collision hitbox (adjust size as needed)
+    // Add collision hitbox
     add(RectangleHitbox(
-      size: Vector2(_playerWidth * 0.6, _playerHeight * 0.8), // Slightly smaller than sprite
-      position: Vector2(_playerWidth * 0.2, _playerHeight * 0.1), // Center the hitbox
+      size: Vector2(_playerWidth * 0.6, _playerHeight * 0.8),
+      position: Vector2(_playerWidth * 0.2, _playerHeight * 0.1),
     ));
   }
 
@@ -70,26 +69,21 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   void update(double dt) {
     super.update(dt);
 
-    // Handle both keyboard and joystick input
-    // _updateDirectionFromKeyboard();
     _updateDirectionFromJoystick();
 
-    // Check if player is moving
     final wasMoving = _isMoving;
     _isMoving = direction.length > 0;
 
-    // Switch animations based on movement
     if (_isMoving && !wasMoving) {
       animation = walkAnimation;
     } else if (!_isMoving && wasMoving) {
       animation = idleAnimation;
     }
 
-    // Handle sprite flipping based on movement direction
     if (direction.x > 0) {
-      scale.x = -1; // Face right
+      scale.x = -1;
     } else if (direction.x < 0) {
-      scale.x = 1; // Face left (flip sprite)
+      scale.x = 1;
     }
 
     velocity = direction * _speed;
@@ -98,73 +92,118 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
 
     _clampToMapBounds();
 
-    // if (_checkBuildingCollision()) {
-    //   position.setFrom(previousPosition);
-    // }
-  }
+    // Check if new position is on a valid road tile
+    if (!_isOnRoad()) {
+      // Revert to previous position if not on road
+      position.setFrom(previousPosition);
+    }
 
-  // void _updateDirectionFromKeyboard() {
-  //   Vector2 keyboardDirection = Vector2.zero();
-  //
-  //   if (_keysPressed.contains(LogicalKeyboardKey.arrowLeft) ||
-  //       _keysPressed.contains(LogicalKeyboardKey.keyA)) {
-  //     keyboardDirection.x -= 1;
-  //   }
-  //   if (_keysPressed.contains(LogicalKeyboardKey.arrowRight) ||
-  //       _keysPressed.contains(LogicalKeyboardKey.keyD)) {
-  //     keyboardDirection.x += 1;
-  //   }
-  //   if (_keysPressed.contains(LogicalKeyboardKey.arrowUp) ||
-  //       _keysPressed.contains(LogicalKeyboardKey.keyW)) {
-  //     keyboardDirection.y -= 1;
-  //   }
-  //   if (_keysPressed.contains(LogicalKeyboardKey.arrowDown) ||
-  //       _keysPressed.contains(LogicalKeyboardKey.keyS)) {
-  //     keyboardDirection.y += 1;
-  //   }
-  //
-  //   if (keyboardDirection.length > 0) {
-  //     direction = keyboardDirection..normalize();
-  //   }
-  // }
+    // Check for nearby buildings
+    _checkNearbyBuildings();
+  }
 
   void _updateDirectionFromJoystick() {
     if (joystick != null && joystick!.direction != JoystickDirection.idle) {
-      // Use joystick's relativeDelta for smooth movement
       direction = joystick!.relativeDelta;
     } else if (joystick != null && joystick!.direction == JoystickDirection.idle && _keysPressed.isEmpty) {
-      // Stop moving when joystick is idle and no keys are pressed
       direction = Vector2.zero();
     }
   }
 
   void _clampToMapBounds() {
-    const mapWidth = 40 * 32.0;
-    const mapHeight = 40 * 32.0;
+    const mapWidth = 20 * 64.0;
+    const mapHeight = 20 * 64.0;
     position.x = position.x.clamp(_playerWidth / 2, mapWidth - _playerWidth / 2);
     position.y = position.y.clamp(_playerHeight / 2, mapHeight - _playerHeight / 2);
   }
 
-  // bool _checkBuildingCollision() {
-  //   final tileX = (position.x / 64).floor();
-  //   final tileY = (position.y / 64).floor();
-  //   return _isBuildingTile(tileX, tileY);
-  // }
+  bool _isOnRoad() {
+    // Get the tile coordinates of the player's position
+    final tileX = (position.x / 64).floor();
+    final tileY = (position.y / 64).floor();
 
-  // bool _isBuildingTile(int tileX, int tileY) {
-  //   if (tileX >= 2 && tileX <= 7 && tileY >= 2 && tileY <= 7) return true;
-  //   if (tileX >= 30 && tileX <= 37 && tileY >= 2 && tileY <= 9) return true;
-  //   if (tileX >= 2 && tileX <= 10 && tileY >= 16 && tileY <= 25) return true;
-  //   if (tileX >= 32 && tileX <= 37 && tileY >= 16 && tileY <= 22) return true;
-  //   if (tileX >= 17 && tileX <= 22 && tileY >= 32 && tileY <= 36) return true;
-  //   if (tileX >= 33 && tileX <= 38 && tileY >= 33 && tileY <= 37) return true;
-  //   return false;
-  // }
+    // Get the road layer from the map
+    final roadLayer = game.mapComponent.tileMap.getLayer<TileLayer>('Road');
 
-  // @override
-  // bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-  //   _keysPressed.clear();
-  //   _keysPressed.addAll(keysPressed);
-  //   return true;
-  // }
+    if (roadLayer == null) return false;
+
+    // Check bounds
+    if (tileX < 0 || tileY < 0 ||
+        tileX >= game.mapComponent.tileMap.map.width ||
+        tileY >= game.mapComponent.tileMap.map.height) {
+      return false;
+    }
+
+    // Access tile data - tileData is a 2D array [y][x]
+    if (roadLayer.tileData != null &&
+        tileY < roadLayer.tileData!.length &&
+        tileX < roadLayer.tileData![tileY].length) {
+      final gid = roadLayer.tileData![tileY][tileX].tile;
+      // If gid > 0, there's a road tile here
+      return gid > 0;
+    }
+
+    return false;
+  }
+
+  void _checkNearbyBuildings() {
+    final objectGroup = game.mapComponent.tileMap.getLayer<ObjectGroup>('collision');
+    if (objectGroup == null) {
+      print('Warning: collision layer not found!');
+      return;
+    }
+
+    const detectionRadius = 200.0; // Increased detection radius
+
+    String? nearestBuilding;
+    double nearestDistance = double.infinity;
+
+    for (final obj in objectGroup.objects) {
+      // Skip tree collisions
+      if (obj.name.contains('tree')) continue;
+
+      // Calculate distance from player to building
+      final objCenterX = obj.x + obj.width / 2;
+      final objCenterY = obj.y + obj.height / 2;
+      final distance = Vector2(objCenterX - position.x, objCenterY - position.y).length;
+
+      // Debug specific buildings that aren't working
+      if ((obj.name == 'playground_collision' ||
+          obj.name == 'petshop_collision' ||
+          obj.name == 'zoo_collision') && distance < 400) {
+        print('${obj.name}: distance = ${distance.toInt()} pixels');
+      }
+
+      if (distance < detectionRadius && distance < nearestDistance) {
+        nearestDistance = distance;
+        // Extract building name from collision object name
+        String buildingName = obj.name.replaceAll('_collision', '');
+
+        // Handle special cases for multi-word names
+        if (buildingName == 'petshop') {
+          buildingName = 'Pet Shop';
+        } else if (buildingName == 'luckyspin') {
+          buildingName = 'Lucky Spin';
+        } else if (buildingName == 'artstudio') {
+          buildingName = 'Art Studio';
+        } else {
+          // For simple names, just capitalize
+          buildingName = buildingName.replaceAll('_', ' ');
+          buildingName = buildingName.split(' ').map((word) =>
+          word[0].toUpperCase() + word.substring(1).toLowerCase()
+          ).join(' ');
+        }
+
+        nearestBuilding = buildingName;
+      }
+    }
+
+    if (nearestBuilding != null) {
+      // Show popup through game reference
+      game.showBuildingPopup(nearestBuilding);
+    } else {
+      // If no buildings nearby, hide popup
+      game.hideBuildingPopup();
+    }
+  }
 }

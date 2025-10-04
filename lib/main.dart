@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flame/game.dart';
 import 'package:flutter/services.dart';
-
-import 'game/my_game.dart';
+import 'package:get/get.dart';
+import 'screens/home/home_screen.dart';
+import 'screens/game/game_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +15,7 @@ void main() {
 
   // Hide status bar for full screen experience
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
   runApp(const MyApp());
 }
 
@@ -23,16 +24,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Tiled Game',
+    return GetMaterialApp(
+      title: 'Kids Game',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: GameWidget<TiledGame>.controlled(
-        gameFactory: TiledGame.new,
-      ),
       debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      getPages: [
+        GetPage(
+          name: '/',
+          page: () => const HomeScreen(),
+          transition: Transition.fadeIn,
+        ),
+        GetPage(
+          name: '/game',
+          page: () => const GameScreen(),
+          transition: Transition.fadeIn,
+        ),
+      ],
     );
   }
 }

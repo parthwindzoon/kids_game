@@ -43,12 +43,12 @@ class BuildingPopupOverlay extends StatelessWidget {
 
             // Building name text
             Positioned(
-              top: 50,
+              top: 80,
               left: 0,
               right: 0,
               child: Center(
                 child: Text(
-                  'Would you like to enter\n$buildingName?',
+                  'Would you like to enter $buildingName?',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 28,
@@ -67,10 +67,10 @@ class BuildingPopupOverlay extends StatelessWidget {
               child: Center(
                 child: GestureDetector(
                   onTap: () {
-                    print('Entering $buildingName');
-                    game.overlayManuallyClosed = true;
+                    print('Opening mini games for $buildingName');
+                    // Remove current popup and show mini games overlay
                     game.overlays.remove('building_popup');
-                    // TODO: Navigate to minigame
+                    game.overlays.add('minigames_overlay');
                   },
                   child: Image.asset(
                     'assets/images/overlays/Group 93.png',

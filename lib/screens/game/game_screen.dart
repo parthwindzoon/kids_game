@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../game/components/building_popup_overlay.dart';
 import '../../game/my_game.dart';
 import '../../game/overlay/home_button_overlay.dart';
+import '../../game/overlay/minigames_overlay.dart';
 
 class GameScreen extends StatelessWidget {
   const GameScreen({super.key});
@@ -27,6 +28,9 @@ class GameScreen extends StatelessWidget {
             },
             'home_button': (context, game) {
               return HomeButtonOverlay(game: game);
+            },
+            'minigames_overlay': (context, game) {
+              return MiniGamesOverlay(game: game);
             },
           },
         ),

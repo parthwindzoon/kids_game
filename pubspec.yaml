@@ -67,6 +67,7 @@ flutter:
     - assets/images/player/
     - assets/images/home/
     - assets/images/overlays/
+    - assets/images/minigames/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

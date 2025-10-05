@@ -13,10 +13,14 @@ class MiniGamesOverlay extends StatefulWidget {
 }
 
 class _MiniGamesOverlayState extends State<MiniGamesOverlay>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
+    with TickerProviderStateMixin {
+  late AnimationController _titleAnimationController;
   late Animation<double> _titleAnimation;
   late PageController _pageController;
+
+  // Animation controller for floating text effect
+  late AnimationController _floatingAnimationController;
+  late Animation<double> _floatingAnimation;
 
   final Map<String, List<MiniGame>> buildingMiniGames = {
     'School': [
@@ -46,24 +50,40 @@ class _MiniGamesOverlayState extends State<MiniGamesOverlay>
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.6);
+    // Increased viewportFraction to 0.85 to show just a hint of adjacent games
+    _pageController = PageController(viewportFraction: 0.85);
 
-    _animationController = AnimationController(
+    _titleAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
 
     _titleAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutBack,
+      parent: _titleAnimationController,
+      curve: Curves.easeOut,
     );
 
-    _animationController.forward();
+    // Floating animation for game names
+    _floatingAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _floatingAnimation = Tween<double>(
+      begin: -8.0,
+      end: 8.0,
+    ).animate(CurvedAnimation(
+      parent: _floatingAnimationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _titleAnimationController.forward();
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _titleAnimationController.dispose();
+    _floatingAnimationController.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -73,6 +93,13 @@ class _MiniGamesOverlayState extends State<MiniGamesOverlay>
     return buildingMiniGames[buildingName] ?? [];
   }
 
+  void _handleBackButton() {
+    // Remove the overlay and go back to the building popup
+    widget.game.overlays.remove('minigames_overlay');
+    // Optionally, show the building popup again
+    // widget.game.overlays.add('building_popup');
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -80,180 +107,154 @@ class _MiniGamesOverlayState extends State<MiniGamesOverlay>
     final buildingName = widget.game.currentBuildingName ?? 'Building';
     final miniGames = _getMiniGames();
 
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/home/background.png'),
-          fit: BoxFit.cover,
+    return WillPopScope(
+      onWillPop: () async {
+        _handleBackButton();
+        return false;
+      },
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/home/background.png'),
+            fit: BoxFit.cover,
+          ),
         ),
-      ),
-      child: SafeArea(
-        child: Stack(
-          children: [
-            // Decorative clouds
-            _buildDecorativeClouds(isTablet),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // Decorative clouds
+              _buildDecorativeClouds(isTablet),
 
-            // Back Button (top-left)
-            Positioned(
-              top: isTablet ? 20 : 10,
-              left: isTablet ? 20 : 10,
-              child: GestureDetector(
-                onTap: () {
-                  widget.game.overlays.remove('minigames_overlay');
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 20 : 15,
-                    vertical: isTablet ? 10 : 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
+              // Back Button (top-left)
+              Positioned(
+                top: isTablet ? 20 : 10,
+                left: isTablet ? 20 : 10,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _handleBackButton,
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 20 : 15,
+                        vertical: isTablet ? 10 : 8,
                       ),
-                    ],
-                  ),
-                  child: Text(
-                    'For parents',
-                    style: TextStyle(
-                      fontFamily: 'AkayaKanadaka',
-                      fontSize: isTablet ? 18 : 14,
-                      color: Colors.grey.shade700,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.arrow_back,
+                            color: Colors.grey.shade700,
+                            size: isTablet ? 24 : 18,
+                          ),
+                          SizedBox(width: isTablet ? 8 : 5),
+                          Text(
+                            'Back',
+                            style: TextStyle(
+                              fontFamily: 'AkayaKanadaka',
+                              fontSize: isTablet ? 18 : 14,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            // Unlock All Button (top-right)
-            Positioned(
-              top: isTablet ? 20 : 10,
-              right: isTablet ? 20 : 10,
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 20 : 15,
-                  vertical: isTablet ? 10 : 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF7CB342),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  'Unlock all',
-                  style: TextStyle(
-                    fontFamily: 'AkayaKanadaka',
-                    fontSize: isTablet ? 18 : 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-
-            // Title (animated from top)
-            AnimatedBuilder(
-              animation: _titleAnimation,
-              builder: (context, child) {
-                return Positioned(
-                  top: isTablet ? 80 : 60,
-                  left: 0,
-                  right: 0,
-                  child: Opacity(
-                    opacity: _titleAnimation.value,
-                    child: Transform.translate(
-                      offset: Offset(
-                        0,
-                        -50 * (1 - _titleAnimation.value),
-                      ),
-                      child: Center(
-                        child: Text(
-                          buildingName,
-                          style: TextStyle(
-                            fontFamily: 'AkayaKanadaka',
-                            fontSize: isTablet ? 56 : 42,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFFFFA500),
-                            shadows: [
-                              Shadow(
-                                offset: const Offset(3, 3),
-                                blurRadius: 5,
-                                color: Colors.black.withOpacity(0.3),
-                              ),
-                            ],
+              // Title (animated from top)
+              AnimatedBuilder(
+                animation: _titleAnimation,
+                builder: (context, child) {
+                  final clampedValue = _titleAnimation.value.clamp(0.0, 1.0);
+                  return Positioned(
+                    top: isTablet ? 80 : 60,
+                    left: 0,
+                    right: 0,
+                    child: Opacity(
+                      opacity: clampedValue,
+                      child: Transform.translate(
+                        offset: Offset(
+                          0,
+                          -50 * (1 - clampedValue),
+                        ),
+                        child: Center(
+                          child: Text(
+                            buildingName,
+                            style: TextStyle(
+                              fontFamily: 'AkayaKanadaka',
+                              fontSize: isTablet ? 56 : 42,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFFFA500),
+                              shadows: [
+                                Shadow(
+                                  offset: const Offset(3, 3),
+                                  blurRadius: 5,
+                                  color: Colors.black.withOpacity(0.3),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-
-            // Horizontal Carousel
-            Center(
-              child: SizedBox(
-                height: isTablet ? 450 : 350,
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: miniGames.length,
-                  itemBuilder: (context, index) {
-                    return AnimatedBuilder(
-                      animation: _pageController,
-                      builder: (context, child) {
-                        double value = 1.0;
-                        if (_pageController.position.haveDimensions) {
-                          value = _pageController.page! - index;
-                          value = (1 - (value.abs() * 0.3)).clamp(0.7, 1.0);
-                        }
-                        return Center(
-                          child: SizedBox(
-                            height: Curves.easeInOut.transform(value) *
-                                (isTablet ? 400 : 300),
-                            width: Curves.easeInOut.transform(value) *
-                                (isTablet ? 400 : 300),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: _buildMiniGameCircle(
-                        miniGames[index],
-                        isTablet,
-                        index,
-                      ),
-                    );
-                  },
-                ),
+                  );
+                },
               ),
-            ),
 
-            // Bottom decorative text
-            if (!isTablet)
-              Positioned(
-                bottom: 10,
-                left: 20,
-                child: Text(
-                  'Restore Purchases',
-                  style: TextStyle(
-                    fontFamily: 'AkayaKanadaka',
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
+              // Horizontal Carousel
+              Center(
+                child: SizedBox(
+                  height: isTablet ? 450 : 380,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: miniGames.length,
+                    itemBuilder: (context, index) {
+                      return AnimatedBuilder(
+                        animation: _pageController,
+                        builder: (context, child) {
+                          double value = 1.0;
+                          if (_pageController.position.haveDimensions) {
+                            value = _pageController.page! - index;
+                            // Reduce scaling effect for adjacent items
+                            value = (1 - (value.abs() * 0.15)).clamp(0.85, 1.0);
+                          }
+                          return Center(
+                            child: Transform.scale(
+                              scale: value,
+                              child: Opacity(
+                                opacity: value,
+                                child: child,
+                              ),
+                            ),
+                          );
+                        },
+                        child: _buildMiniGameCircle(
+                          miniGames[index],
+                          isTablet,
+                          index,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -298,70 +299,120 @@ class _MiniGamesOverlayState extends State<MiniGamesOverlay>
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 600 + (index * 150)),
-      curve: Curves.elasticOut,
+      curve: Curves.easeOut,
       builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: Opacity(
-            opacity: value,
-            child: child,
-          ),
+        final clampedValue = value.clamp(0.0, 1.0);
+        return Opacity(
+          opacity: clampedValue,
+          child: child,
         );
       },
       child: GestureDetector(
         onTap: () {
-          if (!miniGame.isLocked) {
-            print('Selected: ${miniGame.name}');
-            widget.game.overlays.remove('minigames_overlay');
-            // TODO: Navigate to the mini game
-          }
+          print('Selected: ${miniGame.name}');
+          widget.game.overlays.remove('minigames_overlay');
+          // TODO: Navigate to the mini game
         },
-        child: Container(
-          margin: const EdgeInsets.all(20),
-          child: Stack(
-            alignment: Alignment.center,
-            clipBehavior: Clip.none,
-            children: [
-              // Outer glow circle
-              Container(
-                width: isTablet ? 380 : 280,
-                height: isTablet ? 380 : 280,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFF00BCD4),
-                    width: isTablet ? 8 : 6,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Animated Game Name
+            AnimatedBuilder(
+              animation: _floatingAnimation,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, _floatingAnimation.value),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20 : 15,
+                      vertical: isTablet ? 12 : 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFA500).withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 3,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.orange.withOpacity(0.4),
+                          blurRadius: 15,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      miniGame.name,
+                      style: TextStyle(
+                        fontFamily: 'AkayaKanadaka',
+                        fontSize: isTablet ? 24 : 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            offset: const Offset(2, 2),
+                            blurRadius: 3,
+                            color: Colors.black.withOpacity(0.3),
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.cyan.withOpacity(0.3),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-              ),
+                );
+              },
+            ),
 
-              // Inner circle with image
-              Container(
-                width: isTablet ? 340 : 250,
-                height: isTablet ? 340 : 250,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
+            SizedBox(height: isTablet ? 20 : 15),
+
+            // Game Circle
+            SizedBox(
+              width: isTablet ? 240 : 180,
+              height: isTablet ? 240 : 180,
+              child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  // Outer glow circle
+                  Container(
+                    width: isTablet ? 240 : 180,
+                    height: isTablet ? 240 : 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF00BCD4),
+                        width: isTablet ? 6 : 4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.cyan.withOpacity(0.3),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: ClipOval(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.asset(
+                  ),
+
+                  // Inner circle with image
+                  Container(
+                    width: isTablet ? 210 : 160,
+                    height: isTablet ? 210 : 160,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
                         'assets/images/minigames/${miniGame.imageName}',
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
@@ -370,41 +421,22 @@ class _MiniGamesOverlayState extends State<MiniGamesOverlay>
                             child: Center(
                               child: Icon(
                                 Icons.image_not_supported,
-                                size: isTablet ? 80 : 60,
+                                size: isTablet ? 60 : 45,
                                 color: Colors.white,
                               ),
                             ),
                           );
                         },
                       ),
-                      // Lock overlay
-                      if (miniGame.isLocked)
-                        Container(
-                          color: Colors.black.withOpacity(0.5),
-                          child: Center(
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.lock,
-                                size: isTablet ? 60 : 40,
-                                color: Colors.grey.shade700,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
 
-              // Decorative elements (flowers, animals, etc.)
-              _buildDecorativeElements(miniGame, isTablet),
-            ],
-          ),
+                  // Decorative elements
+                  _buildDecorativeElements(miniGame, isTablet),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -416,19 +448,19 @@ class _MiniGamesOverlayState extends State<MiniGamesOverlay>
         // Top flower
         Positioned(
           top: isTablet ? -10 : -5,
-          right: isTablet ? 40 : 30,
+          right: isTablet ? 20 : 15,
           child: Text(
             '🌸',
-            style: TextStyle(fontSize: isTablet ? 32 : 24),
+            style: TextStyle(fontSize: isTablet ? 28 : 20),
           ),
         ),
         // Bottom flower
         Positioned(
-          bottom: isTablet ? 20 : 15,
-          left: isTablet ? 30 : 20,
+          bottom: isTablet ? 10 : 8,
+          left: isTablet ? 15 : 10,
           child: Text(
             '🌺',
-            style: TextStyle(fontSize: isTablet ? 28 : 20),
+            style: TextStyle(fontSize: isTablet ? 24 : 18),
           ),
         ),
       ],

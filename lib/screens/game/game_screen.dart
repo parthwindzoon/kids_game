@@ -1,7 +1,11 @@
+// lib/screens/game/game_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:get/get.dart';
+import '../../game/components/building_popup_overlay.dart';
 import '../../game/my_game.dart';
+import '../../game/overlay/home_button_overlay.dart';
 
 class GameScreen extends StatelessWidget {
   const GameScreen({super.key});
@@ -17,6 +21,14 @@ class GameScreen extends StatelessWidget {
       child: Scaffold(
         body: GameWidget<TiledGame>.controlled(
           gameFactory: TiledGame.new,
+          overlayBuilderMap: {
+            'building_popup': (context, game) {
+              return BuildingPopupOverlay(game: game);
+            },
+            'home_button': (context, game) {
+              return HomeButtonOverlay(game: game);
+            },
+          },
         ),
       ),
     );

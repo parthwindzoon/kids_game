@@ -6,14 +6,15 @@ import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:flutter/material.dart';
-import 'package:kids_game/game/overlay/game_overlay.dart';
 import 'components/player.dart';
 
 class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandlerComponents {
   late TiledComponent mapComponent;
   late Player player;
   late JoystickComponent joystick;
-  GameOverlay? currentGameOverlay; // Use the new GameOverlay
+
+  String? currentBuildingName;
+  bool overlayManuallyClosed = false; // Track if user closed the overlay
 
   @override
   bool get debugMode => false;
@@ -29,7 +30,6 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
       'overlays/Group 93.png',
     ]);
 
-    // ... (rest of the onLoad method remains the same)
     mapComponent = await TiledComponent.load('Main-Map.tmx', Vector2.all(64));
     world.add(mapComponent);
 
@@ -57,7 +57,6 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     _setupCameraBounds();
   }
 
-  // ... (_getPlayerSpawnPoint and _setupCameraBounds methods remain the same)
   Vector2 _getPlayerSpawnPoint() {
     final objectGroup = mapComponent.tileMap.getLayer<ObjectGroup>('spawn');
     if (objectGroup != null) {
@@ -99,22 +98,38 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     });
   }
 
+  // New methods to manage overlays
+  void showBuildingOverlay(String buildingName) {
+    // Don't show if user manually closed it and still in same building
+    if (overlayManuallyClosed && currentBuildingName == buildingName) {
+      return;
+    }
 
-  // New methods to manage the overlay
-  void showGameOverlay(String buildingName) {
-    if (currentGameOverlay?.buildingName == buildingName) return;
+    // If it's a different building, reset the closed flag
+    if (currentBuildingName != buildingName) {
+      overlayManuallyClosed = false;
+    }
 
-    hideGameOverlay();
+    if (currentBuildingName == buildingName) return;
 
-    currentGameOverlay = GameOverlay(buildingName: buildingName);
-    camera.viewport.add(currentGameOverlay!);
+    // Hide all overlays first
+    hideAllOverlays();
+
+    currentBuildingName = buildingName;
+
+    if (buildingName.toLowerCase() == 'home') {
+      // Show home button for Home building
+      overlays.add('home_button');
+    } else {
+      // Show building popup for other buildings
+      overlays.add('building_popup');
+    }
   }
 
-  void hideGameOverlay() {
-    if (currentGameOverlay != null) {
-      currentGameOverlay!.removeFromParent();
-      currentGameOverlay = null;
-    }
+  void hideAllOverlays() {
+    overlays.remove('building_popup');
+    overlays.remove('home_button');
+    currentBuildingName = null;
   }
 
   @override

@@ -7,7 +7,6 @@ import 'package:flame_tiled/flame_tiled.dart';
 import 'package:kids_game/game/my_game.dart';
 
 class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, CollisionCallbacks, KeyboardHandler {
-  // ... (no changes to properties or onLoad method)
   static const double _speed = 200.0;
   static const double _playerWidth = 42.0;
   static const double _playerHeight = 42.0;
@@ -33,6 +32,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   Future<void> onLoad() async {
     await super.onLoad();
     priority = 100;
+
     final idleSprites = <Sprite>[];
     for (int i = 1; i <= 10; i++) {
       final sprite = await Sprite.load('player/idle_$i.png');
@@ -43,6 +43,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
       stepTime: 0.1,
       loop: true,
     );
+
     final walkSprites = <Sprite>[];
     for (int i = 1; i <= 10; i++) {
       final sprite = await Sprite.load('player/walk_$i.png');
@@ -53,7 +54,9 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
       stepTime: 0.08,
       loop: true,
     );
+
     animation = idleAnimation;
+
     add(RectangleHitbox(
       size: Vector2(_playerWidth * 0.6, _playerHeight * 0.8),
       position: Vector2(_playerWidth * 0.2, _playerHeight * 0.1),
@@ -63,26 +66,34 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   @override
   void update(double dt) {
     super.update(dt);
+
     _updateDirectionFromJoystick();
+
     final wasMoving = _isMoving;
     _isMoving = direction.length > 0;
+
     if (_isMoving && !wasMoving) {
       animation = walkAnimation;
     } else if (!_isMoving && wasMoving) {
       animation = idleAnimation;
     }
+
     if (direction.x > 0) {
       scale.x = -1;
     } else if (direction.x < 0) {
       scale.x = 1;
     }
+
     velocity = direction * _speed;
     final previousPosition = position.clone();
     position += velocity * dt;
+
     _clampToMapBounds();
+
     if (!_isOnRoad()) {
       position.setFrom(previousPosition);
     }
+
     _checkNearbyBuildings();
   }
 
@@ -92,6 +103,37 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     } else if (joystick != null && joystick!.direction == JoystickDirection.idle && _keysPressed.isEmpty) {
       direction = Vector2.zero();
     }
+  }
+
+  @override
+  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    _keysPressed.clear();
+    _keysPressed.addAll(keysPressed);
+
+    direction.setZero();
+
+    if (_keysPressed.contains(LogicalKeyboardKey.keyW) ||
+        _keysPressed.contains(LogicalKeyboardKey.arrowUp)) {
+      direction.y -= 1;
+    }
+    if (_keysPressed.contains(LogicalKeyboardKey.keyS) ||
+        _keysPressed.contains(LogicalKeyboardKey.arrowDown)) {
+      direction.y += 1;
+    }
+    if (_keysPressed.contains(LogicalKeyboardKey.keyA) ||
+        _keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
+      direction.x -= 1;
+    }
+    if (_keysPressed.contains(LogicalKeyboardKey.keyD) ||
+        _keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
+      direction.x += 1;
+    }
+
+    if (direction.length > 0) {
+      direction.normalize();
+    }
+
+    return true;
   }
 
   void _clampToMapBounds() {
@@ -106,11 +148,13 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     final tileY = (position.y / 64).floor();
     final roadLayer = game.mapComponent.tileMap.getLayer<TileLayer>('Road');
     if (roadLayer == null) return false;
+
     if (tileX < 0 || tileY < 0 ||
         tileX >= game.mapComponent.tileMap.map.width ||
         tileY >= game.mapComponent.tileMap.map.height) {
       return false;
     }
+
     if (roadLayer.tileData != null &&
         tileY < roadLayer.tileData!.length &&
         tileX < roadLayer.tileData![tileY].length) {
@@ -120,7 +164,6 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     return false;
   }
 
-  // Updated method
   void _checkNearbyBuildings() {
     final objectGroup = game.mapComponent.tileMap.getLayer<ObjectGroup>('collision');
     if (objectGroup == null) {
@@ -128,48 +171,35 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
       return;
     }
 
-    const detectionRadius = 150.0; // Adjusted for better trigger area
-
-    String? nearestBuilding;
-    double nearestDistance = double.infinity;
+    String? buildingInside;
 
     for (final obj in objectGroup.objects) {
-      // Skip trees
-      if (obj.name.contains('tree')) continue;
+      // Check if this is a building_popup object
+      // In Tiled, the type is stored as a property
+      final objType = obj.properties.getValue<String>('type');
+      if (objType != 'building_popup') continue;
 
-      final objCenterX = obj.x + obj.width / 2;
-      final objCenterY = obj.y + obj.height / 2;
-      final distance = position.distanceTo(Vector2(objCenterX, objCenterY));
+      // Check if player is INSIDE the rectangular bounds of the object
+      final playerInsideBounds =
+          position.x >= obj.x &&
+              position.x <= obj.x + obj.width &&
+              position.y >= obj.y &&
+              position.y <= obj.y + obj.height;
 
-      if (distance < detectionRadius && distance < nearestDistance) {
-        nearestDistance = distance;
-        String buildingName = obj.name.replaceAll('_collision', '');
-
-        // Handle special names
-        if (buildingName == 'petshop') {
-          buildingName = 'Pet Shop';
-        } else if (buildingName == 'luckyspin') {
-          buildingName = 'Lucky Spin';
-        } else if (buildingName == 'artstudio') {
-          buildingName = 'Art Studio';
-        } else {
-          // Capitalize other names
-          buildingName = buildingName.replaceAll('_', ' ');
-          buildingName = buildingName.split(' ').map((word) =>
-          word[0].toUpperCase() + word.substring(1).toLowerCase()
-          ).join(' ');
-        }
-
-        nearestBuilding = buildingName;
+      if (playerInsideBounds) {
+        buildingInside = obj.name;
+        break; // Found a building, no need to check others
       }
     }
 
-    // Show overlay only if a building is nearby and it's NOT the home
-    if (nearestBuilding != null && nearestBuilding.toLowerCase() != 'home') {
-      game.showGameOverlay(nearestBuilding);
+    // Show overlay only if player is inside a building area
+    if (buildingInside != null) {
+      game.showBuildingOverlay(buildingInside);
     } else {
-      // Hide overlay if no buildings are nearby or if it's the home
-      game.hideGameOverlay();
+      // Hide overlay if player is not inside any building area
+      game.hideAllOverlays();
+      // Reset the manually closed flag when player leaves the area
+      game.overlayManuallyClosed = false;
     }
   }
 }

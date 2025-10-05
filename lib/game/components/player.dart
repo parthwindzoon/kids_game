@@ -1,3 +1,5 @@
+// lib/game/components/player.dart
+
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/services.dart';
@@ -5,6 +7,7 @@ import 'package:flame_tiled/flame_tiled.dart';
 import 'package:kids_game/game/my_game.dart';
 
 class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, CollisionCallbacks, KeyboardHandler {
+  // ... (no changes to properties or onLoad method)
   static const double _speed = 200.0;
   static const double _playerWidth = 42.0;
   static const double _playerHeight = 42.0;
@@ -29,10 +32,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-
     priority = 100;
-
-    // Load idle animation (10 frames)
     final idleSprites = <Sprite>[];
     for (int i = 1; i <= 10; i++) {
       final sprite = await Sprite.load('player/idle_$i.png');
@@ -43,8 +43,6 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
       stepTime: 0.1,
       loop: true,
     );
-
-    // Load walk animation (10 frames)
     final walkSprites = <Sprite>[];
     for (int i = 1; i <= 10; i++) {
       final sprite = await Sprite.load('player/walk_$i.png');
@@ -55,10 +53,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
       stepTime: 0.08,
       loop: true,
     );
-
     animation = idleAnimation;
-
-    // Add collision hitbox
     add(RectangleHitbox(
       size: Vector2(_playerWidth * 0.6, _playerHeight * 0.8),
       position: Vector2(_playerWidth * 0.2, _playerHeight * 0.1),
@@ -68,37 +63,26 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   @override
   void update(double dt) {
     super.update(dt);
-
     _updateDirectionFromJoystick();
-
     final wasMoving = _isMoving;
     _isMoving = direction.length > 0;
-
     if (_isMoving && !wasMoving) {
       animation = walkAnimation;
     } else if (!_isMoving && wasMoving) {
       animation = idleAnimation;
     }
-
     if (direction.x > 0) {
       scale.x = -1;
     } else if (direction.x < 0) {
       scale.x = 1;
     }
-
     velocity = direction * _speed;
     final previousPosition = position.clone();
     position += velocity * dt;
-
     _clampToMapBounds();
-
-    // Check if new position is on a valid road tile
     if (!_isOnRoad()) {
-      // Revert to previous position if not on road
       position.setFrom(previousPosition);
     }
-
-    // Check for nearby buildings
     _checkNearbyBuildings();
   }
 
@@ -118,34 +102,25 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   }
 
   bool _isOnRoad() {
-    // Get the tile coordinates of the player's position
     final tileX = (position.x / 64).floor();
     final tileY = (position.y / 64).floor();
-
-    // Get the road layer from the map
     final roadLayer = game.mapComponent.tileMap.getLayer<TileLayer>('Road');
-
     if (roadLayer == null) return false;
-
-    // Check bounds
     if (tileX < 0 || tileY < 0 ||
         tileX >= game.mapComponent.tileMap.map.width ||
         tileY >= game.mapComponent.tileMap.map.height) {
       return false;
     }
-
-    // Access tile data - tileData is a 2D array [y][x]
     if (roadLayer.tileData != null &&
         tileY < roadLayer.tileData!.length &&
         tileX < roadLayer.tileData![tileY].length) {
       final gid = roadLayer.tileData![tileY][tileX].tile;
-      // If gid > 0, there's a road tile here
       return gid > 0;
     }
-
     return false;
   }
 
+  // Updated method
   void _checkNearbyBuildings() {
     final objectGroup = game.mapComponent.tileMap.getLayer<ObjectGroup>('collision');
     if (objectGroup == null) {
@@ -153,33 +128,24 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
       return;
     }
 
-    const detectionRadius = 200.0; // Increased detection radius
+    const detectionRadius = 150.0; // Adjusted for better trigger area
 
     String? nearestBuilding;
     double nearestDistance = double.infinity;
 
     for (final obj in objectGroup.objects) {
-      // Skip tree collisions
+      // Skip trees
       if (obj.name.contains('tree')) continue;
 
-      // Calculate distance from player to building
       final objCenterX = obj.x + obj.width / 2;
       final objCenterY = obj.y + obj.height / 2;
-      final distance = Vector2(objCenterX - position.x, objCenterY - position.y).length;
-
-      // Debug specific buildings that aren't working
-      if ((obj.name == 'playground_collision' ||
-          obj.name == 'petshop_collision' ||
-          obj.name == 'zoo_collision') && distance < 400) {
-        print('${obj.name}: distance = ${distance.toInt()} pixels');
-      }
+      final distance = position.distanceTo(Vector2(objCenterX, objCenterY));
 
       if (distance < detectionRadius && distance < nearestDistance) {
         nearestDistance = distance;
-        // Extract building name from collision object name
         String buildingName = obj.name.replaceAll('_collision', '');
 
-        // Handle special cases for multi-word names
+        // Handle special names
         if (buildingName == 'petshop') {
           buildingName = 'Pet Shop';
         } else if (buildingName == 'luckyspin') {
@@ -187,7 +153,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
         } else if (buildingName == 'artstudio') {
           buildingName = 'Art Studio';
         } else {
-          // For simple names, just capitalize
+          // Capitalize other names
           buildingName = buildingName.replaceAll('_', ' ');
           buildingName = buildingName.split(' ').map((word) =>
           word[0].toUpperCase() + word.substring(1).toLowerCase()
@@ -198,12 +164,12 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
       }
     }
 
-    if (nearestBuilding != null) {
-      // Show popup through game reference
-      game.showBuildingPopup(nearestBuilding);
+    // Show overlay only if a building is nearby and it's NOT the home
+    if (nearestBuilding != null && nearestBuilding.toLowerCase() != 'home') {
+      game.showGameOverlay(nearestBuilding);
     } else {
-      // If no buildings nearby, hide popup
-      game.hideBuildingPopup();
+      // Hide overlay if no buildings are nearby or if it's the home
+      game.hideGameOverlay();
     }
   }
 }

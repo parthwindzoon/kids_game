@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../game/components/building_popup_overlay.dart';
 import '../../game/my_game.dart';
 import '../../game/overlay/home_button_overlay.dart';
+import '../../game/overlay/learn_alphabets_overlay.dart';
 import '../../game/overlay/minigames_overlay.dart';
 
 class GameScreen extends StatelessWidget {
@@ -31,6 +32,10 @@ class GameScreen extends StatelessWidget {
             },
             'minigames_overlay': (context, game) {
               return MiniGamesOverlay(game: game);
+            },
+
+            'learn_alphabets': (context, game) {
+              return LearnAlphabetsOverlay(game: game);
             },
           },
         ),

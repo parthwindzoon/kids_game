@@ -105,7 +105,7 @@ class MiniGamesOverlay extends StatelessWidget {
                 ),
               ),
 
-              // Back Button (top-left) - MOVED TO END FOR PROPER Z-INDEX
+              // Back Button (top-left)
               Positioned(
                 top: isTablet ? 20 : 10,
                 left: isTablet ? 20 : 10,
@@ -172,8 +172,7 @@ class MiniGamesOverlay extends StatelessWidget {
         child: GestureDetector(
           onTap: () {
             print('Selected: ${miniGame.name}');
-            controller.handleBackButton();
-            // TODO: Navigate to the mini game
+            controller.navigateToMiniGame(miniGame.name);
           },
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -339,10 +338,8 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
   @override
   void onInit() {
     super.onInit();
-    // Show more of adjacent games (half in, half out)
     pageController = PageController(viewportFraction: 0.5);
 
-    // Start animations
     _startTitleAnimation();
     _startFloatingAnimation();
     _startCardAnimations();
@@ -371,7 +368,6 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
       final duration = 1500;
       final steps = 60;
 
-      // Animate up
       for (int i = 0; i <= steps; i++) {
         Future.delayed(Duration(milliseconds: (duration / 2 / steps * i).round()), () {
           if (!isClosed) {
@@ -380,7 +376,6 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
         });
       }
 
-      // Animate down
       for (int i = 0; i <= steps; i++) {
         Future.delayed(Duration(milliseconds: duration ~/ 2 + (duration / 2 / steps * i).round()), () {
           if (!isClosed) {
@@ -421,6 +416,34 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
   List<MiniGame> getMiniGames() {
     final buildingName = game.currentBuildingName ?? 'School';
     return buildingMiniGames[buildingName] ?? [];
+  }
+
+  void navigateToMiniGame(String gameName) {
+    print('Navigating to: $gameName');
+
+    // Remove current overlay
+    game.overlays.remove('minigames_overlay');
+
+    // Navigate based on game name
+    switch (gameName) {
+      case 'Learn Alphabets':
+        game.overlays.add('learn_alphabets');
+        break;
+      case 'Learn Numbers':
+      // TODO: Add Learn Numbers overlay
+        print('Learn Numbers - Coming Soon!');
+        game.overlays.add('minigames_overlay');
+        break;
+      case 'Simple Math':
+      // TODO: Add Simple Math overlay
+        print('Simple Math - Coming Soon!');
+        game.overlays.add('minigames_overlay');
+        break;
+      default:
+        print('Mini-game not implemented yet: $gameName');
+        game.overlays.add('minigames_overlay');
+        break;
+    }
   }
 
   void handleBackButton() {

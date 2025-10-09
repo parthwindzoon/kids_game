@@ -31,6 +31,10 @@ class MiniGamesOverlay extends StatelessWidget {
           ),
         ),
         child: SafeArea(
+          left: false,
+          right: false,
+          top: true,
+          bottom: true,
           child: Stack(
             children: [
               // Title (animated from top)
@@ -114,42 +118,7 @@ class MiniGamesOverlay extends StatelessWidget {
                     print('🔴 BACK BUTTON TAPPED!');
                     controller.handleBackButton();
                   },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 20 : 15,
-                      vertical: isTablet ? 10 : 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 5,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.arrow_back,
-                          color: Colors.grey.shade700,
-                          size: isTablet ? 24 : 18,
-                        ),
-                        SizedBox(width: isTablet ? 8 : 5),
-                        Text(
-                          'Back',
-                          style: TextStyle(
-                            fontFamily: 'AkayaKanadaka',
-                            fontSize: isTablet ? 18 : 14,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: Image.asset('assets/images/back_btn.png'),
                 ),
               ),
             ],
@@ -438,6 +407,9 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
       // TODO: Add Simple Math overlay
         print('Simple Math - Coming Soon!');
         game.overlays.add('minigames_overlay');
+        break;
+      case 'Shape Shorting':
+        game.overlays.add('shape_sorting');
         break;
       default:
         print('Mini-game not implemented yet: $gameName');

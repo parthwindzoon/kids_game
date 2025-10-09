@@ -8,6 +8,7 @@ import '../../game/my_game.dart';
 import '../../game/overlay/home_button_overlay.dart';
 import '../../game/overlay/learn_alphabets_overlay.dart';
 import '../../game/overlay/minigames_overlay.dart';
+import '../../game/overlay/shape_shorting_overlay.dart';
 
 class GameScreen extends StatelessWidget {
   const GameScreen({super.key});
@@ -36,6 +37,10 @@ class GameScreen extends StatelessWidget {
 
             'learn_alphabets': (context, game) {
               return LearnAlphabetsOverlay(game: game);
+            },
+
+            'shape_sorting': (context, game) {
+              return ShapeSortingOverlay(game: game);
             },
           },
         ),

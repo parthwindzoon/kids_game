@@ -15,104 +15,102 @@ class HomeScreen extends StatelessWidget {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/home/background.png'),
-            fit: BoxFit.cover,
+            fit: isTablet ? BoxFit.fill :BoxFit.cover,
           ),
         ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // Settings Button (from left)
-              Obx(() => AnimatedPositioned(
+        child: Stack(
+          children: [
+            // Settings Button (from left)
+            Obx(() => AnimatedPositioned(
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOutBack,
+              left: controller.showSettings.value
+                  ? (isTablet ? 40 : 20)
+                  : -100,
+              top: isTablet ? 40 : 20,
+              child: _buildSettingsButton(controller, isTablet),
+            )),
+
+            // Coin Counter (from right)
+            Obx(() => AnimatedPositioned(
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOutBack,
+              right: controller.showCoins.value
+                  ? (isTablet ? 40 : 20)
+                  : -200,
+              top: isTablet ? 40 : 20,
+              child: _buildCoinCounter(isTablet),
+            )),
+
+            // KIDS GAME Title (from top)
+            Obx(() => AnimatedPositioned(
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOutBack,
+              top: controller.showTitle.value
+                  ? (isTablet ? 60 : 30)
+                  : -150,
+              left: 0,
+              right: 0,
+              child: _buildTitle(isTablet),
+            )),
+
+            // Owl (from left)
+            Positioned(
+              left: isTablet ? size.width * 0.06 : size.width * 0.05,
+              bottom: isTablet ? size.height * 0.15 : size.height * 0.15,
+              child: Obx(() => AnimatedSlide(
                 duration: const Duration(milliseconds: 800),
                 curve: Curves.easeOutBack,
-                left: controller.showSettings.value
-                    ? (isTablet ? 40 : 20)
-                    : -100,
-                top: isTablet ? 40 : 20,
-                child: _buildSettingsButton(controller, isTablet),
+                offset: controller.showOwl.value
+                    ? Offset.zero
+                    : const Offset(-3, 0),
+                child: Image.asset(
+                  'assets/images/home/owl.png',
+                  width: isTablet ? 140 : 100,
+                  height: isTablet ? 140 : 100,
+                ),
               )),
+            ),
 
-              // Coin Counter (from right)
-              Obx(() => AnimatedPositioned(
+            // Deer (from right)
+            Positioned(
+              right: isTablet ? size.width * 0.10 : size.width * 0.12,
+              bottom: isTablet ? size.height * 0.20 : size.height * 0.20,
+              child: Obx(() => AnimatedSlide(
                 duration: const Duration(milliseconds: 800),
                 curve: Curves.easeOutBack,
-                right: controller.showCoins.value
-                    ? (isTablet ? 40 : 20)
-                    : -200,
-                top: isTablet ? 40 : 20,
-                child: _buildCoinCounter(isTablet),
+                offset: controller.showDeer.value
+                    ? Offset.zero
+                    : const Offset(3, 0),
+                child: Image.asset(
+                  'assets/images/home/deer.png',
+                  width: isTablet ? 140 : 100,
+                  height: isTablet ? 140 : 100,
+                ),
               )),
+            ),
 
-              // KIDS GAME Title (from top)
-              Obx(() => AnimatedPositioned(
+            // Play Game Group with Lion (from bottom)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Obx(() => AnimatedSlide(
                 duration: const Duration(milliseconds: 800),
                 curve: Curves.easeOutBack,
-                top: controller.showTitle.value
-                    ? (isTablet ? 60 : 30)
-                    : -150,
-                left: 0,
-                right: 0,
-                child: _buildTitle(isTablet),
+                offset: controller.showPlayGameGroup.value
+                    ? Offset.zero
+                    : const Offset(0, 2),
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: isTablet ? 20 : 0,
+                  ),
+                  child: _buildPlayGameGroupWithLion(controller, isTablet),
+                ),
               )),
-
-              // Owl (from left)
-              Positioned(
-                left: isTablet ? size.width * 0.05 : size.width * 0.02,
-                bottom: isTablet ? size.height * 0.25 : size.height * 0.22,
-                child: Obx(() => AnimatedSlide(
-                  duration: const Duration(milliseconds: 800),
-                  curve: Curves.easeOutBack,
-                  offset: controller.showOwl.value
-                      ? Offset.zero
-                      : const Offset(-3, 0),
-                  child: Image.asset(
-                    'assets/images/home/owl.png',
-                    width: isTablet ? 140 : 100,
-                    height: isTablet ? 140 : 100,
-                  ),
-                )),
-              ),
-
-              // Deer (from right)
-              Positioned(
-                right: isTablet ? size.width * 0.15 : size.width * 0.1,
-                bottom: isTablet ? size.height * 0.25 : size.height * 0.22,
-                child: Obx(() => AnimatedSlide(
-                  duration: const Duration(milliseconds: 800),
-                  curve: Curves.easeOutBack,
-                  offset: controller.showDeer.value
-                      ? Offset.zero
-                      : const Offset(3, 0),
-                  child: Image.asset(
-                    'assets/images/home/deer.png',
-                    width: isTablet ? 140 : 100,
-                    height: isTablet ? 140 : 100,
-                  ),
-                )),
-              ),
-
-              // Play Game Group with Lion (from bottom)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Obx(() => AnimatedSlide(
-                  duration: const Duration(milliseconds: 800),
-                  curve: Curves.easeOutBack,
-                  offset: controller.showPlayGameGroup.value
-                      ? Offset.zero
-                      : const Offset(0, 2),
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      bottom: isTablet ? 20 : 0,
-                    ),
-                    child: _buildPlayGameGroupWithLion(controller, isTablet),
-                  ),
-                )),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -148,7 +146,6 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildPlayGameGroupWithLion(HomeController controller, bool isTablet) {
-    // BIGGER dimensions
     final groupWidth = isTablet ? 720.0 : 500.0;
     final groupHeight = isTablet ? 180.0 : 140.0;
     final lionSize = isTablet ? 180.0 : 130.0;
@@ -156,24 +153,24 @@ class HomeScreen extends StatelessWidget {
 
     return SizedBox(
       width: groupWidth,
-      height: groupHeight + lionSize * 0.5 + arrowSize * 0.5, // Space for lion top + arrow bottom
+      height: groupHeight + lionSize * 0.5 + arrowSize * 0.5,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
           // Base purple container
           Positioned(
-            top: lionSize * 0.5, // Start below lion
+            top: lionSize * 0.5,
             left: 0,
             right: 0,
-            bottom: arrowSize * 0.5, // End above arrow
+            bottom: arrowSize * 0.5,
             child: Image.asset(
               'assets/images/home/play_group_base.png',
               fit: BoxFit.fill,
             ),
           ),
 
-          // Lion sitting on the EDGE of purple container (from top animation)
+          // Lion sitting on the EDGE of purple container
           Positioned(
             top: -50,
             left: 0,
@@ -194,7 +191,7 @@ class HomeScreen extends StatelessWidget {
             )),
           ),
 
-          // Character Button (left side) - BIGGER
+          // Character Button (left side)
           Positioned(
             left: isTablet ? 70 : 50,
             top: lionSize * 0.5 + (isTablet ? 60 : 50),
@@ -208,7 +205,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // Play Game Text (center, inside purple container)
+          // Play Game Text
           Positioned(
             left: 0,
             right: 0,
@@ -234,7 +231,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // Arrow Button - Half in, half out at BOTTOM CENTER
+          // Arrow Button
           Positioned(
             left: 0,
             right: 0,
@@ -252,7 +249,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // Companion Button (right side) - BIGGER
+          // Companion Button (right side)
           Positioned(
             right: isTablet ? 70 : 50,
             top: lionSize * 0.5 + (isTablet ? 60 : 50),

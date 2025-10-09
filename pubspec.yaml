@@ -65,12 +65,16 @@ flutter:
   assets:
     - assets/tiles/
     - assets/tilesets/
+    - assets/images/
     - assets/images/player/
+    - assets/images/player_boy/
     - assets/images/home/
     - assets/images/overlays/
     - assets/images/minigames/
     - assets/images/alphabets/
     - assets/images/alphabet_words/
+    - assets/images/shapes/
+      #Audio Assets
     - assets/audio/alphabets/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

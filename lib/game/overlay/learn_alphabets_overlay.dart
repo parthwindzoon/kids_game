@@ -25,115 +25,78 @@ class LearnAlphabetsOverlay extends StatelessWidget {
           fit: BoxFit.cover,
         ),
       ),
-      child: SafeArea(
-        child: Stack(
-          children: [
-            // Main Content - Alphabet Grid
-            Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 60 : 40,
-                    vertical: isTablet ? 40 : 20,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(height: isTablet ? 60 : 40),
-                      // Row 1: A to H
-                      _buildAlphabetRow(
-                        ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
-                        isTablet,
-                        controller,
-                      ),
-                      SizedBox(height: isTablet ? 20 : 15),
-                      // Row 2: I to P
-                      _buildAlphabetRow(
-                        ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'],
-                        isTablet,
-                        controller,
-                      ),
-                      SizedBox(height: isTablet ? 20 : 15),
-                      // Row 3: Q to X
-                      _buildAlphabetRow(
-                        ['Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X'],
-                        isTablet,
-                        controller,
-                      ),
-                      SizedBox(height: isTablet ? 20 : 15),
-                      // Row 4: Y, Z (centered)
-                      _buildAlphabetRow(
-                        ['Y', 'Z'],
-                        isTablet,
-                        controller,
-                        centered: true,
-                      ),
-                      SizedBox(height: isTablet ? 40 : 20),
-                    ],
-                  ),
+      child: Stack(
+        children: [
+          // Main Content - Alphabet Grid
+          Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 60 : 40,
+                  vertical: isTablet ? 40 : 20,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: isTablet ? 60 : 40),
+                    // Row 1: A to H
+                    _buildAlphabetRow(
+                      ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+                      isTablet,
+                      controller,
+                    ),
+                    SizedBox(height: isTablet ? 20 : 15),
+                    // Row 2: I to P
+                    _buildAlphabetRow(
+                      ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'],
+                      isTablet,
+                      controller,
+                    ),
+                    SizedBox(height: isTablet ? 20 : 15),
+                    // Row 3: Q to X
+                    _buildAlphabetRow(
+                      ['Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X'],
+                      isTablet,
+                      controller,
+                    ),
+                    SizedBox(height: isTablet ? 20 : 15),
+                    // Row 4: Y, Z (centered)
+                    _buildAlphabetRow(
+                      ['Y', 'Z'],
+                      isTablet,
+                      controller,
+                      centered: true,
+                    ),
+                    SizedBox(height: isTablet ? 40 : 20),
+                  ],
                 ),
               ),
             ),
+          ),
 
-            // Back Button (top-left corner)
-            Positioned(
-              top: isTablet ? 20 : 10,
-              left: isTablet ? 20 : 10,
-              child: GestureDetector(
-                onTap: () {
-                  controller.dispose();
-                  Get.delete<LearnAlphabetsController>();
-                  game.overlays.remove('learn_alphabets');
-                  game.overlays.add('minigames_overlay');
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 20 : 15,
-                    vertical: isTablet ? 10 : 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.arrow_back,
-                        color: Colors.grey.shade700,
-                        size: isTablet ? 24 : 18,
-                      ),
-                      SizedBox(width: isTablet ? 8 : 5),
-                      Text(
-                        'Back',
-                        style: TextStyle(
-                          fontFamily: 'AkayaKanadaka',
-                          fontSize: isTablet ? 18 : 14,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+          // Back Button (top-left corner)
+          Positioned(
+            top: isTablet ? 20 : 10,
+            left: isTablet ? 20 : 10,
+            child: GestureDetector(
+              onTap: () {
+                controller.dispose();
+                Get.delete<LearnAlphabetsController>();
+                game.overlays.remove('learn_alphabets');
+                game.overlays.add('minigames_overlay');
+              },
+                child: Image.asset('assets/images/back_btn.png')
             ),
+          ),
 
-            // Letter Detail Popup
-            Obx(() {
-              if (controller.selectedLetter.value.isEmpty) {
-                return const SizedBox.shrink();
-              }
-              return _buildLetterPopup(controller, isTablet);
-            }),
-          ],
-        ),
+          // Letter Detail Popup
+          Obx(() {
+            if (controller.selectedLetter.value.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return _buildLetterPopup(controller, isTablet);
+          }),
+        ],
       ),
     );
   }

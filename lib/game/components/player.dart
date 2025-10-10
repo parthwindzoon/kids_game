@@ -4,7 +4,9 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/services.dart';
 import 'package:flame_tiled/flame_tiled.dart';
+import 'package:get/get.dart';
 import 'package:kids_game/game/my_game.dart';
+import '../../controllers/character_controller.dart';
 
 class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, CollisionCallbacks, KeyboardHandler {
   static const double _speed = 200.0;
@@ -20,6 +22,7 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   late SpriteAnimation walkAnimation;
 
   bool _isMoving = false;
+  String _currentCharacter = 'player';
 
   Player({required Vector2 position, this.joystick})
       : super(
@@ -33,10 +36,40 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     await super.onLoad();
     priority = 100;
 
+    // Get current character from controller
+    final characterController = Get.find<CharacterController>();
+    _currentCharacter = characterController.selectedCharacter.value;
+
+    await _loadCharacterAnimations();
+
+    add(RectangleHitbox(
+      size: Vector2(_playerWidth * 0.6, _playerHeight * 0.8),
+      position: Vector2(_playerWidth * 0.2, _playerHeight * 0.1),
+    ));
+
+    // Listen for character changes
+    ever(characterController.selectedCharacter, (_) {
+      _onCharacterChanged();
+    });
+  }
+
+  Future<void> _loadCharacterAnimations() async {
+    final characterController = Get.find<CharacterController>();
+    final character = characterController.getCurrentCharacter();
+
     final idleSprites = <Sprite>[];
     for (int i = 1; i <= 10; i++) {
-      final sprite = await Sprite.load('player/idle_$i.png');
-      idleSprites.add(sprite);
+      try {
+        final sprite = await Sprite.load('${character.folderName}/idle_$i.png');
+        idleSprites.add(sprite);
+      } catch (e) {
+        print('Error loading idle sprite $i for ${character.folderName}: $e');
+        // Fallback to default character if images don't exist
+        if (character.folderName != 'player') {
+          final fallbackSprite = await Sprite.load('player/idle_$i.png');
+          idleSprites.add(fallbackSprite);
+        }
+      }
     }
     idleAnimation = SpriteAnimation.spriteList(
       idleSprites,
@@ -46,8 +79,17 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
 
     final walkSprites = <Sprite>[];
     for (int i = 1; i <= 10; i++) {
-      final sprite = await Sprite.load('player/walk_$i.png');
-      walkSprites.add(sprite);
+      try {
+        final sprite = await Sprite.load('${character.folderName}/walk_$i.png');
+        walkSprites.add(sprite);
+      } catch (e) {
+        print('Error loading walk sprite $i for ${character.folderName}: $e');
+        // Fallback to default character if images don't exist
+        if (character.folderName != 'player') {
+          final fallbackSprite = await Sprite.load('player/walk_$i.png');
+          walkSprites.add(fallbackSprite);
+        }
+      }
     }
     walkAnimation = SpriteAnimation.spriteList(
       walkSprites,
@@ -56,11 +98,16 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     );
 
     animation = idleAnimation;
+  }
 
-    add(RectangleHitbox(
-      size: Vector2(_playerWidth * 0.6, _playerHeight * 0.8),
-      position: Vector2(_playerWidth * 0.2, _playerHeight * 0.1),
-    ));
+  Future<void> _onCharacterChanged() async {
+    final characterController = Get.find<CharacterController>();
+    final newCharacter = characterController.selectedCharacter.value;
+
+    if (_currentCharacter != newCharacter) {
+      _currentCharacter = newCharacter;
+      await _loadCharacterAnimations();
+    }
   }
 
   @override
@@ -174,12 +221,9 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     String? buildingInside;
 
     for (final obj in objectGroup.objects) {
-      // Check if this is a building_popup object
-      // In Tiled, the type is stored as a property
       final objType = obj.properties.getValue<String>('type');
       if (objType != 'building_popup') continue;
 
-      // Check if player is INSIDE the rectangular bounds of the object
       final playerInsideBounds =
           position.x >= obj.x &&
               position.x <= obj.x + obj.width &&
@@ -188,17 +232,14 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
 
       if (playerInsideBounds) {
         buildingInside = obj.name;
-        break; // Found a building, no need to check others
+        break;
       }
     }
 
-    // Show overlay only if player is inside a building area
     if (buildingInside != null) {
       game.showBuildingOverlay(buildingInside);
     } else {
-      // Hide overlay if player is not inside any building area
       game.hideAllOverlays();
-      // Reset the manually closed flag when player leaves the area
       game.overlayManuallyClosed = false;
     }
   }

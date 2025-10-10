@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:kids_game/controllers/character_controller.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/game/game_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  Get.put(CharacterController());
 
   // Force landscape orientation
   SystemChrome.setPreferredOrientations([

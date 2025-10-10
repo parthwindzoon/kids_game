@@ -27,124 +27,122 @@ class ShapeSortingOverlay extends StatelessWidget {
           fit: BoxFit.cover,
         ),
       ),
-      child: SafeArea(
-        child: Stack(
-          children: [
-            // Main Content
-            Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 60 : 30,
-                    vertical: isTablet ? 40 : 20,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(height: isTablet ? 80 : 60),
-
-                      // Title
-                      Text(
-                        'Shape Sorting',
-                        style: TextStyle(
-                          fontFamily: 'AkayaKanadaka',
-                          fontSize: isTablet ? 48 : 36,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFFFFA500),
-                          shadows: [
-                            Shadow(
-                              offset: const Offset(3, 3),
-                              blurRadius: 5,
-                              color: Colors.black.withOpacity(0.3),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: isTablet ? 40 : 30),
-
-                      // Target Shapes (Outlines) - Top Row
-                      Obx(() => _buildTargetShapes(controller, isTablet)),
-
-                      SizedBox(height: isTablet ? 60 : 40),
-
-                      // Draggable Shapes (Filled) - Bottom Row
-                      Obx(() => _buildDraggableShapes(controller, isTablet)),
-
-                      SizedBox(height: isTablet ? 40 : 30),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Back Button (top-left corner)
-            Positioned(
-              top: isTablet ? 20 : 10,
-              left: isTablet ? 20 : 10,
-              child: GestureDetector(
-                onTap: () {
-                  controller.dispose();
-                  Get.delete<ShapeSortingController>();
-                  game.overlays.remove('shape_sorting');
-                  game.overlays.add('minigames_overlay');
-                },
-                  child: Image.asset('assets/images/back_btn.png')
-              ),
-            ),
-
-            // Score Display (top-right corner)
-            Positioned(
-              top: isTablet ? 20 : 10,
-              right: isTablet ? 20 : 10,
-              child: Obx(() => Container(
+      child: Stack(
+        children: [
+          // Main Content
+          Center(
+            child: SingleChildScrollView(
+              child: Padding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 20 : 15,
-                  vertical: isTablet ? 10 : 8,
+                  horizontal: isTablet ? 60 : 30,
+                  vertical: isTablet ? 40 : 20,
                 ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.star,
-                      color: Colors.yellow,
-                      size: isTablet ? 24 : 20,
-                    ),
-                    SizedBox(width: isTablet ? 8 : 5),
+                    SizedBox(height: isTablet ? 80 : 60),
+
+                    // Title
                     Text(
-                      '${controller.score.value}/${controller.totalShapes}',
+                      'Shape Sorting',
                       style: TextStyle(
                         fontFamily: 'AkayaKanadaka',
-                        fontSize: isTablet ? 20 : 16,
+                        fontSize: isTablet ? 48 : 36,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: const Color(0xFFFFA500),
+                        shadows: [
+                          Shadow(
+                            offset: const Offset(3, 3),
+                            blurRadius: 5,
+                            color: Colors.black.withOpacity(0.3),
+                          ),
+                        ],
                       ),
                     ),
+
+                    SizedBox(height: isTablet ? 40 : 30),
+
+                    // Target Shapes (Outlines) - Top Row
+                    Obx(() => _buildTargetShapes(controller, isTablet)),
+
+                    SizedBox(height: isTablet ? 60 : 40),
+
+                    // Draggable Shapes (Filled) - Bottom Row
+                    Obx(() => _buildDraggableShapes(controller, isTablet)),
+
+                    SizedBox(height: isTablet ? 40 : 30),
                   ],
                 ),
-              )),
+              ),
             ),
+          ),
 
-            // Completion Popup
-            Obx(() {
-              if (!controller.showCompletionPopup.value) {
-                return const SizedBox.shrink();
-              }
-              return _buildCompletionPopup(controller, isTablet, game);
-            }),
-          ],
-        ),
+          // Back Button (top-left corner)
+          Positioned(
+            top: isTablet ? 20 : 10,
+            left: isTablet ? 20 : 10,
+            child: GestureDetector(
+              onTap: () {
+                controller.dispose();
+                Get.delete<ShapeSortingController>();
+                game.overlays.remove('shape_sorting');
+                game.overlays.add('minigames_overlay');
+              },
+                child: Image.asset('assets/images/back_btn.png')
+            ),
+          ),
+
+          // Score Display (top-right corner)
+          Positioned(
+            top: isTablet ? 20 : 10,
+            right: isTablet ? 20 : 10,
+            child: Obx(() => Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 20 : 15,
+                vertical: isTablet ? 10 : 8,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4CAF50),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.star,
+                    color: Colors.yellow,
+                    size: isTablet ? 24 : 20,
+                  ),
+                  SizedBox(width: isTablet ? 8 : 5),
+                  Text(
+                    '${controller.score.value}/${controller.totalShapes}',
+                    style: TextStyle(
+                      fontFamily: 'AkayaKanadaka',
+                      fontSize: isTablet ? 20 : 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            )),
+          ),
+
+          // Completion Popup
+          Obx(() {
+            if (!controller.showCompletionPopup.value) {
+              return const SizedBox.shrink();
+            }
+            return _buildCompletionPopup(controller, isTablet, game);
+          }),
+        ],
       ),
     );
   }

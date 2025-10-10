@@ -67,7 +67,6 @@ flutter:
     - assets/tilesets/
     - assets/images/
     - assets/images/player/
-    - assets/images/player_boy/
     - assets/images/home/
     - assets/images/overlays/
     - assets/images/minigames/

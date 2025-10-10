@@ -1,3 +1,5 @@
+// lib/screens/home/home_controller.dart
+
 import 'package:get/get.dart';
 
 class HomeController extends GetxController with GetSingleTickerProviderStateMixin {
@@ -9,6 +11,9 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   final RxBool showSettings = false.obs;
   final RxBool showCoins = false.obs;
   final RxBool showTitle = false.obs;
+
+  // Character selection overlay state
+  final RxBool showCharacterSelection = false.obs;
 
   @override
   void onInit() {
@@ -45,12 +50,12 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   }
 
   void openCharacterSelection() {
-    // TODO: Implement character selection
-    Get.snackbar(
-      'Coming Soon',
-      'Character selection will be available soon!',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    // Show character selection overlay instead of navigating to new page
+    showCharacterSelection.value = true;
+  }
+
+  void closeCharacterSelection() {
+    showCharacterSelection.value = false;
   }
 
   void openCompanionSelection() {

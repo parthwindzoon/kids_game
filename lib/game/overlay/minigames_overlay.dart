@@ -411,6 +411,9 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
       case 'Shape Shorting':
         game.overlays.add('shape_sorting');
         break;
+      case 'Color Filling':
+        game.overlays.add('image_selection_overlay');
+        break;
       default:
         print('Mini-game not implemented yet: $gameName');
         game.overlays.add('minigames_overlay');

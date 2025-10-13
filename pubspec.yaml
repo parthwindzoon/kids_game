@@ -38,6 +38,7 @@ dependencies:
   flame_tiled: ^3.0.7
   flame_audio: ^2.11.10
   get: ^4.7.2
+  flutter_svg: ^2.2.1
 
 dev_dependencies:
   flutter_test:
@@ -78,6 +79,7 @@ flutter:
     - assets/images/alphabets/
     - assets/images/alphabet_words/
     - assets/images/shapes/
+    - assets/images/coloring/
       #Audio Assets
     - assets/audio/alphabets/
   #   - images/a_dot_burr.jpeg

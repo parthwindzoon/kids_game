@@ -16,6 +16,8 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
   String? currentBuildingName;
   bool overlayManuallyClosed = false; // Track if user closed the overlay
 
+  String? selectedColoringSvgPath;
+
   @override
   bool get debugMode => false;
 

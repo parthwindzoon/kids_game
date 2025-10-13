@@ -5,6 +5,8 @@ import 'package:flame/game.dart';
 import 'package:get/get.dart';
 import '../../game/components/building_popup_overlay.dart';
 import '../../game/my_game.dart';
+import '../../game/overlay/coloring_page_overlay.dart';
+import '../../game/overlay/image_selection_overlay.dart';
 import '../../game/overlay/home_button_overlay.dart';
 import '../../game/overlay/learn_alphabets_overlay.dart';
 import '../../game/overlay/minigames_overlay.dart';
@@ -42,6 +44,10 @@ class GameScreen extends StatelessWidget {
             'shape_sorting': (context, game) {
               return ShapeSortingOverlay(game: game);
             },
+            'image_selection_overlay': (context, TiledGame game) =>
+                ImageSelectionOverlay(game: game),
+            'coloring_page_overlay': (context, TiledGame game) =>
+                ColoringPageOverlay(game: game),
           },
         ),
       ),

@@ -14,34 +14,35 @@ class ImageSelectionController extends GetxController {
     'assets/images/coloring/rose.svg',
   ].obs;
 
-  // *** NEW: Add PageController for the carousel animation ***
+  // PageController for the carousel animation
   late PageController pageController;
 
-  // *** NEW: Reactive variables to hold animation values ***
+  // Reactive variables to hold animation values
   final titleAnimation = 0.0.obs;
+  final floatingAnimation = 0.0.obs; // NEW: Floating animation like mini games
   final cardAnimations = <int, RxDouble>{}.obs;
 
   @override
   void onInit() {
     super.onInit();
     // Initialize PageController with a viewportFraction to show adjacent items
-    pageController = PageController(viewportFraction: 0.45);
+    pageController = PageController(viewportFraction: 0.5);
 
     // Start the animations when the controller is ready
     _startTitleAnimation();
+    _startFloatingAnimation(); // NEW: Start floating animation
     _startCardAnimations();
   }
 
-  // *** NEW: Title fade-in and slide-down animation logic ***
+  // Title fade-in and slide-down animation logic
   void _startTitleAnimation() {
-    const duration = Duration(milliseconds: 600);
-    const steps = 30; // More steps for a smoother animation
-    final increment = 1.0 / steps;
+    Future.delayed(const Duration(milliseconds: 100), () {
+      final duration = 800;
+      final steps = 60;
+      final increment = 1.0 / steps;
 
-    // A short delay before starting
-    Future.delayed(const Duration(milliseconds: 200), () {
       for (int i = 0; i <= steps; i++) {
-        Future.delayed(Duration(milliseconds: (duration.inMilliseconds * i / steps).round()), () {
+        Future.delayed(Duration(milliseconds: (duration / steps * i).round()), () {
           if (!isClosed) {
             titleAnimation.value = (i * increment).clamp(0.0, 1.0);
           }
@@ -50,21 +51,54 @@ class ImageSelectionController extends GetxController {
     });
   }
 
-  // *** MODIFIED: Card animation logic fixed ***
+  // NEW: Floating animation logic (same as mini games)
+  void _startFloatingAnimation() {
+    void animate() {
+      if (isClosed) return;
+
+      final duration = 1500; // 1.5 seconds for smooth floating
+      final steps = 60;
+
+      // Animate down
+      for (int i = 0; i <= steps; i++) {
+        Future.delayed(Duration(milliseconds: (duration / 2 / steps * i).round()), () {
+          if (!isClosed) {
+            floatingAnimation.value = -8.0 + (16.0 * i / steps); // -8 to +8
+          }
+        });
+      }
+
+      // Animate up
+      for (int i = 0; i <= steps; i++) {
+        Future.delayed(Duration(milliseconds: duration ~/ 2 + (duration / 2 / steps * i).round()), () {
+          if (!isClosed) {
+            floatingAnimation.value = 8.0 - (16.0 * i / steps); // +8 to -8
+          }
+        });
+      }
+
+      // Loop the animation
+      Future.delayed(Duration(milliseconds: duration), animate);
+    }
+
+    animate();
+  }
+
+  // Card animation logic
   void _startCardAnimations() {
     for (int i = 0; i < svgImages.length; i++) {
       cardAnimations[i] = 0.0.obs;
 
       // Each card starts animating after a staggered delay
-      Future.delayed(Duration(milliseconds: 500 + (i * 150)), () {
+      Future.delayed(Duration(milliseconds: 600 + (i * 150)), () {
         if (isClosed) return;
 
-        const duration = Duration(milliseconds: 500);
-        const steps = 30;
+        final duration = 600;
+        final steps = 60;
         final increment = 1.0 / steps;
 
         for (int j = 0; j <= steps; j++) {
-          Future.delayed(Duration(milliseconds: (duration.inMilliseconds * j / steps).round()), () {
+          Future.delayed(Duration(milliseconds: (duration / steps * j).round()), () {
             if (!isClosed && cardAnimations.containsKey(i)) {
               cardAnimations[i]!.value = (j * increment).clamp(0.0, 1.0);
             }

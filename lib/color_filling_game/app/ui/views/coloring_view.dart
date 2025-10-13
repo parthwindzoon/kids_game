@@ -17,7 +17,7 @@ class ColoringView extends GetView<ColoringController> {
     return Stack(
       children: [
         // Layer 1: The main drawing area (No changes here)
-        Expanded(
+        Positioned.fill(
           child: Container(
             color: Colors.white,
             child: Obx(

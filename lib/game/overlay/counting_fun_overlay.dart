@@ -72,7 +72,7 @@ class CountingFunOverlay extends StatelessWidget {
 
                 // Subtitle - White text
                 Text(
-                  'Count the objects and pic the right number!',
+                  'Count the objects and pick the right number!',
                   style: TextStyle(
                     fontFamily: 'AkayaKanadaka',
                     fontSize: isTablet ? 24 : 18,
@@ -165,14 +165,15 @@ class CountingFunOverlay extends StatelessWidget {
   }
 
   Widget _buildCountingObjects(CountingFunController controller, bool isTablet) {
-    final objectSize = isTablet ? 40.0 : 32.0;
+    final objectSize = isTablet ? 60.0 : 50.0;
 
     return Container(
-      height: isTablet ? 120 : 100,
+      height: isTablet ? 160 : 140,
       width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: isTablet ? 60 : 40),
       child: Stack(
         children: List.generate(controller.currentObjectCount.value, (index) {
-          // Random positioning for scattered look
+          // Get non-overlapping positions
           final positions = controller.getObjectPositions(isTablet);
           if (index >= positions.length) return const SizedBox.shrink();
 
@@ -183,17 +184,26 @@ class CountingFunOverlay extends StatelessWidget {
               controller.currentObjectImage.value,
               width: objectSize,
               height: objectSize,
+              fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
-                // Fallback to flower emoji
+                // Fallback to colored circle with text
                 return Container(
                   width: objectSize,
                   height: objectSize,
-                  decoration: const BoxDecoration(
-                    color: Colors.pink,
+                  decoration: BoxDecoration(
+                    color: Colors.pink.shade300,
                     shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
-                  child: const Center(
-                    child: Text('🌸', style: TextStyle(fontSize: 20)),
+                  child: Center(
+                    child: Text(
+                      '${index + 1}',
+                      style: TextStyle(
+                        fontSize: objectSize * 0.4,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 );
               },
@@ -205,15 +215,15 @@ class CountingFunOverlay extends StatelessWidget {
   }
 
   Widget _buildTrain(CountingFunController controller, bool isTablet) {
-    final engineSize = isTablet ? 80.0 : 65.0;
-    final carriageSize = isTablet ? 70.0 : 55.0;
+    final engineSize = isTablet ? 120.0 : 95.0; // Increased size
+    final carriageSize = isTablet ? 100.0 : 80.0; // Increased size
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Engine
+          // Engine - larger now
           Image.asset(
             'assets/images/counting_fun/Engine.png',
             width: engineSize,
@@ -227,13 +237,13 @@ class CountingFunOverlay extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Center(
-                  child: Text('🚂', style: TextStyle(fontSize: 40)),
+                  child: Text('🚂', style: TextStyle(fontSize: 50)),
                 ),
               );
             },
           ),
 
-          // Carriages (1-10)
+          // Carriages (1-10) - larger now
           ...List.generate(10, (index) {
             final number = index + 1;
             return Obx(() {
@@ -249,16 +259,17 @@ class CountingFunOverlay extends StatelessWidget {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
                   transform: Matrix4.identity()
                     ..scale(isSelected ? 1.1 : 1.0),
                   child: Stack(
                     children: [
                       // Carriage image
                       Image.asset(
-                        'assets/images/counting_fun/${number}.png', // Individual carriage images
+                        'assets/images/counting_fun/${number}.png',
                         width: carriageSize,
                         height: carriageSize,
+                        fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
                           // Fallback carriage design
                           return Container(
@@ -274,7 +285,7 @@ class CountingFunOverlay extends StatelessWidget {
                                 '$number',
                                 style: TextStyle(
                                   fontFamily: 'AkayaKanadaka',
-                                  fontSize: isTablet ? 24 : 20,
+                                  fontSize: isTablet ? 28 : 24,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
@@ -316,7 +327,7 @@ class CountingFunOverlay extends StatelessWidget {
                               child: Icon(
                                 isCorrectAnswer ? Icons.check : Icons.close,
                                 color: isCorrectAnswer ? Colors.green : Colors.red,
-                                size: isTablet ? 30 : 25,
+                                size: isTablet ? 35 : 30,
                               ),
                             ),
                           ),
@@ -587,7 +598,7 @@ class CountingFunOverlay extends StatelessWidget {
 
 class CountingFunController extends GetxController {
   final RxInt currentObjectCount = 1.obs;
-  final RxString currentObjectImage = 'assets/images/flower.png'.obs;
+  final RxString currentObjectImage = 'assets/images/counting_fun/1.png'.obs;
   final RxInt selectedNumber = 0.obs;
   final RxBool hasAnswered = false.obs;
   final RxInt score = 0.obs;
@@ -597,16 +608,8 @@ class CountingFunController extends GetxController {
   final RxDouble popupScale = 0.0.obs;
   final RxDouble popupOpacity = 0.0.obs;
 
-  final List<String> objectImages = [
-    'assets/images/flower.png',
-    'assets/images/star.png',
-    'assets/images/heart.png',
-    'assets/images/sun.png',
-    'assets/images/butterfly.png',
-    'assets/images/apple.png',
-    'assets/images/ball.png',
-    'assets/images/car.png',
-  ];
+  // Store generated positions to avoid recalculating
+  List<Offset> _cachedPositions = [];
 
   @override
   void onInit() {
@@ -619,29 +622,71 @@ class CountingFunController extends GetxController {
     // Generate random count (1-10)
     currentObjectCount.value = Random().nextInt(10) + 1;
 
-    // Select random object
-    currentObjectImage.value = objectImages[Random().nextInt(objectImages.length)];
+    // Use the object.png file based on count
+    currentObjectImage.value = 'assets/images/counting_fun/${currentObjectCount.value}.png';
 
     // Reset selection
     selectedNumber.value = 0;
     hasAnswered.value = false;
+
+    // Clear cached positions to regenerate for new level
+    _cachedPositions.clear();
   }
 
   List<Offset> getObjectPositions(bool isTablet) {
-    final count = currentObjectCount.value;
-    final maxWidth = isTablet ? 600.0 : 400.0;
-    final maxHeight = isTablet ? 100.0 : 80.0;
-    final positions = <Offset>[];
-
-    // Generate scattered positions
-    final random = Random(count); // Use count as seed for consistent positions
-
-    for (int i = 0; i < count; i++) {
-      final x = random.nextDouble() * (maxWidth - 50);
-      final y = random.nextDouble() * (maxHeight - 50);
-      positions.add(Offset(x, y));
+    // Return cached positions if already generated
+    if (_cachedPositions.isNotEmpty && _cachedPositions.length == currentObjectCount.value) {
+      return _cachedPositions;
     }
 
+    final count = currentObjectCount.value;
+    final maxWidth = isTablet ? 800.0 : 600.0;
+    final maxHeight = isTablet ? 140.0 : 120.0;
+    final objectSize = isTablet ? 60.0 : 50.0;
+    final minDistance = objectSize * 1.3; // Minimum distance between objects
+
+    final positions = <Offset>[];
+    final random = Random();
+    int maxAttempts = 100; // Prevent infinite loop
+
+    for (int i = 0; i < count; i++) {
+      bool positionFound = false;
+      int attempts = 0;
+
+      while (!positionFound && attempts < maxAttempts) {
+        // Generate random position
+        final x = random.nextDouble() * (maxWidth - objectSize);
+        final y = random.nextDouble() * (maxHeight - objectSize);
+        final newPosition = Offset(x, y);
+
+        // Check if this position is far enough from all existing positions
+        bool isFarEnough = true;
+        for (final existingPosition in positions) {
+          final distance = (newPosition - existingPosition).distance;
+          if (distance < minDistance) {
+            isFarEnough = false;
+            break;
+          }
+        }
+
+        if (isFarEnough) {
+          positions.add(newPosition);
+          positionFound = true;
+        }
+
+        attempts++;
+      }
+
+      // If we couldn't find a good position after max attempts, just place it anyway
+      if (!positionFound) {
+        final x = random.nextDouble() * (maxWidth - objectSize);
+        final y = random.nextDouble() * (maxHeight - objectSize);
+        positions.add(Offset(x, y));
+      }
+    }
+
+    // Cache the positions
+    _cachedPositions = positions;
     return positions;
   }
 

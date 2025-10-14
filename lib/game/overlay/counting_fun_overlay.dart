@@ -215,15 +215,16 @@ class CountingFunOverlay extends StatelessWidget {
   }
 
   Widget _buildTrain(CountingFunController controller, bool isTablet) {
-    final engineSize = isTablet ? 120.0 : 95.0; // Increased size
-    final carriageSize = isTablet ? 100.0 : 80.0; // Increased size
+    // Reduced sizes to prevent overflow
+    final engineSize = isTablet ? 100.0 : 80.0; // Reduced from 120/95
+    final carriageSize = isTablet ? 85.0 : 70.0; // Reduced from 100/80
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Engine - larger now
+          // Engine - smaller now
           Image.asset(
             'assets/images/counting_fun/Engine.png',
             width: engineSize,
@@ -243,7 +244,7 @@ class CountingFunOverlay extends StatelessWidget {
             },
           ),
 
-          // Carriages (1-10) - larger now
+          // Carriages (1-10) - smaller now
           ...List.generate(10, (index) {
             final number = index + 1;
             return Obx(() {
@@ -285,7 +286,7 @@ class CountingFunOverlay extends StatelessWidget {
                                 '$number',
                                 style: TextStyle(
                                   fontFamily: 'AkayaKanadaka',
-                                  fontSize: isTablet ? 28 : 24,
+                                  fontSize: isTablet ? 24 : 20,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
@@ -327,7 +328,7 @@ class CountingFunOverlay extends StatelessWidget {
                               child: Icon(
                                 isCorrectAnswer ? Icons.check : Icons.close,
                                 color: isCorrectAnswer ? Colors.green : Colors.red,
-                                size: isTablet ? 35 : 30,
+                                size: isTablet ? 30 : 25,
                               ),
                             ),
                           ),
@@ -598,7 +599,7 @@ class CountingFunOverlay extends StatelessWidget {
 
 class CountingFunController extends GetxController {
   final RxInt currentObjectCount = 1.obs;
-  final RxString currentObjectImage = 'assets/images/counting_fun/1.png'.obs;
+  final RxString currentObjectImage = 'assets/images/counting_fun/object.png'.obs;
   final RxInt selectedNumber = 0.obs;
   final RxBool hasAnswered = false.obs;
   final RxInt score = 0.obs;
@@ -622,8 +623,8 @@ class CountingFunController extends GetxController {
     // Generate random count (1-10)
     currentObjectCount.value = Random().nextInt(10) + 1;
 
-    // Use the object.png file based on count
-    currentObjectImage.value = 'assets/images/counting_fun/${currentObjectCount.value}.png';
+    // Always use the single object.png file for displaying objects
+    currentObjectImage.value = 'assets/images/counting_fun/object.png';
 
     // Reset selection
     selectedNumber.value = 0;

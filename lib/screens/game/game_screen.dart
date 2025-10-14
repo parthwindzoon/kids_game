@@ -3,13 +3,17 @@
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:get/get.dart';
+import 'package:kids_game/game/overlay/counting_fun_overlay.dart';
+import 'package:kids_game/game/overlay/number_memory_overlay.dart';
 import '../../game/components/building_popup_overlay.dart';
 import '../../game/my_game.dart';
 import '../../game/overlay/coloring_page_overlay.dart';
+import '../../game/overlay/garden_cleaning_overlay.dart';
 import '../../game/overlay/image_selection_overlay.dart';
 import '../../game/overlay/home_button_overlay.dart';
 import '../../game/overlay/learn_alphabets_overlay.dart';
 import '../../game/overlay/minigames_overlay.dart';
+import '../../game/overlay/pop_balloon_overlay.dart';
 import '../../game/overlay/shape_shorting_overlay.dart';
 
 class GameScreen extends StatelessWidget {
@@ -48,6 +52,18 @@ class GameScreen extends StatelessWidget {
                 ImageSelectionOverlay(game: game),
             'coloring_page_overlay': (context, TiledGame game) =>
                 ColoringPageOverlay(game: game),
+            'garden_cleaning': (context, game) {
+              return GardenCleaningOverlay(game: game);
+            },
+            'pop_balloon': (context, game) {
+              return PopBalloonOverlay(game: game);
+            },
+            'number_memory':(context, game) {
+              return NumberMemoryOverlay(game: game);
+            },
+            'counting_fun':(context, game) {
+              return CountingFunOverlay(game: game);
+            }
           },
         ),
       ),

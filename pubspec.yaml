@@ -80,6 +80,10 @@ flutter:
     - assets/images/alphabet_words/
     - assets/images/shapes/
     - assets/images/coloring/
+    - assets/images/garden_cleaning/
+    - assets/images/pop_the_baloon/
+    - assets/images/number_memory/
+    - assets/images/counting_fun/
       #Audio Assets
     - assets/audio/alphabets/
   #   - images/a_dot_burr.jpeg

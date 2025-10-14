@@ -39,7 +39,10 @@ class MiniGamesOverlay extends StatelessWidget {
             children: [
               // Title (animated from top)
               Obx(() {
-                final animValue = controller.titleAnimation.value.clamp(0.0, 1.0);
+                final animValue = controller.titleAnimation.value.clamp(
+                  0.0,
+                  1.0,
+                );
                 return Positioned(
                   top: isTablet ? 80 : 60,
                   left: 0,
@@ -83,17 +86,17 @@ class MiniGamesOverlay extends StatelessWidget {
                         animation: controller.pageController,
                         builder: (context, child) {
                           double value = 1.0;
-                          if (controller.pageController.position.haveDimensions) {
+                          if (controller
+                              .pageController
+                              .position
+                              .haveDimensions) {
                             value = controller.pageController.page! - index;
                             value = (1 - (value.abs() * 0.25)).clamp(0.75, 1.0);
                           }
                           return Center(
                             child: Transform.scale(
                               scale: value,
-                              child: Opacity(
-                                opacity: value,
-                                child: child,
-                              ),
+                              child: Opacity(opacity: value, child: child),
                             ),
                           );
                         },
@@ -129,13 +132,16 @@ class MiniGamesOverlay extends StatelessWidget {
   }
 
   Widget _buildMiniGameCircle(
-      MiniGame miniGame,
-      bool isTablet,
-      int index,
-      MiniGamesController controller,
-      ) {
+    MiniGame miniGame,
+    bool isTablet,
+    int index,
+    MiniGamesController controller,
+  ) {
     return Obx(() {
-      final animValue = (controller.cardAnimations[index]?.value ?? 0.0).clamp(0.0, 1.0);
+      final animValue = (controller.cardAnimations[index]?.value ?? 0.0).clamp(
+        0.0,
+        1.0,
+      );
       return Opacity(
         opacity: animValue,
         child: GestureDetector(
@@ -159,10 +165,7 @@ class MiniGamesOverlay extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFA500).withOpacity(0.9),
                       borderRadius: BorderRadius.circular(25),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 3,
-                      ),
+                      border: Border.all(color: Colors.white, width: 3),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.orange.withOpacity(0.4),
@@ -268,14 +271,14 @@ class MiniGamesOverlay extends StatelessWidget {
   }
 }
 
-class MiniGamesController extends GetxController with GetSingleTickerProviderStateMixin {
+class MiniGamesController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   final TiledGame game;
   late PageController pageController;
 
   final titleAnimation = 0.0.obs;
   final floatingAnimation = 0.0.obs;
   final Map<int, RxDouble> cardAnimations = {};
-
 
   MiniGamesController(this.game);
 
@@ -288,11 +291,8 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
     'Library': [
       MiniGame('Number Memory', 'Number Memory.png', false),
       MiniGame('Counting Fun', 'Counting fun.png', false),
-      MiniGame('Pattern Recognition', 'Pattern Recognition.png', false),
     ],
-    'Garden': [
-      MiniGame('Shape Shorting', 'Shape Shorting.png', false),
-    ],
+    'Garden': [MiniGame('Shape Shorting', 'Shape Shorting.png', false)],
     'Art Studio': [
       MiniGame('Color Filling', 'Color Filling.png', false),
       MiniGame('Color Matching', 'Color matching.png', false),
@@ -301,6 +301,10 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
       MiniGame('Learn Animals', 'Learn Animals.png', false),
       MiniGame('Animal Quiz', 'Animal Quiz.png', false),
       MiniGame('Animal Sounds', 'Animals with Sounds.png', false),
+    ],
+    'Playground': [
+      MiniGame('Pop the Balloon', 'Pop_The_Baloon.png', false),
+      MiniGame('Pattern Recognition', 'Pattern Recognition.png', false),
     ],
   };
 
@@ -321,11 +325,14 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
       final increment = 1.0 / steps;
 
       for (int i = 0; i <= steps; i++) {
-        Future.delayed(Duration(milliseconds: (duration / steps * i).round()), () {
-          if (!isClosed) {
-            titleAnimation.value = (i * increment).clamp(0.0, 1.0);
-          }
-        });
+        Future.delayed(
+          Duration(milliseconds: (duration / steps * i).round()),
+          () {
+            if (!isClosed) {
+              titleAnimation.value = (i * increment).clamp(0.0, 1.0);
+            }
+          },
+        );
       }
     });
   }
@@ -338,19 +345,27 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
       final steps = 60;
 
       for (int i = 0; i <= steps; i++) {
-        Future.delayed(Duration(milliseconds: (duration / 2 / steps * i).round()), () {
-          if (!isClosed) {
-            floatingAnimation.value = -8.0 + (16.0 * i / steps);
-          }
-        });
+        Future.delayed(
+          Duration(milliseconds: (duration / 2 / steps * i).round()),
+          () {
+            if (!isClosed) {
+              floatingAnimation.value = -8.0 + (16.0 * i / steps);
+            }
+          },
+        );
       }
 
       for (int i = 0; i <= steps; i++) {
-        Future.delayed(Duration(milliseconds: duration ~/ 2 + (duration / 2 / steps * i).round()), () {
-          if (!isClosed) {
-            floatingAnimation.value = 8.0 - (16.0 * i / steps);
-          }
-        });
+        Future.delayed(
+          Duration(
+            milliseconds: duration ~/ 2 + (duration / 2 / steps * i).round(),
+          ),
+          () {
+            if (!isClosed) {
+              floatingAnimation.value = 8.0 - (16.0 * i / steps);
+            }
+          },
+        );
       }
 
       Future.delayed(Duration(milliseconds: duration), animate);
@@ -372,11 +387,14 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
         final increment = 1.0 / steps;
 
         for (int j = 0; j <= steps; j++) {
-          Future.delayed(Duration(milliseconds: (duration / steps * j).round()), () {
-            if (!isClosed && cardAnimations.containsKey(i)) {
-              cardAnimations[i]!.value = (j * increment).clamp(0.0, 1.0);
-            }
-          });
+          Future.delayed(
+            Duration(milliseconds: (duration / steps * j).round()),
+            () {
+              if (!isClosed && cardAnimations.containsKey(i)) {
+                cardAnimations[i]!.value = (j * increment).clamp(0.0, 1.0);
+              }
+            },
+          );
         }
       });
     }
@@ -399,12 +417,12 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
         game.overlays.add('learn_alphabets');
         break;
       case 'Learn Numbers':
-      // TODO: Add Learn Numbers overlay
+        // TODO: Add Learn Numbers overlay
         print('Learn Numbers - Coming Soon!');
         game.overlays.add('minigames_overlay');
         break;
       case 'Simple Math':
-      // TODO: Add Simple Math overlay
+        // TODO: Add Simple Math overlay
         print('Simple Math - Coming Soon!');
         game.overlays.add('minigames_overlay');
         break;
@@ -413,6 +431,15 @@ class MiniGamesController extends GetxController with GetSingleTickerProviderSta
         break;
       case 'Color Filling':
         game.overlays.add('image_selection_overlay');
+        break;
+      case 'Pop the Balloon':
+        game.overlays.add('pop_balloon');
+        break;
+      case 'Number Memory':
+        game.overlays.add('number_memory');
+        break;
+      case  'Counting Fun':
+        game.overlays.add('counting_fun');
         break;
       default:
         print('Mini-game not implemented yet: $gameName');

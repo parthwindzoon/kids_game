@@ -83,7 +83,7 @@ flutter:
     - assets/images/garden_cleaning/
     - assets/images/pop_the_baloon/
     - assets/images/number_memory/
-    - assets/images/counting_fun/
+    - assets/images/change_character/
       #Audio Assets
     - assets/audio/alphabets/
   #   - images/a_dot_burr.jpeg

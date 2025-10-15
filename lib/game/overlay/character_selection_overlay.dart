@@ -32,8 +32,8 @@ class CharacterSelectionOverlay extends StatelessWidget {
               // Main Content
               Center(
                 child: Container(
-                  width: isTablet ? 800 : 600,
-                  height: isTablet ? 500 : 400,
+                  width: size.width * 0.80,
+                  height: size.height * 0.70,
                   decoration: BoxDecoration(
                     image: const DecorationImage(
                       image: AssetImage('assets/images/change_character/white_bg.png'),
@@ -76,7 +76,7 @@ class CharacterSelectionOverlay extends StatelessWidget {
 
               // Title at the top
               Positioned(
-                top: isTablet ? 100 : 80,
+                top: isTablet ? 100 : 10,
                 left: 0,
                 right: 0,
                 child: Center(
@@ -247,25 +247,6 @@ class CharacterSelectionOverlay extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                // Boys Title
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: isTablet ? 10 : 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1976D2),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Text(
-                    'Boys',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'AkayaKanadaka',
-                      fontSize: isTablet ? 24 : 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
 
                 SizedBox(height: isTablet ? 15 : 10),
 
@@ -273,11 +254,11 @@ class CharacterSelectionOverlay extends StatelessWidget {
                 Expanded(
                   child: Row(
                     children: [
-                      _buildCharacterOption('player', 'boy1', 'Boy 1', controller, isTablet),
+                      _buildCharacterOption('player', 'boy1', controller, isTablet),
                       SizedBox(width: isTablet ? 15 : 10),
-                      _buildCharacterOption('player_1', 'boy2', 'Boy 2', controller, isTablet),
+                      _buildCharacterOption('player_1', 'boy2', controller, isTablet),
                       SizedBox(width: isTablet ? 15 : 10),
-                      _buildCharacterOption('player_2', 'boy3', 'Boy 3', controller, isTablet),
+                      _buildCharacterOption('player_2', 'boy3', controller, isTablet),
                     ],
                   ),
                 ),
@@ -291,25 +272,6 @@ class CharacterSelectionOverlay extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                // Girls Title
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: isTablet ? 10 : 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE91E63),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Text(
-                    'Girls',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'AkayaKanadaka',
-                      fontSize: isTablet ? 24 : 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
 
                 SizedBox(height: isTablet ? 15 : 10),
 
@@ -317,11 +279,11 @@ class CharacterSelectionOverlay extends StatelessWidget {
                 Expanded(
                   child: Row(
                     children: [
-                      _buildCharacterOption('player_3', 'girl1', 'Girl 1', controller, isTablet),
+                      _buildCharacterOption('player_5', 'girl1', controller, isTablet),
                       SizedBox(width: isTablet ? 15 : 10),
-                      _buildCharacterOption('player_4', 'girl2', 'Girl 2', controller, isTablet),
+                      _buildCharacterOption('player_4', 'girl2', controller, isTablet),
                       SizedBox(width: isTablet ? 15 : 10),
-                      _buildCharacterOption('player_5', 'girl3', 'Girl 3', controller, isTablet),
+                      _buildCharacterOption('player_3', 'girl3', controller, isTablet),
                     ],
                   ),
                 ),
@@ -336,7 +298,7 @@ class CharacterSelectionOverlay extends StatelessWidget {
   Widget _buildCharacterOption(
       String characterId,
       String assetName,
-      String characterName,
+      // String characterName,
       CharacterController controller,
       bool isTablet,
       ) {
@@ -370,65 +332,27 @@ class CharacterSelectionOverlay extends StatelessWidget {
             ),
             child: Stack(
               children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Character Image
-                    Expanded(
-                      flex: 3,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Image.asset(
-                          'assets/images/change_character/$assetName.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade200,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.person,
-                                size: isTablet ? 40 : 30,
-                                color: Colors.grey.shade500,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                 Container(
+                   alignment: Alignment.center,
+                    child: Image.asset(
+                      'assets/images/change_character/$assetName.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.person,
+                            size: isTablet ? 40 : 30,
+                            color: Colors.grey.shade500,
+                          ),
+                        );
+                      },
                     ),
+                  ),
 
-                    // Character Name
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFF4CAF50).withOpacity(0.1)
-                              : Colors.grey.shade50,
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(14),
-                            bottomRight: Radius.circular(14),
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            characterName,
-                            style: TextStyle(
-                              fontFamily: 'AkayaKanadaka',
-                              fontSize: isTablet ? 16 : 12,
-                              fontWeight: FontWeight.bold,
-                              color: isSelected
-                                  ? const Color(0xFF4CAF50)
-                                  : Colors.grey.shade700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
 
                 // Selection indicator
                 if (isSelected)

@@ -107,7 +107,6 @@ class CharacterSelectionOverlay extends StatelessWidget {
                   onTap: () {
                     homeController.closeCharacterSelection();
                     Get.delete<CharacterSelectionOverlayController>();
-                    Get.back();
                   },
                   child: Image.asset(
                     'assets/images/back_btn.png',
@@ -214,6 +213,8 @@ class CharacterSelectionOverlay extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.contain,
+        // Add gaplessPlayback to prevent flickering during frame changes
+        gaplessPlayback: true,
         errorBuilder: (context, error, stackTrace) {
           // Fallback to static character selection asset if walk animation fails
           return Image.asset(
@@ -221,6 +222,7 @@ class CharacterSelectionOverlay extends StatelessWidget {
             width: size,
             height: size,
             fit: BoxFit.contain,
+            gaplessPlayback: true,
             errorBuilder: (context, error, stackTrace) {
               return Icon(
                 Icons.person,
@@ -298,7 +300,6 @@ class CharacterSelectionOverlay extends StatelessWidget {
   Widget _buildCharacterOption(
       String characterId,
       String assetName,
-      // String characterName,
       CharacterController controller,
       bool isTablet,
       ) {
@@ -308,6 +309,7 @@ class CharacterSelectionOverlay extends StatelessWidget {
 
         return GestureDetector(
           onTap: () {
+            // Since images are already preloaded, just switch instantly
             controller.selectCharacter(characterId);
           },
           child: AnimatedContainer(
@@ -332,26 +334,27 @@ class CharacterSelectionOverlay extends StatelessWidget {
             ),
             child: Stack(
               children: [
-                 Container(
-                   alignment: Alignment.center,
-                    child: Image.asset(
-                      'assets/images/change_character/$assetName.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.person,
-                            size: isTablet ? 40 : 30,
-                            color: Colors.grey.shade500,
-                          ),
-                        );
-                      },
-                    ),
+                Container(
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    'assets/images/change_character/$assetName.png',
+                    fit: BoxFit.contain,
+                    gaplessPlayback: true,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.person,
+                          size: isTablet ? 40 : 30,
+                          color: Colors.grey.shade500,
+                        ),
+                      );
+                    },
                   ),
+                ),
 
 
                 // Selection indicator
@@ -388,6 +391,7 @@ class CharacterSelectionOverlayController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // Images are already preloaded in home screen, so start animation immediately
     _startAnimation();
   }
 

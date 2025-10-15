@@ -1,6 +1,8 @@
 // lib/screens/home/home_controller.dart
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../controllers/character_controller.dart';
 
 class HomeController extends GetxController with GetSingleTickerProviderStateMixin {
   // Animation states
@@ -15,10 +17,79 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   // Character selection overlay state
   final RxBool showCharacterSelection = false.obs;
 
+  // Preloading state
+  final RxBool isPreloadingCharacters = true.obs;
+
   @override
   void onInit() {
     super.onInit();
-    startAnimationSequence();
+    _preloadAllCharacters();
+  }
+
+  Future<void> _preloadAllCharacters() async {
+    try {
+      print('🔄 Starting to preload all character animations...');
+
+      final characterController = Get.find<CharacterController>();
+      final context = Get.context;
+
+      if (context == null) {
+        print('⚠️ Context is null, waiting...');
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (Get.context != null) {
+          await _preloadAllCharacters();
+        }
+        return;
+      }
+
+      // Preload all characters' walk animations
+      final List<Future<void>> allPreloadTasks = [];
+
+      for (final character in characterController.characters) {
+        // Preload walk animation frames (1-10)
+        for (int i = 1; i <= 10; i++) {
+          final walkImagePath = '${character.walkPath}$i.png';
+          allPreloadTasks.add(
+            precacheImage(
+              AssetImage(walkImagePath),
+              context,
+            ).catchError((error) {
+              print('⚠️ Failed to preload $walkImagePath: $error');
+            }),
+          );
+        }
+
+        // Also preload the character selection image
+        final selectionImagePath = character.selectionAssetPath;
+        allPreloadTasks.add(
+          precacheImage(
+            AssetImage(selectionImagePath),
+            context,
+          ).catchError((error) {
+            print('⚠️ Failed to preload $selectionImagePath: $error');
+          }),
+        );
+      }
+
+      // Wait for all images to preload
+      await Future.wait(allPreloadTasks);
+
+      print('✅ All character animations preloaded successfully!');
+
+      // Small delay to ensure everything is cached
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      isPreloadingCharacters.value = false;
+
+      // Now start the home screen animations
+      startAnimationSequence();
+
+    } catch (e) {
+      print('❌ Error preloading characters: $e');
+      // Continue anyway
+      isPreloadingCharacters.value = false;
+      startAnimationSequence();
+    }
   }
 
   Future<void> startAnimationSequence() async {
@@ -50,7 +121,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   }
 
   void openCharacterSelection() {
-    // Show character selection overlay instead of navigating to new page
+    // Show character selection overlay
     showCharacterSelection.value = true;
   }
 

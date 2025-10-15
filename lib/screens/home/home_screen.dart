@@ -125,9 +125,7 @@ class HomeScreen extends StatelessWidget {
             if (!controller.showCharacterSelection.value) {
               return const SizedBox.shrink();
             }
-            return CharacterSelectionOverlay(
-              // onClose: controller.closeCharacterSelection,
-            );
+            return CharacterSelectionOverlay();
           }),
         ],
       ),

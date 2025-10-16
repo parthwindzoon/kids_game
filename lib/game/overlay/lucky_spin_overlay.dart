@@ -44,30 +44,8 @@ class LuckySpinOverlay extends StatelessWidget {
               children: [
                 SizedBox(height: isTablet ? 60 : 40),
 
-                // Title
-                // Text(
-                //   'Lucky Spin',
-                //   style: TextStyle(
-                //     fontFamily: 'AkayaKanadaka',
-                //     fontSize: isTablet ? 48 : 36,
-                //     fontWeight: FontWeight.bold,
-                //     color: const Color(0xFFFFD700),
-                //     shadows: [
-                //       Shadow(
-                //         offset: const Offset(3, 3),
-                //         blurRadius: 5,
-                //         color: Colors.black.withOpacity(0.5),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-
-                // SizedBox(height: isTablet ? 40 : 30),
-
                 // Wheel container
                 _buildWheelContainer(controller, isTablet),
-
-                // SizedBox(height: isTablet ? 40 : 30),
 
                 // Spin button
                 _buildSpinButton(controller, isTablet),
@@ -118,7 +96,7 @@ class LuckySpinOverlay extends StatelessWidget {
                 controller.dispose();
                 Get.delete<LuckySpinController>();
                 game.overlays.remove('lucky_spin');
-                game.overlays.add('minigames_overlay');
+                // Don't add minigames_overlay here - just go back to building popup
               },
               child: Container(
                 padding: EdgeInsets.all(isTablet ? 12 : 8),
@@ -235,7 +213,7 @@ class LuckySpinOverlay extends StatelessWidget {
                     },
                   ),
 
-                  // Prize text overlay
+                  // Prize text overlay - FIXED POSITIONING
                   _buildPrizeTexts(controller, wheelSize),
                 ],
               ),
@@ -247,8 +225,8 @@ class LuckySpinOverlay extends StatelessWidget {
             top: 0,
             child: Image.asset(
               'assets/images/lucky_spin/wheel_point.png',
-              width: isTablet ? 40 : 200,
-              height: isTablet ? 50 : 200,
+              width: isTablet ? 40 : 32,
+              height: isTablet ? 50 : 40,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
@@ -266,21 +244,18 @@ class LuckySpinOverlay extends StatelessWidget {
     );
   }
 
-  Widget _buildFallbackWheel(LuckySpinController controller, double size) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: WheelPainter(controller.prizes, controller),
-    );
-  }
-
+  // FIXED: Prize text positioning to center in segments
   Widget _buildPrizeTexts(LuckySpinController controller, double size) {
     return Container(
       width: size,
       height: size,
       child: Stack(
         children: List.generate(controller.prizes.length, (index) {
-          final angle = (index * 45.0) * (pi / 180); // 45 degrees per segment
-          final radius = size * 0.3;
+          // Fix the angle calculation to center text in segments
+          // Start from top and add half segment offset to center in segments
+          final segmentAngle = 360.0 / controller.prizes.length; // 45 degrees per segment
+          final angle = (index * segmentAngle + segmentAngle / 2) * (pi / 180); // Center of each segment
+          final radius = size * 0.32; // Slightly adjusted radius
           final x = size / 2 + radius * cos(angle - pi / 2);
           final y = size / 2 + radius * sin(angle - pi / 2);
 
@@ -297,12 +272,17 @@ class LuckySpinOverlay extends StatelessWidget {
                   _getShortPrizeName(controller.prizes[index].name),
                   style: TextStyle(
                     fontFamily: 'AkayaKanadaka',
-                    fontSize: size > 280 ? 12 : 10,
+                    fontSize: size > 280 ? 13 : 11, // Slightly larger for better visibility
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     shadows: [
                       Shadow(
                         offset: const Offset(1, 1),
+                        blurRadius: 2,
+                        color: Colors.black,
+                      ),
+                      Shadow(
+                        offset: const Offset(-1, -1),
                         blurRadius: 2,
                         color: Colors.black,
                       ),
@@ -315,6 +295,13 @@ class LuckySpinOverlay extends StatelessWidget {
           );
         }),
       ),
+    );
+  }
+
+  Widget _buildFallbackWheel(LuckySpinController controller, double size) {
+    return CustomPaint(
+      size: Size(size, size),
+      painter: WheelPainter(controller.prizes, controller),
     );
   }
 

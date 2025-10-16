@@ -1,4 +1,4 @@
-// lib/game/overlay/building_popup_overlay.dart
+// lib/game/components/building_popup_overlay.dart
 
 import 'package:flutter/material.dart';
 import 'package:kids_game/game/my_game.dart';
@@ -59,7 +59,7 @@ class BuildingPopupOverlay extends StatelessWidget {
               ),
             ),
 
-            // Play Game button
+            // Play Game button - FIXED to handle different building types
             Positioned(
               bottom: 70,
               left: 0,
@@ -67,10 +67,20 @@ class BuildingPopupOverlay extends StatelessWidget {
               child: Center(
                 child: GestureDetector(
                   onTap: () {
-                    print('Opening mini games for $buildingName');
-                    // Remove current popup and show mini games overlay
+                    print('Opening content for $buildingName');
+                    // Remove current popup
                     game.overlays.remove('building_popup');
-                    game.overlays.add('minigames_overlay');
+
+                    // Navigate based on building type
+                    if (buildingName.toLowerCase().contains('casino') ||
+                        buildingName.toLowerCase().contains('spin') ||
+                        buildingName.toLowerCase().contains('wheel')) {
+                      // If it's a casino/spin building, open lucky spin directly
+                      game.overlays.add('lucky_spin');
+                    } else {
+                      // For other buildings, open mini games overlay
+                      game.overlays.add('minigames_overlay');
+                    }
                   },
                   child: Image.asset(
                     'assets/images/overlays/Group 93.png',

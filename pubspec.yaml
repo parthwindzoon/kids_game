@@ -84,6 +84,7 @@ flutter:
     - assets/images/pop_the_baloon/
     - assets/images/number_memory/
     - assets/images/change_character/
+    - assets/images/lucky_spin/
       #Audio Assets
     - assets/audio/alphabets/
   #   - images/a_dot_burr.jpeg

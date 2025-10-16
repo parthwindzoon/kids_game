@@ -12,6 +12,7 @@ import '../../game/overlay/garden_cleaning_overlay.dart';
 import '../../game/overlay/image_selection_overlay.dart';
 import '../../game/overlay/home_button_overlay.dart';
 import '../../game/overlay/learn_alphabets_overlay.dart';
+import '../../game/overlay/lucky_spin_overlay.dart';
 import '../../game/overlay/minigames_overlay.dart';
 import '../../game/overlay/pop_balloon_overlay.dart';
 import '../../game/overlay/shape_shorting_overlay.dart';
@@ -37,6 +38,9 @@ class GameScreen extends StatelessWidget {
             'home_button': (context, game) {
               return HomeButtonOverlay(game: game);
             },
+            'lucky_spin': (context, game) {
+              return LuckySpinOverlay(game: game);
+            },
             'minigames_overlay': (context, game) {
               return MiniGamesOverlay(game: game);
             },
@@ -58,12 +62,12 @@ class GameScreen extends StatelessWidget {
             'pop_balloon': (context, game) {
               return PopBalloonOverlay(game: game);
             },
-            'number_memory':(context, game) {
+            'number_memory': (context, game) {
               return NumberMemoryOverlay(game: game);
             },
-            'counting_fun':(context, game) {
+            'counting_fun': (context, game) {
               return CountingFunOverlay(game: game);
-            }
+            },
           },
         ),
       ),

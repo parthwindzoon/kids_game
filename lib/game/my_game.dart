@@ -100,7 +100,7 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     });
   }
 
-  // New methods to manage overlays
+  // New methods to manage overlays - Modified to skip building popup and show lucky spin directly
   void showBuildingOverlay(String buildingName) {
     // Don't show if user manually closed it and still in same building
     if (overlayManuallyClosed && currentBuildingName == buildingName) {
@@ -123,14 +123,15 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
       // Show home button for Home building
       overlays.add('home_button');
     } else {
-      // Show building popup for other buildings
-      overlays.add('building_popup');
+      // Skip building popup and directly open lucky spin overlay
+      overlays.add('lucky_spin');
     }
   }
 
   void hideAllOverlays() {
     overlays.remove('building_popup');
     overlays.remove('home_button');
+    overlays.remove('lucky_spin');
     currentBuildingName = null;
   }
 

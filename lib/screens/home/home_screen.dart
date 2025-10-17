@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'home_controller.dart';
 import '../../game/overlay/character_selection_overlay.dart';
+import '../../game/overlay/companion_selection_overlay.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -126,6 +127,14 @@ class HomeScreen extends StatelessWidget {
               return const SizedBox.shrink();
             }
             return CharacterSelectionOverlay();
+          }),
+
+          // Companion Selection Overlay
+          Obx(() {
+            if (!controller.showCompanionSelection.value) {
+              return const SizedBox.shrink();
+            }
+            return CompanionSelectionOverlay();
           }),
         ],
       ),

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kids_game/game/my_game.dart';
 
-import '../../color_filling_game/app/controllers/lucky_spin_controller.dart';
+import '../../controllers/lucky_spin_controller.dart';
 
 class LuckySpinOverlay extends StatelessWidget {
   final TiledGame game;

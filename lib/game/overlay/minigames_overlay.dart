@@ -292,7 +292,10 @@ class MiniGamesController extends GetxController
       MiniGame('Number Memory', 'Number Memory.png', false),
       MiniGame('Counting Fun', 'Counting fun.png', false),
     ],
-    'Garden': [MiniGame('Shape Shorting', 'Shape Shorting.png', false)],
+    'Garden': [
+      MiniGame('Shape Shorting', 'Shape Shorting.png', false),
+      MiniGame('Garden Cleaning', 'Garden Cleaning.png', false),
+    ],
     'Art Studio': [
       MiniGame('Color Filling', 'Color Filling.png', false),
       MiniGame('Color Matching', 'Color matching.png', false),
@@ -438,8 +441,11 @@ class MiniGamesController extends GetxController
       case 'Number Memory':
         game.overlays.add('number_memory');
         break;
-      case  'Counting Fun':
+      case 'Counting Fun':
         game.overlays.add('counting_fun');
+        break;
+      case 'Garden Cleaning':
+        game.overlays.add('garden_cleaning');
         break;
       default:
         print('Mini-game not implemented yet: $gameName');

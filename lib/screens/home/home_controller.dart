@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/character_controller.dart';
+import '../../controllers/companion_controller.dart';
 
 class HomeController extends GetxController with GetSingleTickerProviderStateMixin {
   // Animation states
@@ -17,36 +18,52 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   // Character selection overlay state
   final RxBool showCharacterSelection = false.obs;
 
+  // Companion selection overlay state
+  final RxBool showCompanionSelection = false.obs;
+
   // Preloading state
   final RxBool isPreloadingCharacters = true.obs;
 
   @override
   void onInit() {
     super.onInit();
-    _preloadAllCharacters();
+    _initializeControllers();
+    _preloadAllAssets();
   }
 
-  Future<void> _preloadAllCharacters() async {
+  void _initializeControllers() {
+    // Initialize character controller if not already initialized
+    if (!Get.isRegistered<CharacterController>()) {
+      Get.put(CharacterController());
+    }
+
+    // Initialize companion controller
+    if (!Get.isRegistered<CompanionController>()) {
+      Get.put(CompanionController());
+    }
+  }
+
+  Future<void> _preloadAllAssets() async {
     try {
-      print('🔄 Starting to preload all character animations...');
+      print('🔄 Starting to preload all assets...');
 
       final characterController = Get.find<CharacterController>();
+      final companionController = Get.find<CompanionController>();
       final context = Get.context;
 
       if (context == null) {
         print('⚠️ Context is null, waiting...');
         await Future.delayed(const Duration(milliseconds: 100));
         if (Get.context != null) {
-          await _preloadAllCharacters();
+          await _preloadAllAssets();
         }
         return;
       }
 
-      // Preload all characters' walk animations
       final List<Future<void>> allPreloadTasks = [];
 
+      // Preload all characters' walk animations
       for (final character in characterController.characters) {
-        // Preload walk animation frames (1-10)
         for (int i = 1; i <= 10; i++) {
           final walkImagePath = '${character.walkPath}$i.png';
           allPreloadTasks.add(
@@ -55,11 +72,11 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
               context,
             ).catchError((error) {
               print('⚠️ Failed to preload $walkImagePath: $error');
+              return null;
             }),
           );
         }
 
-        // Also preload the character selection image
         final selectionImagePath = character.selectionAssetPath;
         allPreloadTasks.add(
           precacheImage(
@@ -67,40 +84,69 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
             context,
           ).catchError((error) {
             print('⚠️ Failed to preload $selectionImagePath: $error');
+            return null;
           }),
         );
       }
 
-      // Wait for all images to preload
+      // Preload companion display images (main selection images)
+      for (final companion in companionController.companions) {
+        allPreloadTasks.add(
+          precacheImage(
+            AssetImage(companion.displayImagePath),
+            context,
+          ).catchError((error) {
+            print('⚠️ Failed to preload companion display image ${companion.displayImagePath}: $error');
+            return null;
+          }),
+        );
+      }
+
+      // IMPORTANT: Don't preload ALL companion walk animations on startup
+      // This causes memory issues. Only preload when overlay opens.
+      // Uncomment if you want to preload just the default companion (Robo)
+      /*
+      final defaultCompanion = companionController.getCurrentCompanion();
+      if (defaultCompanion != null) {
+        for (int i = 1; i <= defaultCompanion.totalFrames; i++) {
+          final frameImagePath = '${defaultCompanion.animationPath}walk_$i.png';
+          allPreloadTasks.add(
+            precacheImage(
+              AssetImage(frameImagePath),
+              context,
+            ).catchError((error) {
+              print('⚠️ Failed to preload $frameImagePath: $error');
+              return null;
+            }),
+          );
+        }
+      }
+      */
+
       await Future.wait(allPreloadTasks);
 
-      print('✅ All character animations preloaded successfully!');
+      print('✅ All assets preloaded successfully!');
 
-      // Small delay to ensure everything is cached
       await Future.delayed(const Duration(milliseconds: 100));
 
       isPreloadingCharacters.value = false;
 
-      // Now start the home screen animations
       startAnimationSequence();
 
     } catch (e) {
-      print('❌ Error preloading characters: $e');
-      // Continue anyway
+      print('❌ Error preloading assets: $e');
+      // Continue anyway to prevent app crash
       isPreloadingCharacters.value = false;
       startAnimationSequence();
     }
   }
 
   Future<void> startAnimationSequence() async {
-    // Wait a bit before starting
     await Future.delayed(const Duration(milliseconds: 300));
 
-    // 1. Show Play Game group from bottom
     showPlayGameGroup.value = true;
     await Future.delayed(const Duration(milliseconds: 600));
 
-    // 2. Show animals
     showOwl.value = true;
     await Future.delayed(const Duration(milliseconds: 200));
     showLion.value = true;
@@ -108,7 +154,6 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
     showDeer.value = true;
     await Future.delayed(const Duration(milliseconds: 600));
 
-    // 3. Show top elements
     showSettings.value = true;
     await Future.delayed(const Duration(milliseconds: 200));
     showCoins.value = true;
@@ -121,7 +166,6 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   }
 
   void openCharacterSelection() {
-    // Show character selection overlay
     showCharacterSelection.value = true;
   }
 
@@ -130,16 +174,14 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   }
 
   void openCompanionSelection() {
-    // TODO: Implement companion selection
-    Get.snackbar(
-      'Coming Soon',
-      'Companion selection will be available soon!',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    showCompanionSelection.value = true;
+  }
+
+  void closeCompanionSelection() {
+    showCompanionSelection.value = false;
   }
 
   void openSettings() {
-    // TODO: Implement settings
     Get.snackbar(
       'Settings',
       'Settings panel coming soon!',

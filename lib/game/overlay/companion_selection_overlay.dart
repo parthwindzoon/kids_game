@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kids_game/screens/home/home_controller.dart';
+import 'package:flame/widgets.dart';
+import 'package:flame/sprite.dart';
 import '../../controllers/companion_controller.dart';
 
 class CompanionSelectionOverlay extends StatelessWidget {
@@ -138,21 +140,59 @@ class CompanionSelectionOverlay extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Walking Animation Preview
+          // Walking Animation Preview using SpriteAnimationWidget
           Obx(() {
-            final companion = controller.getCurrentCompanion()!;
+            final companion = controller.getCurrentCompanion();
 
-            return Container(
-              key: ValueKey(companion.id),
-              width: isTablet ? 200 : 150,
-              height: isTablet ? 200 : 150,
-              child: Center(
-                child: _buildWalkingCompanion(
-                  companion,
-                  overlayController,
-                  isTablet,
+            if (companion == null) {
+              return Container(
+                width: isTablet ? 200 : 150,
+                height: isTablet ? 200 : 150,
+                child: Center(
+                  child: CircularProgressIndicator(),
                 ),
-              ),
+              );
+            }
+
+            return FutureBuilder<SpriteAnimation>(
+              key: ValueKey(companion.id),
+              future: overlayController.getAnimationForCompanion(companion),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    width: isTablet ? 200 : 150,
+                    height: isTablet ? 200 : 150,
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                if (snapshot.hasError || !snapshot.hasData) {
+                  // Fallback to static display image
+                  return Container(
+                    width: isTablet ? 200 : 150,
+                    height: isTablet ? 200 : 150,
+                    child: Image.asset(
+                      companion.displayImagePath,
+                      fit: BoxFit.contain,
+                    ),
+                  );
+                }
+
+                // Create a ticker for this specific animation
+                final animationTicker = snapshot.data!.createTicker();
+
+                return SizedBox(
+                  width: isTablet ? 200 : 150,
+                  height: isTablet ? 200 : 150,
+                  child: SpriteAnimationWidget(
+                    animation: snapshot.data!,
+                    animationTicker: animationTicker,
+                    anchor: Anchor.center,
+                  ),
+                );
+              },
             );
           }),
 
@@ -160,7 +200,20 @@ class CompanionSelectionOverlay extends StatelessWidget {
 
           // Companion Name
           Obx(() {
-            final companion = controller.getCurrentCompanion()!;
+            final companion = controller.getCurrentCompanion();
+
+            if (companion == null) {
+              return Text(
+                'Loading...',
+                style: TextStyle(
+                  fontFamily: 'AkayaKanadaka',
+                  fontSize: isTablet ? 28 : 22,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF2E7D32),
+                ),
+              );
+            }
+
             return Text(
               companion.name,
               style: TextStyle(
@@ -174,53 +227,6 @@ class CompanionSelectionOverlay extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Widget _buildWalkingCompanion(
-      CompanionData companion,
-      CompanionSelectionOverlayController controller,
-      bool isTablet,
-      ) {
-    final size = isTablet ? 180.0 : 130.0;
-
-    return Obx(() {
-      final frameIndex = controller.animationFrame.value % companion.totalFrames;
-      final imagePath = '${companion.animationPath}walk_${frameIndex + 1}.png';
-
-      return Image.asset(
-        imagePath,
-        width: size,
-        height: size,
-        fit: BoxFit.contain,
-        gaplessPlayback: true,
-        errorBuilder: (context, error, stackTrace) {
-          // Fallback to display image
-          return Image.asset(
-            companion.displayImagePath,
-            width: size,
-            height: size,
-            fit: BoxFit.contain,
-            gaplessPlayback: true,
-            errorBuilder: (context, error, stackTrace) {
-              // Final fallback
-              return Container(
-                width: size,
-                height: size,
-                decoration: BoxDecoration(
-                  color: Color(companion.color).withOpacity(0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.pets,
-                  size: size * 0.6,
-                  color: Color(companion.color),
-                ),
-              );
-            },
-          );
-        },
-      );
-    });
   }
 
   Widget _buildRightSideSelection(
@@ -304,7 +310,6 @@ class CompanionSelectionOverlay extends StatelessWidget {
                   child: Image.asset(
                     companion.displayImagePath,
                     fit: BoxFit.contain,
-                    gaplessPlayback: true,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         decoration: BoxDecoration(
@@ -343,49 +348,59 @@ class CompanionSelectionOverlay extends StatelessWidget {
   }
 }
 
-class CompanionSelectionOverlayController extends GetxController with GetSingleTickerProviderStateMixin {
-  final animationFrame = 0.obs;
+class CompanionSelectionOverlayController extends GetxController {
   final companionController = Get.find<CompanionController>();
 
-  late AnimationController _animController;
-  String? _lastCompanionId;
+  // Cache for loaded animations
+  final Map<String, SpriteAnimation> _animationCache = {};
 
-  @override
-  void onInit() {
-    super.onInit();
-
-    // Use AnimationController for smooth, consistent animation
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 150), // Frame duration
-    )..addListener(_updateFrame);
-
-    // Listen for companion changes
-    ever(companionController.selectedCompanion, (companionId) {
-      if (_lastCompanionId != companionId) {
-        _lastCompanionId = companionId;
-        animationFrame.value = 0; // Reset to first frame
-      }
-    });
-
-    // Start animation
-    _startAnimation();
-  }
-
-  void _updateFrame() {
-    final companion = companionController.getCurrentCompanion();
-    if (companion != null && !isClosed) {
-      animationFrame.value = (animationFrame.value + 1) % companion.totalFrames;
+  // Load and create sprite animation for a companion
+  Future<SpriteAnimation> getAnimationForCompanion(CompanionData companion) async {
+    // Return cached animation if available
+    if (_animationCache.containsKey(companion.id)) {
+      return _animationCache[companion.id]!;
     }
-  }
 
-  void _startAnimation() {
-    _animController.repeat();
+    // Load all frames for the companion
+    final List<Sprite> sprites = [];
+
+    try {
+      for (int i = 1; i <= companion.totalFrames; i++) {
+        final imagePath = '${companion.animationPath}walk_$i.png';
+        // Remove 'assets/images/' prefix as Sprite.load adds it automatically
+        final cleanPath = imagePath.replaceFirst('assets/images/', '');
+        final sprite = await Sprite.load(cleanPath);
+        sprites.add(sprite);
+      }
+
+      // Create animation with appropriate step time
+      // Robo (21 frames) plays slightly faster
+      final stepTime = companion.totalFrames == 21 ? 0.08 : 0.1;
+
+      final animation = SpriteAnimation.spriteList(
+        sprites,
+        stepTime: stepTime,
+        loop: true,
+      );
+
+      // Cache the animation
+      _animationCache[companion.id] = animation;
+
+      return animation;
+    } catch (e) {
+      print('❌ Error loading animation for ${companion.name}: $e');
+      // Return a dummy animation if loading fails
+      return SpriteAnimation.spriteList(
+        sprites.isNotEmpty ? sprites : [await Sprite.load('companions/robo/walk_1.png')],
+        stepTime: 0.1,
+        loop: true,
+      );
+    }
   }
 
   @override
   void onClose() {
-    _animController.dispose();
+    _animationCache.clear();
     super.onClose();
   }
 }

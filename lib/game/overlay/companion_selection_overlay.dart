@@ -15,9 +15,6 @@ class CompanionSelectionOverlay extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final isTablet = size.shortestSide > 600;
 
-    // Preload current companion's walk animations for smoother playback
-    _preloadCurrentCompanionAnimations(controller, context);
-
     return GetBuilder<CompanionSelectionOverlayController>(
       init: CompanionSelectionOverlayController(),
       builder: (overlayController) {
@@ -131,31 +128,6 @@ class CompanionSelectionOverlay extends StatelessWidget {
     );
   }
 
-  // Preload companion walk animations for smooth playback
-  void _preloadCurrentCompanionAnimations(CompanionController controller, BuildContext context) {
-    final companion = controller.getCurrentCompanion();
-    if (companion != null) {
-      // Preload all walk animation frames
-      for (int i = 1; i <= companion.totalFrames; i++) {
-        precacheImage(
-          AssetImage('${companion.animationPath}walk_$i.png'),
-          context,
-        ).catchError((error) {
-          // Silently fail if frame doesn't exist - will use fallback
-          return null;
-        });
-      }
-
-      // Also preload display image as fallback
-      precacheImage(
-        AssetImage(companion.displayImagePath),
-        context,
-      ).catchError((error) {
-        return null;
-      });
-    }
-  }
-
   Widget _buildLeftSidePreview(
       CompanionController controller,
       CompanionSelectionOverlayController overlayController,
@@ -166,12 +138,9 @@ class CompanionSelectionOverlay extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Walking Animation Preview - SQUARE container
+          // Walking Animation Preview
           Obx(() {
             final companion = controller.getCurrentCompanion()!;
-
-            // Preload next few frames for smoother animation
-            overlayController._preloadNextFrames(companion);
 
             return Container(
               key: ValueKey(companion.id),
@@ -215,60 +184,41 @@ class CompanionSelectionOverlay extends StatelessWidget {
     final size = isTablet ? 180.0 : 130.0;
 
     return Obx(() {
-      // FIXED: Ensure frame index is within valid range
-      final totalFrames = companion.totalFrames;
-      final rawFrame = controller.animationFrame.value;
-
-      // Ensure frame is always valid for this companion
-      final frameIndex = rawFrame.clamp(0, totalFrames - 1);
+      final frameIndex = controller.animationFrame.value % companion.totalFrames;
       final imagePath = '${companion.animationPath}walk_${frameIndex + 1}.png';
 
-      return Container(
+      return Image.asset(
+        imagePath,
         width: size,
         height: size,
-        child: Image.asset(
-          imagePath,
-          width: size,
-          height: size,
-          fit: BoxFit.contain,
-          gaplessPlayback: true,
-          frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-            if (wasSynchronouslyLoaded) {
-              return child;
-            }
-            return AnimatedOpacity(
-              opacity: frame == null ? 0 : 1,
-              duration: const Duration(milliseconds: 50),
-              child: child,
-            );
-          },
-          errorBuilder: (context, error, stackTrace) {
-            // If walk animation frame is missing, try the display image
-            return Image.asset(
-              companion.displayImagePath,
-              width: size,
-              height: size,
-              fit: BoxFit.contain,
-              gaplessPlayback: true,
-              errorBuilder: (context, error, stackTrace) {
-                // Final fallback to icon
-                return Container(
-                  width: size,
-                  height: size,
-                  decoration: BoxDecoration(
-                    color: Color(companion.color).withOpacity(0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.pets,
-                    size: size * 0.6,
-                    color: Color(companion.color),
-                  ),
-                );
-              },
-            );
-          },
-        ),
+        fit: BoxFit.contain,
+        gaplessPlayback: true,
+        errorBuilder: (context, error, stackTrace) {
+          // Fallback to display image
+          return Image.asset(
+            companion.displayImagePath,
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+            gaplessPlayback: true,
+            errorBuilder: (context, error, stackTrace) {
+              // Final fallback
+              return Container(
+                width: size,
+                height: size,
+                decoration: BoxDecoration(
+                  color: Color(companion.color).withOpacity(0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.pets,
+                  size: size * 0.6,
+                  color: Color(companion.color),
+                ),
+              );
+            },
+          );
+        },
       );
     });
   }
@@ -286,11 +236,11 @@ class CompanionSelectionOverlay extends StatelessWidget {
           Expanded(
             child: Row(
               children: [
-                _buildCompanionOption(controller.companions[0], controller, isTablet), // Robo
+                _buildCompanionOption(controller.companions[0], controller, isTablet),
                 SizedBox(width: isTablet ? 15 : 10),
-                _buildCompanionOption(controller.companions[1], controller, isTablet), // Teddy
+                _buildCompanionOption(controller.companions[1], controller, isTablet),
                 SizedBox(width: isTablet ? 15 : 10),
-                _buildCompanionOption(controller.companions[2], controller, isTablet), // Ducky
+                _buildCompanionOption(controller.companions[2], controller, isTablet),
               ],
             ),
           ),
@@ -302,9 +252,9 @@ class CompanionSelectionOverlay extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildCompanionOption(controller.companions[3], controller, isTablet), // Penguin
+                _buildCompanionOption(controller.companions[3], controller, isTablet),
                 SizedBox(width: isTablet ? 15 : 10),
-                _buildCompanionOption(controller.companions[4], controller, isTablet), // Bear
+                _buildCompanionOption(controller.companions[4], controller, isTablet),
               ],
             ),
           ),
@@ -347,12 +297,12 @@ class CompanionSelectionOverlay extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Companion Image
+              // Companion Display Image (static image with frame)
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(15),
                   child: Image.asset(
-                    companion.selectionAssetPath,
+                    companion.displayImagePath,
                     fit: BoxFit.contain,
                     gaplessPlayback: true,
                     errorBuilder: (context, error, stackTrace) {
@@ -393,113 +343,49 @@ class CompanionSelectionOverlay extends StatelessWidget {
   }
 }
 
-class CompanionSelectionOverlayController extends GetxController {
+class CompanionSelectionOverlayController extends GetxController with GetSingleTickerProviderStateMixin {
   final animationFrame = 0.obs;
   final companionController = Get.find<CompanionController>();
+
+  late AnimationController _animController;
   String? _lastCompanionId;
-  final Set<String> _preloadedPaths = {};
 
   @override
   void onInit() {
     super.onInit();
 
-    // Preload initial companion frames
-    final initialCompanion = companionController.getCurrentCompanion();
-    if (initialCompanion != null) {
-      _preloadAllFrames(initialCompanion);
-    }
+    // Use AnimationController for smooth, consistent animation
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150), // Frame duration
+    )..addListener(_updateFrame);
 
-    // Listen for companion changes and reset frame
+    // Listen for companion changes
     ever(companionController.selectedCompanion, (companionId) {
       if (_lastCompanionId != companionId) {
         _lastCompanionId = companionId;
-        animationFrame.value = 0; // Reset to first frame when companion changes
-
-        // Preload new companion frames
-        final newCompanion = companionController.getCurrentCompanion();
-        if (newCompanion != null) {
-          _preloadAllFrames(newCompanion);
-        }
+        animationFrame.value = 0; // Reset to first frame
       }
     });
 
+    // Start animation
     _startAnimation();
   }
 
-  // Preload all frames for a companion
-  void _preloadAllFrames(CompanionData companion) {
-    if (Get.context == null) return;
-
-    for (int i = 1; i <= companion.totalFrames; i++) {
-      final path = '${companion.animationPath}walk_$i.png';
-      if (!_preloadedPaths.contains(path)) {
-        precacheImage(
-          AssetImage(path),
-          Get.context!,
-        ).then((_) {
-          _preloadedPaths.add(path);
-        }).catchError((error) {
-          // Silently fail
-        });
-      }
-    }
-  }
-
-  // Preload next 3 frames for smoother animation
-  void _preloadNextFrames(CompanionData companion) {
-    if (Get.context == null) return;
-
-    final currentFrame = animationFrame.value;
-    for (int i = 1; i <= 3; i++) {
-      final nextFrame = (currentFrame + i) % companion.totalFrames;
-      final path = '${companion.animationPath}walk_${nextFrame + 1}.png';
-
-      if (!_preloadedPaths.contains(path)) {
-        precacheImage(
-          AssetImage(path),
-          Get.context!,
-        ).then((_) {
-          _preloadedPaths.add(path);
-        }).catchError((error) {
-          // Silently fail
-        });
-      }
+  void _updateFrame() {
+    final companion = companionController.getCurrentCompanion();
+    if (companion != null && !isClosed) {
+      animationFrame.value = (animationFrame.value + 1) % companion.totalFrames;
     }
   }
 
   void _startAnimation() {
-    Future.delayed(const Duration(milliseconds: 200), () {
-      _animate();
-    });
-  }
-
-  void _animate() {
-    if (isClosed) return;
-
-    // Get current companion's total frames dynamically
-    final currentCompanion = companionController.getCurrentCompanion();
-    if (currentCompanion != null) {
-      // Check if current frame is valid for this companion
-      if (animationFrame.value >= currentCompanion.totalFrames) {
-        animationFrame.value = 0; // Reset if out of bounds
-      } else {
-        // Increment frame with wraparound
-        animationFrame.value = (animationFrame.value + 1) % currentCompanion.totalFrames;
-      }
-    } else {
-      // Fallback to default 12 frames if companion is null
-      animationFrame.value = (animationFrame.value + 1) % 12;
-    }
-
-    // Slightly slower timing for smoother appearance
-    Future.delayed(const Duration(milliseconds: 150), () {
-      _animate();
-    });
+    _animController.repeat();
   }
 
   @override
   void onClose() {
-    _preloadedPaths.clear();
+    _animController.dispose();
     super.onClose();
   }
 }

@@ -7,6 +7,7 @@ import 'package:kids_game/game/overlay/counting_fun_overlay.dart';
 import 'package:kids_game/game/overlay/number_memory_overlay.dart';
 import '../../game/components/building_popup_overlay.dart';
 import '../../game/my_game.dart';
+import '../../game/overlay/color_matching_overlay.dart';
 import '../../game/overlay/coloring_page_overlay.dart';
 import '../../game/overlay/garden_cleaning_overlay.dart';
 import '../../game/overlay/image_selection_overlay.dart';
@@ -71,6 +72,9 @@ class GameScreen extends StatelessWidget {
             },
             'pattern_recognition': (context, game) {
               return PatternRecognitionOverlay(game: game);
+            },
+            'color_matching': (context, game) {
+              return ColorMatchingOverlay(game: game);
             },
           },
         ),

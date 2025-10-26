@@ -450,6 +450,9 @@ class MiniGamesController extends GetxController
       case 'Pattern Recognition':
         game.overlays.add('pattern_recognition');
         break;
+      case 'Color Matching':
+        game.overlays.add('color_matching');
+        break;
       default:
         print('Mini-game not implemented yet: $gameName');
         game.overlays.add('minigames_overlay');

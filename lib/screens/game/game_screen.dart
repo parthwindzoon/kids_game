@@ -14,6 +14,7 @@ import '../../game/overlay/home_button_overlay.dart';
 import '../../game/overlay/learn_alphabets_overlay.dart';
 import '../../game/overlay/lucky_spin_overlay.dart';
 import '../../game/overlay/minigames_overlay.dart';
+import '../../game/overlay/pattern_recognition_overlay.dart';
 import '../../game/overlay/pop_balloon_overlay.dart';
 import '../../game/overlay/shape_shorting_overlay.dart';
 
@@ -67,6 +68,9 @@ class GameScreen extends StatelessWidget {
             },
             'counting_fun': (context, game) {
               return CountingFunOverlay(game: game);
+            },
+            'pattern_recognition': (context, game) {
+              return PatternRecognitionOverlay(game: game);
             },
           },
         ),

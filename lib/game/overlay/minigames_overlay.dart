@@ -447,6 +447,9 @@ class MiniGamesController extends GetxController
       case 'Garden Cleaning':
         game.overlays.add('garden_cleaning');
         break;
+      case 'Pattern Recognition':
+        game.overlays.add('pattern_recognition');
+        break;
       default:
         print('Mini-game not implemented yet: $gameName');
         game.overlays.add('minigames_overlay');

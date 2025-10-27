@@ -77,6 +77,7 @@ flutter:
     - assets/images/overlays/
     - assets/images/minigames/
     - assets/images/alphabets/
+    - assets/images/number_learning/
     - assets/images/alphabet_words/
     - assets/images/shapes/
     - assets/images/coloring/

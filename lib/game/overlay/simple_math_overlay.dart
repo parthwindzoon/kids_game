@@ -284,21 +284,23 @@ class SimpleMathOverlay extends StatelessWidget {
                           },
                         ),
 
-                        // Number overlay
-                        Text(
-                          '$answer',
-                          style: TextStyle(
-                            fontFamily: 'AkayaKanadaka',
-                            fontSize: isTablet ? 32 : 26,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                offset: const Offset(2, 2),
-                                blurRadius: 3,
-                                color: Colors.black.withOpacity(0.5),
-                              ),
-                            ],
+                        // Number overlay - CENTERED and BLACK
+                        Center(
+                          child: Text(
+                            '$answer',
+                            style: TextStyle(
+                              fontFamily: 'AkayaKanadaka',
+                              fontSize: isTablet ? 36 : 28, // Slightly larger
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black, // BLACK COLOR
+                              shadows: [
+                                Shadow(
+                                  offset: const Offset(1, 1),
+                                  blurRadius: 2,
+                                  color: Colors.white.withOpacity(0.5), // White shadow for contrast
+                                ),
+                              ],
+                            ),
                           ),
                         ),
 
@@ -694,25 +696,31 @@ class SimpleMathController extends GetxController {
   }
 
   void _generateProblem() {
-    // Generate difficulty based on level
-    int maxNumber = min(10 + (currentLevel.value * 2), 20);
+    // EASIER MATH: Use smaller numbers (1-5 for beginners, max 10)
+    int maxNumber = min(5 + currentLevel.value, 10); // Starts at 5, max 10
 
-    // Choose random operation
-    final operations = ['+', '-'];
+    // Only use addition for now (easier for kids)
+    final operations = ['+'];
     final operation = operations[random.nextInt(operations.length)];
 
     int num1, num2, answer;
 
     if (operation == '+') {
-      // Addition
+      // Addition with small numbers (1-5 to start)
       num1 = random.nextInt(maxNumber) + 1;
       num2 = random.nextInt(maxNumber) + 1;
+
+      // Make sure sum doesn't exceed 10 for easy mode
+      if (num1 + num2 > 10 && currentLevel.value < 5) {
+        num2 = random.nextInt(5) + 1; // Keep it simple
+      }
+
       answer = num1 + num2;
       currentProblem.value = '$num1 + $num2 = ?';
     } else {
-      // Subtraction - ensure positive result
+      // Subtraction - ensure positive result and small numbers
       num1 = random.nextInt(maxNumber) + 1;
-      num2 = random.nextInt(num1) + 1;
+      num2 = random.nextInt(min(num1, 5)) + 1; // Keep subtraction small
       answer = num1 - num2;
       currentProblem.value = '$num1 - $num2 = ?';
     }
@@ -723,16 +731,17 @@ class SimpleMathController extends GetxController {
     answerOptions.clear();
     answerOptions.add(answer);
 
-    // Add 3 wrong answers
+    // Add 3 wrong answers (closer to correct answer for kids)
     while (answerOptions.length < 4) {
       int wrongAnswer;
+      // Make wrong answers close to the correct one (+/- 1 or 2)
       if (random.nextBool()) {
-        wrongAnswer = answer + random.nextInt(5) + 1;
+        wrongAnswer = answer + random.nextInt(2) + 1; // +1 or +2
       } else {
-        wrongAnswer = max(0, answer - random.nextInt(5) - 1);
+        wrongAnswer = max(0, answer - random.nextInt(2) - 1); // -1 or -2
       }
 
-      if (!answerOptions.contains(wrongAnswer) && wrongAnswer >= 0) {
+      if (!answerOptions.contains(wrongAnswer) && wrongAnswer >= 0 && wrongAnswer <= 20) {
         answerOptions.add(wrongAnswer);
       }
     }

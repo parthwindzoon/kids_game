@@ -420,9 +420,7 @@ class MiniGamesController extends GetxController
         game.overlays.add('learn_alphabets');
         break;
       case 'Learn Numbers':
-        // TODO: Add Learn Numbers overlay
-        print('Learn Numbers - Coming Soon!');
-        game.overlays.add('minigames_overlay');
+        game.overlays.add('learn_numbers');
         break;
       case 'Simple Math':
         game.overlays.add('simple_math');

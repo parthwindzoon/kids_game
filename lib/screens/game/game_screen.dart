@@ -14,6 +14,7 @@ import '../../game/overlay/garden_cleaning_overlay.dart';
 import '../../game/overlay/image_selection_overlay.dart';
 import '../../game/overlay/home_button_overlay.dart';
 import '../../game/overlay/learn_alphabets_overlay.dart';
+import '../../game/overlay/learn_numbers_overlay.dart';
 import '../../game/overlay/lucky_spin_overlay.dart';
 import '../../game/overlay/minigames_overlay.dart';
 import '../../game/overlay/pattern_recognition_overlay.dart';
@@ -51,7 +52,9 @@ class GameScreen extends StatelessWidget {
             'learn_alphabets': (context, game) {
               return LearnAlphabetsOverlay(game: game);
             },
-
+            'learn_numbers': (context, game) {
+              return LearnNumbersOverlay(game: game);
+            },
             'shape_sorting': (context, game) {
               return ShapeSortingOverlay(game: game);
             },

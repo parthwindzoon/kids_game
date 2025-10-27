@@ -5,6 +5,7 @@ import 'package:flame/game.dart';
 import 'package:get/get.dart';
 import 'package:kids_game/game/overlay/counting_fun_overlay.dart';
 import 'package:kids_game/game/overlay/number_memory_overlay.dart';
+import 'package:kids_game/game/overlay/simple_math_overlay.dart';
 import '../../game/components/building_popup_overlay.dart';
 import '../../game/my_game.dart';
 import '../../game/overlay/color_matching_overlay.dart';
@@ -75,6 +76,9 @@ class GameScreen extends StatelessWidget {
             },
             'color_matching': (context, game) {
               return ColorMatchingOverlay(game: game);
+            },
+            'simple_math': (context, game) {
+              return SimpleMathOverlay(game: game);
             },
           },
         ),

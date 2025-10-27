@@ -115,7 +115,7 @@ class ColorMatchingOverlay extends StatelessWidget {
                 game.overlays.remove('color_matching');
                 game.overlays.add('minigames_overlay');
               },
-              child: Image.asset('assets/images/back_btn.png'),
+              child: Image.asset('assets/images/back_btn.png')  ,
             ),
           ),
 

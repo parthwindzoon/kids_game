@@ -33,46 +33,42 @@ class CountingFunOverlay extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: isTablet ? 60 : 40),
+                SizedBox(height: isTablet ? 80 : 60),
 
-                // Title - Red outline text
-                Text(
-                  'Counting Fun',
-                  style: TextStyle(
-                    fontFamily: 'AkayaKanadaka',
-                    fontSize: isTablet ? 48 : 36,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
-                    shadows: [
-                      Shadow(
-                        offset: const Offset(2, 2),
-                        blurRadius: 0,
+                // Title - "Counting Fun" with white text and red outline
+                Stack(
+                  children: [
+                    // Outline
+                    Text(
+                      'Counting Fun',
+                      style: TextStyle(
+                        fontFamily: 'AkayaKanadaka',
+                        fontSize: isTablet ? 48 : 36,
+                        fontWeight: FontWeight.bold,
+                        foreground: Paint()
+                          ..style = PaintingStyle.stroke
+                          ..strokeWidth = 4
+                          ..color = Colors.red,
+                      ),
+                    ),
+                    // Fill
+                    Text(
+                      'Counting Fun',
+                      style: TextStyle(
+                        fontFamily: 'AkayaKanadaka',
+                        fontSize: isTablet ? 48 : 36,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
-                      Shadow(
-                        offset: const Offset(-2, -2),
-                        blurRadius: 0,
-                        color: Colors.white,
-                      ),
-                      Shadow(
-                        offset: const Offset(2, -2),
-                        blurRadius: 0,
-                        color: Colors.white,
-                      ),
-                      Shadow(
-                        offset: const Offset(-2, 2),
-                        blurRadius: 0,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
 
                 SizedBox(height: isTablet ? 15 : 10),
 
-                // Subtitle - White text
+                // Subtitle
                 Text(
-                  'Count the objects and pick the right number!',
+                  'Count the objects and pic the right number!',
                   style: TextStyle(
                     fontFamily: 'AkayaKanadaka',
                     fontSize: isTablet ? 24 : 18,
@@ -89,7 +85,7 @@ class CountingFunOverlay extends StatelessWidget {
 
                 SizedBox(height: isTablet ? 30 : 20),
 
-                // Objects to count
+                // Objects to count area
                 Obx(() => _buildCountingObjects(controller, isTablet)),
 
                 SizedBox(height: isTablet ? 30 : 20),
@@ -113,32 +109,58 @@ class CountingFunOverlay extends StatelessWidget {
                 game.overlays.remove('counting_fun');
                 game.overlays.add('minigames_overlay');
               },
-              child: Image.asset('assets/images/back_btn.png'),
+              child: Container(
+                width: isTablet ? 60 : 45,
+                height: isTablet ? 60 : 45,
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 3),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: isTablet ? 30 : 24,
+                ),
+              ),
             ),
           ),
 
-          // Score Display (top-right with score_bg)
+          // Score Display (top-right with custom design)
           Positioned(
             top: isTablet ? 20 : 15,
             right: isTablet ? 20 : 15,
             child: Obx(() => Container(
-              width: isTablet ? 200 : 160,
-              height: isTablet ? 60 : 50,
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/score_bg.png'),
-                  fit: BoxFit.fill,
-                ),
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 25 : 20,
+                vertical: isTablet ? 12 : 10,
               ),
-              child: Center(
-                child: Text(
-                  'Score-${controller.score.value}',
-                  style: TextStyle(
-                    fontFamily: 'AkayaKanadaka',
-                    fontSize: isTablet ? 24 : 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+              decoration: BoxDecoration(
+                color: const Color(0xFF00BCD4),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.white, width: 3),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
+                ],
+              ),
+              child: Text(
+                'Score-${controller.score.value}',
+                style: TextStyle(
+                  fontFamily: 'AkayaKanadaka',
+                  fontSize: isTablet ? 24 : 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
             )),
@@ -173,7 +195,6 @@ class CountingFunOverlay extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: isTablet ? 60 : 40),
       child: Stack(
         children: List.generate(controller.currentObjectCount.value, (index) {
-          // Get non-overlapping positions
           final positions = controller.getObjectPositions(isTablet);
           if (index >= positions.length) return const SizedBox.shrink();
 
@@ -181,12 +202,12 @@ class CountingFunOverlay extends StatelessWidget {
             left: positions[index].dx,
             top: positions[index].dy,
             child: Image.asset(
-              controller.currentObjectImage.value,
+              'assets/images/counting_fun/object.png',
               width: objectSize,
               height: objectSize,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
-                // Fallback to colored circle with text
+                print('❌ Error loading object.png: $error');
                 return Container(
                   width: objectSize,
                   height: objectSize,
@@ -215,153 +236,170 @@ class CountingFunOverlay extends StatelessWidget {
   }
 
   Widget _buildTrain(CountingFunController controller, bool isTablet) {
-    // Reduced sizes to prevent overflow
-    final engineSize = isTablet ? 100.0 : 80.0; // Reduced from 120/95
-    final carriageSize = isTablet ? 85.0 : 70.0; // Reduced from 100/80
+    final engineSize = isTablet ? 110.0 : 85.0;
+    final carriageSize = isTablet ? 95.0 : 75.0;
+    final horizontalSpacing = isTablet ? 5.0 : 3.0;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Engine - smaller now
-          Image.asset(
-            'assets/images/counting_fun/Engine.png',
-            width: engineSize,
-            height: engineSize,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                width: engineSize,
-                height: engineSize,
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                  child: Text('🚂', style: TextStyle(fontSize: 50)),
-                ),
-              );
-            },
-          ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: isTablet ? 40 : 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Engine
+            Image.asset(
+              'assets/images/counting_fun/Engine.png',
+              width: engineSize,
+              height: engineSize,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                print('❌ Error loading Engine.png: $error');
+                return Container(
+                  width: engineSize,
+                  height: engineSize,
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Center(
+                    child: Text('🚂', style: TextStyle(fontSize: 50)),
+                  ),
+                );
+              },
+            ),
 
-          // Carriages (1-10) - smaller now
-          ...List.generate(10, (index) {
-            final number = index + 1;
-            return Obx(() {
-              final isCorrectAnswer = number == controller.currentObjectCount.value;
-              final isSelected = controller.selectedNumber.value == number;
-              final hasAnswered = controller.hasAnswered.value;
+            SizedBox(width: horizontalSpacing),
 
-              return GestureDetector(
-                onTap: () {
-                  if (!hasAnswered) {
-                    controller.selectNumber(number);
-                  }
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  transform: Matrix4.identity()
-                    ..scale(isSelected ? 1.1 : 1.0),
-                  child: Stack(
-                    children: [
-                      // Carriage image
-                      Image.asset(
-                        'assets/images/counting_fun/${number}.png',
-                        width: carriageSize,
-                        height: carriageSize,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          // Fallback carriage design
-                          return Container(
+            // Carriages (1-10)
+            ...List.generate(10, (index) {
+              final number = index + 1;
+              return Obx(() {
+                final isCorrectAnswer = number == controller.currentObjectCount.value;
+                final isSelected = controller.selectedNumber.value == number;
+                final hasAnswered = controller.hasAnswered.value;
+
+                return Padding(
+                  padding: EdgeInsets.only(right: horizontalSpacing),
+                  child: GestureDetector(
+                    onTap: () {
+                      if (!hasAnswered) {
+                        controller.selectNumber(number);
+                      }
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      transform: Matrix4.identity()
+                        ..scale(isSelected ? 1.1 : 1.0),
+                      child: Stack(
+                        children: [
+                          // Carriage image
+                          Image.asset(
+                            'assets/images/counting_fun/$number.png',
                             width: carriageSize,
                             height: carriageSize,
-                            decoration: BoxDecoration(
-                              color: _getCarriageColor(number),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.black, width: 2),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '$number',
-                                style: TextStyle(
-                                  fontFamily: 'AkayaKanadaka',
-                                  fontSize: isTablet ? 24 : 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              print('❌ Error loading $number.png: $error');
+                              return Container(
+                                width: carriageSize,
+                                height: carriageSize,
+                                decoration: BoxDecoration(
+                                  color: _getCarriageColor(number),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.black, width: 2),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '$number',
+                                    style: TextStyle(
+                                      fontFamily: 'AkayaKanadaka',
+                                      fontSize: isTablet ? 24 : 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+
+                          // Selection indicator
+                          if (isSelected && !hasAnswered)
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.yellow,
+                                    width: 4,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
                             ),
-                          );
-                        },
+
+                          // Correct/Wrong indicator after answer
+                          if (hasAnswered && isSelected)
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: isCorrectAnswer
+                                      ? Colors.green.withOpacity(0.3)
+                                      : Colors.red.withOpacity(0.3),
+                                  border: Border.all(
+                                    color: isCorrectAnswer ? Colors.green : Colors.red,
+                                    width: 3,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    isCorrectAnswer ? Icons.check : Icons.close,
+                                    color: isCorrectAnswer ? Colors.green : Colors.red,
+                                    size: isTablet ? 30 : 25,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                          // Show correct answer if wrong was selected
+                          if (hasAnswered && !isSelected && isCorrectAnswer)
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.green,
+                                    width: 4,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-
-                      // Selection indicator
-                      if (isSelected && !hasAnswered)
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.yellow,
-                                width: 3,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-
-                      // Correct/Wrong indicator after answer
-                      if (hasAnswered && isSelected)
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: isCorrectAnswer
-                                  ? Colors.green.withOpacity(0.3)
-                                  : Colors.red.withOpacity(0.3),
-                              border: Border.all(
-                                color: isCorrectAnswer ? Colors.green : Colors.red,
-                                width: 3,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                isCorrectAnswer ? Icons.check : Icons.close,
-                                color: isCorrectAnswer ? Colors.green : Colors.red,
-                                size: isTablet ? 30 : 25,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                      // Show correct answer if wrong was selected
-                      if (hasAnswered && !isSelected && isCorrectAnswer)
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.green,
-                                width: 3,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            });
-          }),
-        ],
+                );
+              });
+            }),
+          ],
+        ),
       ),
     );
   }
 
   Color _getCarriageColor(int number) {
     final colors = [
-      Colors.red, Colors.blue, Colors.green, Colors.orange, Colors.purple,
-      Colors.pink, Colors.yellow, Colors.cyan, Colors.brown, Colors.indigo,
+      const Color(0xFFE74C3C), // Red
+      const Color(0xFF3498DB), // Blue
+      const Color(0xFF2ECC71), // Green
+      const Color(0xFFF39C12), // Orange
+      const Color(0xFFF1C40F), // Yellow
+      const Color(0xFF9B59B6), // Purple
+      const Color(0xFFE91E63), // Pink
+      const Color(0xFF00BCD4), // Cyan
+      const Color(0xFF795548), // Brown
+      const Color(0xFF607D8B), // Blue Grey
     ];
     return colors[(number - 1) % colors.length];
   }
@@ -418,7 +456,6 @@ class CountingFunOverlay extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     Positioned(
                       bottom: isTablet ? 30 : 25,
                       left: 0,
@@ -529,7 +566,6 @@ class CountingFunOverlay extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     Positioned(
                       bottom: isTablet ? 40 : 30,
                       left: 0,
@@ -568,7 +604,6 @@ class CountingFunOverlay extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     Positioned(
                       top: 10,
                       right: 10,
@@ -609,7 +644,6 @@ class CountingFunController extends GetxController {
   final RxDouble popupScale = 0.0.obs;
   final RxDouble popupOpacity = 0.0.obs;
 
-  // Store generated positions to avoid recalculating
   List<Offset> _cachedPositions = [];
 
   @override
@@ -620,23 +654,16 @@ class CountingFunController extends GetxController {
   }
 
   void _generateLevel() {
-    // Generate random count (1-10)
     currentObjectCount.value = Random().nextInt(10) + 1;
-
-    // Always use the single object.png file for displaying objects
     currentObjectImage.value = 'assets/images/counting_fun/object.png';
-
-    // Reset selection
     selectedNumber.value = 0;
     hasAnswered.value = false;
-
-    // Clear cached positions to regenerate for new level
     _cachedPositions.clear();
   }
 
   List<Offset> getObjectPositions(bool isTablet) {
-    // Return cached positions if already generated
-    if (_cachedPositions.isNotEmpty && _cachedPositions.length == currentObjectCount.value) {
+    if (_cachedPositions.isNotEmpty &&
+        _cachedPositions.length == currentObjectCount.value) {
       return _cachedPositions;
     }
 
@@ -644,23 +671,21 @@ class CountingFunController extends GetxController {
     final maxWidth = isTablet ? 800.0 : 600.0;
     final maxHeight = isTablet ? 140.0 : 120.0;
     final objectSize = isTablet ? 60.0 : 50.0;
-    final minDistance = objectSize * 1.3; // Minimum distance between objects
+    final minDistance = objectSize * 1.3;
 
     final positions = <Offset>[];
     final random = Random();
-    int maxAttempts = 100; // Prevent infinite loop
+    int maxAttempts = 100;
 
     for (int i = 0; i < count; i++) {
       bool positionFound = false;
       int attempts = 0;
 
       while (!positionFound && attempts < maxAttempts) {
-        // Generate random position
         final x = random.nextDouble() * (maxWidth - objectSize);
         final y = random.nextDouble() * (maxHeight - objectSize);
         final newPosition = Offset(x, y);
 
-        // Check if this position is far enough from all existing positions
         bool isFarEnough = true;
         for (final existingPosition in positions) {
           final distance = (newPosition - existingPosition).distance;
@@ -678,7 +703,6 @@ class CountingFunController extends GetxController {
         attempts++;
       }
 
-      // If we couldn't find a good position after max attempts, just place it anyway
       if (!positionFound) {
         final x = random.nextDouble() * (maxWidth - objectSize);
         final y = random.nextDouble() * (maxHeight - objectSize);
@@ -686,7 +710,6 @@ class CountingFunController extends GetxController {
       }
     }
 
-    // Cache the positions
     _cachedPositions = positions;
     return positions;
   }
@@ -696,26 +719,21 @@ class CountingFunController extends GetxController {
     hasAnswered.value = true;
 
     if (number == currentObjectCount.value) {
-      // Correct answer
       score.value += 10;
       _playSuccessSound();
 
       Future.delayed(const Duration(milliseconds: 1000), () {
         if (currentLevel.value >= 10) {
-          // Game completed
           _showCompletionPopup();
           _playCelebrationSound();
         } else {
-          // Show next level popup
           _showNextLevelPopup();
         }
       });
     } else {
-      // Wrong answer
       _playWrongSound();
 
       Future.delayed(const Duration(milliseconds: 2000), () {
-        // Generate new level after showing correct answer
         currentLevel.value++;
         _generateLevel();
       });
@@ -806,5 +824,11 @@ class CountingFunController extends GetxController {
     } catch (e) {
       print('⚠️ Error playing celebration sound: $e');
     }
+  }
+
+  @override
+  void onClose() {
+    _cachedPositions.clear();
+    super.onClose();
   }
 }

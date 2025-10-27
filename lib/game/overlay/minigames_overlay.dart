@@ -425,9 +425,7 @@ class MiniGamesController extends GetxController
         game.overlays.add('minigames_overlay');
         break;
       case 'Simple Math':
-        // TODO: Add Simple Math overlay
-        print('Simple Math - Coming Soon!');
-        game.overlays.add('minigames_overlay');
+        game.overlays.add('simple_math');
         break;
       case 'Shape Shorting':
         game.overlays.add('shape_sorting');

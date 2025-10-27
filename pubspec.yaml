@@ -80,6 +80,8 @@ flutter:
     - assets/images/alphabet_words/
     - assets/images/shapes/
     - assets/images/coloring/
+    - assets/images/counting_fun/
+    - assets/images/simple_math/
     - assets/images/pattern_recognition/
     - assets/images/garden_cleaning/
     - assets/images/pop_the_baloon/

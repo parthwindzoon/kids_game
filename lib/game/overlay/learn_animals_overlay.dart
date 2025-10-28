@@ -127,7 +127,7 @@ class LearnAnimalsOverlay extends StatelessWidget {
                         controller.animals[16],
                         controller.animals[17],
                         controller.animals[18],
-                        controller.animals[19],
+                        // controller.animals[19],
                       ],
                       isTablet,
                       controller,
@@ -357,7 +357,7 @@ class LearnAnimalsController extends GetxController {
   final List<AnimalData> animals = [
     AnimalData(name: 'Duck', audioFile: 'Duck.mp3'),
     AnimalData(name: 'Bear', audioFile: 'Bear.mp3'),
-    AnimalData(name: 'Chicken', audioFile: 'Chiken.mp3'),
+    AnimalData(name: 'Chiken', audioFile: 'Chiken.mp3'),
     AnimalData(name: 'Cow', audioFile: 'Cow.mp3'),
     AnimalData(name: 'Elephant', audioFile: 'Elephant.mp3'),
     AnimalData(name: 'Giraffe', audioFile: 'Giraffe.mp3'),

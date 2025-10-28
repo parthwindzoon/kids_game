@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flame_audio/flame_audio.dart';
 
+import 'coin_controller.dart';
+
 class ColorMatchingController extends GetxController {
   // Game state
   final RxInt score = 0.obs;
@@ -143,6 +145,9 @@ class ColorMatchingController extends GetxController {
   void _showCompletionPopup() {
     showCompletionPopup.value = true;
     _animatePopupIn();
+
+    final coinController = Get.find<CoinController>();
+    coinController.addCoins(5);
   }
 
   void _animateSuccessPopupIn() {

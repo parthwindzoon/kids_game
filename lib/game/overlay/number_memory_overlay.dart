@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import 'package:kids_game/game/my_game.dart';
 import 'package:flame_audio/flame_audio.dart';
 
+import '../../controllers/coin_controller.dart';
+
 class NumberMemoryOverlay extends StatelessWidget {
   final TiledGame game;
 
@@ -582,6 +584,10 @@ class NumberMemoryController extends GetxController {
   void _showCompletionPopup() {
     showCompletionPopup.value = true;
     _animatePopupIn();
+
+    // Award coins
+    final coinController = Get.find<CoinController>();
+    coinController.addCoins(5);
   }
 
   void _animatePopupIn() {

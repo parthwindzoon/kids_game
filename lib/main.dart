@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:kids_game/controllers/character_controller.dart';
 import 'package:kids_game/controllers/companion_controller.dart';
+import 'controllers/coin_controller.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/game/game_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  GetStorage.init();
 
   // Initialize controllers
   Get.put(CharacterController());
   Get.put(CompanionController());
+  Get.put(CoinController());
 
   // Force landscape orientation
   SystemChrome.setPreferredOrientations([

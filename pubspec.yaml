@@ -39,6 +39,7 @@ dependencies:
   flame_audio: ^2.11.10
   get: ^4.7.2
   flutter_svg: ^2.2.1
+  get_storage: ^2.1.1
 
 dev_dependencies:
   flutter_test:
@@ -87,6 +88,7 @@ flutter:
     - assets/images/pattern_recognition/
     - assets/images/garden_cleaning/
     - assets/images/pop_the_baloon/
+    - assets/images/animal_quiz/
     - assets/images/number_memory/
     - assets/images/change_character/
     - assets/images/lucky_spin/
@@ -97,8 +99,10 @@ flutter:
     - assets/images/companions/robo/
     - assets/images/companions/bear/
       #Audio Assets
+    - assets/audio/
     - assets/audio/alphabets/
     - assets/audio/animals/
+    - assets/audio/numbers/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

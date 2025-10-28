@@ -6,8 +6,10 @@ import 'package:get/get.dart';
 import 'package:kids_game/game/overlay/counting_fun_overlay.dart';
 import 'package:kids_game/game/overlay/number_memory_overlay.dart';
 import 'package:kids_game/game/overlay/simple_math_overlay.dart';
+import '../../controllers/coin_controller.dart';
 import '../../game/components/building_popup_overlay.dart';
 import '../../game/my_game.dart';
+import '../../game/overlay/animal_quiz_overlay.dart';
 import '../../game/overlay/color_matching_overlay.dart';
 import '../../game/overlay/coloring_page_overlay.dart';
 import '../../game/overlay/garden_cleaning_overlay.dart';
@@ -34,60 +36,70 @@ class GameScreen extends StatelessWidget {
         return false;
       },
       child: Scaffold(
-        body: GameWidget<TiledGame>.controlled(
-          gameFactory: TiledGame.new,
-          overlayBuilderMap: {
-            'building_popup': (context, game) {
-              return BuildingPopupOverlay(game: game);
-            },
-            'home_button': (context, game) {
-              return HomeButtonOverlay(game: game);
-            },
-            'lucky_spin': (context, game) {
-              return LuckySpinOverlay(game: game);
-            },
-            'minigames_overlay': (context, game) {
-              return MiniGamesOverlay(game: game);
-            },
+        body: Stack(
+          children: [
+            GameWidget<TiledGame>.controlled(
+              gameFactory: TiledGame.new,
+              overlayBuilderMap: {
+                'building_popup': (context, game) {
+                  return BuildingPopupOverlay(game: game);
+                },
+                'home_button': (context, game) {
+                  return HomeButtonOverlay(game: game);
+                },
+                'lucky_spin': (context, game) {
+                  return LuckySpinOverlay(game: game);
+                },
+                'minigames_overlay': (context, game) {
+                  return MiniGamesOverlay(game: game);
+                },
 
-            'learn_alphabets': (context, game) {
-              return LearnAlphabetsOverlay(game: game);
-            },
-            'learn_numbers': (context, game) {
-              return LearnNumbersOverlay(game: game);
-            },
-            'learn_animals': (context, game) {
-              return LearnAnimalsOverlay(game: game);
-            },
-            'shape_sorting': (context, game) {
-              return ShapeSortingOverlay(game: game);
-            },
-            'image_selection_overlay': (context, TiledGame game) =>
-                ImageSelectionOverlay(game: game),
-            'coloring_page_overlay': (context, TiledGame game) =>
-                ColoringPageOverlay(game: game),
-            'garden_cleaning': (context, game) {
-              return GardenCleaningOverlay(game: game);
-            },
-            'pop_balloon': (context, game) {
-              return PopBalloonOverlay(game: game);
-            },
-            'number_memory': (context, game) {
-              return NumberMemoryOverlay(game: game);
-            },
-            'counting_fun': (context, game) {
-              return CountingFunOverlay(game: game);
-            },
-            'pattern_recognition': (context, game) {
-              return PatternRecognitionOverlay(game: game);
-            },
-            'color_matching': (context, game) {
-              return ColorMatchingOverlay(game: game);
-            },
-            'simple_math': (context, game) {
-              return SimpleMathOverlay(game: game);
-            },
-          },
+                'learn_alphabets': (context, game) {
+                  return LearnAlphabetsOverlay(game: game);
+                },
+                'learn_numbers': (context, game) {
+                  return LearnNumbersOverlay(game: game);
+                },
+                'learn_animals': (context, game) {
+                  return LearnAnimalsOverlay(game: game);
+                },
+                'shape_sorting': (context, game) {
+                  return ShapeSortingOverlay(game: game);
+                },
+                'image_selection_overlay': (context, TiledGame game) =>
+                    ImageSelectionOverlay(game: game),
+                'coloring_page_overlay': (context, TiledGame game) =>
+                    ColoringPageOverlay(game: game),
+                'garden_cleaning': (context, game) {
+                  return GardenCleaningOverlay(game: game);
+                },
+                'pop_balloon': (context, game) {
+                  return PopBalloonOverlay(game: game);
+                },
+                'number_memory': (context, game) {
+                  return NumberMemoryOverlay(game: game);
+                },
+                'counting_fun': (context, game) {
+                  return CountingFunOverlay(game: game);
+                },
+                'pattern_recognition': (context, game) {
+                  return PatternRecognitionOverlay(game: game);
+                },
+                'color_matching': (context, game) {
+                  return ColorMatchingOverlay(game: game);
+                },
+                'simple_math': (context, game) {
+                  return SimpleMathOverlay(game: game);
+                },
+                'animal_quiz': (context, game) {
+                  return AnimalQuizOverlay(game: game);
+                },
+
+              },
+            ),
+
+            Get.find<CoinController>().buildCoinPopup(),
+          ],
         ),
       ),
     );

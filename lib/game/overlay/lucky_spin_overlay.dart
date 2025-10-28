@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kids_game/game/my_game.dart';
 
+import '../../controllers/coin_controller.dart';
 import '../../controllers/lucky_spin_controller.dart';
 
 class LuckySpinOverlay extends StatelessWidget {
@@ -42,15 +43,16 @@ class LuckySpinOverlay extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: isTablet ? 60 : 40),
-
-                // Wheel container
-                _buildWheelContainer(controller, isTablet),
-
-                // Spin button
-                _buildSpinButton(controller, isTablet),
-
-                SizedBox(height: isTablet ? 20 : 15),
+                Text('Coming Soon...',style: TextStyle(fontSize: 26,color: Colors.white,fontFamily: 'AkayaKanadaka'),)
+                // SizedBox(height: isTablet ? 60 : 40),
+                //
+                // // Wheel container
+                // _buildWheelContainer(controller, isTablet),
+                //
+                // // Spin button
+                // _buildSpinButton(controller, isTablet),
+                //
+                // SizedBox(height: isTablet ? 20 : 15),
               ],
             ),
           ),
@@ -84,6 +86,7 @@ class LuckySpinOverlay extends StatelessWidget {
   }
 
   Widget _buildTopUI(LuckySpinController controller, bool isTablet, TiledGame game) {
+    final coinController = Get.find<CoinController>();
     return SafeArea(
       child: Stack(
         children: [
@@ -98,19 +101,7 @@ class LuckySpinOverlay extends StatelessWidget {
                 game.overlays.remove('lucky_spin');
                 // Don't add minigames_overlay here - just go back to building popup
               },
-              child: Container(
-                padding: EdgeInsets.all(isTablet ? 12 : 8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(color: Colors.white.withOpacity(0.3)),
-                ),
-                child: Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: isTablet ? 30 : 24,
-                ),
-              ),
+              child: Image.asset('assets/images/back_btn.png'),
             ),
           ),
 
@@ -152,7 +143,7 @@ class LuckySpinOverlay extends StatelessWidget {
                   ),
                   SizedBox(width: isTablet ? 10 : 8),
                   Text(
-                    '${controller.playerCoins.value}',
+                    '${coinController.coins.value}',
                     style: TextStyle(
                       fontFamily: 'AkayaKanadaka',
                       fontSize: isTablet ? 20 : 16,

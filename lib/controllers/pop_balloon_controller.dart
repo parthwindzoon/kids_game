@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flame_audio/flame_audio.dart';
 
+import 'coin_controller.dart';
+
 class PopBalloonController extends GetxController with GetSingleTickerProviderStateMixin {
   // Game state
   final RxInt score = 0.obs;
@@ -223,6 +225,10 @@ class PopBalloonController extends GetxController with GetSingleTickerProviderSt
   void _showCompletionPopup() {
     showCompletionPopup.value = true;
     _animatePopupIn();
+
+    // Award coins
+    final coinController = Get.find<CoinController>();
+    coinController.addCoins(5);
   }
 
   void _animatePopupIn() {

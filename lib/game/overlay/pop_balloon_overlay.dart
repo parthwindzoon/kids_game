@@ -31,20 +31,73 @@ class PopBalloonOverlay extends StatelessWidget {
         children: [
           // Main Game Area - Balloons
           Positioned.fill(
-            child: Obx(() => Stack(
-              children: controller.balloons.map((balloon) {
-                if (balloon.isPopped) {
-                  return const SizedBox.shrink();
-                }
+            child: Obx(
+              () => Stack(
+                children: controller.balloons.map((balloon) {
+                  if (balloon.isPopped) {
+                    return const SizedBox.shrink();
+                  }
 
-                return AnimatedPositioned(
-                  duration: const Duration(milliseconds: 100),
-                  left: balloon.x,
-                  top: balloon.currentY,
-                  child: _buildBalloon(balloon, controller, isTablet),
-                );
-              }).toList(),
-            )),
+                  return AnimatedPositioned(
+                    duration: const Duration(milliseconds: 100),
+                    left: balloon.x,
+                    top: balloon.currentY,
+                    child: _buildBalloon(balloon, controller, isTablet),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+
+          Positioned(
+            top: isTablet ? 20 : 10,
+            right: isTablet ? 20 : 10,
+            child: // Score Display
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Obx(
+                  () => Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20 : 15,
+                      vertical: isTablet ? 12 : 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4CAF50),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.star,
+                          color: Colors.yellow,
+                          size: isTablet ? 28 : 22,
+                        ),
+                        SizedBox(width: isTablet ? 8 : 5),
+                        Text(
+                          'Score: ${controller.score.value}',
+                          style: TextStyle(
+                            fontFamily: 'AkayaKanadaka',
+                            fontSize: isTablet ? 24 : 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
 
           // Top UI - Title, Task, and Score
@@ -106,97 +159,50 @@ class PopBalloonOverlay extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: isTablet ? 20 : 15),
+          SizedBox(height: isTablet ? 10 : 5),
 
           // Task Description
-          Obx(() => Container(
-            margin: EdgeInsets.symmetric(horizontal: isTablet ? 40 : 20),
-            padding: EdgeInsets.symmetric(
-              horizontal: isTablet ? 25 : 20,
-              vertical: isTablet ? 15 : 12,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(25),
-              border: Border.all(
-                color: const Color(0xFFFFA500),
-                width: 3,
+          Obx(
+            () => Container(
+              margin: EdgeInsets.symmetric(horizontal: isTablet ? 40 : 20),
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 25 : 20,
+                vertical: isTablet ? 8 : 5,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Text(
-              controller.currentTask.value,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'AkayaKanadaka',
-                fontSize: isTablet ? 24 : 18,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF2E7D32),
-              ),
-            ),
-          )),
-
-          SizedBox(height: isTablet ? 15 : 10),
-
-          // Score Display
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Obx(() => Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 20 : 15,
-                  vertical: isTablet ? 12 : 10,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 3,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: const Color(0xFFFFA500), width: 3),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                ],
+              ),
+              child: Text(
+                controller.currentTask.value,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'AkayaKanadaka',
+                  fontSize: isTablet ? 24 : 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF2E7D32),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.star,
-                      color: Colors.yellow,
-                      size: isTablet ? 28 : 22,
-                    ),
-                    SizedBox(width: isTablet ? 8 : 5),
-                    Text(
-                      'Score: ${controller.score.value}',
-                      style: TextStyle(
-                        fontFamily: 'AkayaKanadaka',
-                        fontSize: isTablet ? 24 : 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              )),
-            ],
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBalloon(BalloonData balloon, PopBalloonController controller, bool isTablet) {
+  Widget _buildBalloon(
+    BalloonData balloon,
+    PopBalloonController controller,
+    bool isTablet,
+  ) {
     final balloonSize = isTablet ? 100.0 : 75.0; // Made smaller as requested
 
     return GestureDetector(
@@ -229,15 +235,15 @@ class PopBalloonOverlay extends StatelessWidget {
               child: Container(
                 width: balloonSize * 0.6,
                 height: balloonSize * 0.6,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                ),
+                decoration: const BoxDecoration(shape: BoxShape.circle),
                 child: Center(
                   child: Text(
                     balloon.letter,
                     style: TextStyle(
                       fontFamily: 'AkayaKanadaka',
-                      fontSize: isTablet ? 28 : 20, // Adjusted for smaller balloons
+                      fontSize: isTablet
+                          ? 28
+                          : 20, // Adjusted for smaller balloons
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       shadows: [
@@ -275,10 +281,7 @@ class PopBalloonOverlay extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white,
-          width: 3,
-        ),
+        border: Border.all(color: Colors.white, width: 3),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
@@ -291,10 +294,10 @@ class PopBalloonOverlay extends StatelessWidget {
   }
 
   Widget _buildCompletionPopup(
-      PopBalloonController controller,
-      bool isTablet,
-      TiledGame game,
-      ) {
+    PopBalloonController controller,
+    bool isTablet,
+    TiledGame game,
+  ) {
     return Obx(() {
       final scale = controller.popupScale.value;
       final opacity = controller.popupOpacity.value;

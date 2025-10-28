@@ -452,6 +452,9 @@ class MiniGamesController extends GetxController
       case 'Color Matching':
         game.overlays.add('color_matching');
         break;
+      case 'Animal Quiz':
+        game.overlays.add('animal_quiz');
+        break;
       default:
         print('Mini-game not implemented yet: $gameName');
         game.overlays.add('minigames_overlay');

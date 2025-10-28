@@ -6,12 +6,16 @@ import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'components/player.dart';
+import 'components/companion_component.dart';
+import '../controllers/companion_controller.dart';
 
 class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandlerComponents {
   late TiledComponent mapComponent;
   late Player player;
   late JoystickComponent joystick;
+  CompanionComponent? companion; // Companion component
 
   String? currentBuildingName;
   bool overlayManuallyClosed = false; // Track if user closed the overlay
@@ -24,6 +28,11 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+
+    // Initialize companion controller
+    if (!Get.isRegistered<CompanionController>()) {
+      Get.put(CompanionController());
+    }
 
     // Pre-load overlay assets for better performance
     await images.loadAll([
@@ -51,12 +60,33 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     player.priority = 100;
     world.add(player);
 
+    // Add companion after player is loaded
+    _loadCompanion(spawnPoint);
+
     camera.viewport.add(joystick);
 
     camera.viewfinder.zoom = 1.0;
     camera.follow(player);
 
     _setupCameraBounds();
+  }
+
+  Future<void> _loadCompanion(Vector2 spawnPoint) async {
+    final companionController = Get.find<CompanionController>();
+    final currentCompanion = companionController.getCurrentCompanion();
+
+    if (currentCompanion != null) {
+      // Spawn companion at SAME position as player (they start together)
+      final companionSpawnPoint = spawnPoint.clone();
+
+      companion = CompanionComponent(
+        player: player,
+        position: companionSpawnPoint,
+      );
+
+      world.add(companion!);
+      print('✅ Companion loaded: ${currentCompanion.name}');
+    }
   }
 
   Vector2 _getPlayerSpawnPoint() {

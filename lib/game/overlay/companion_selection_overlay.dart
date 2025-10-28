@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kids_game/screens/home/home_controller.dart';
 import 'package:flame/widgets.dart';
-import 'package:flame/sprite.dart';
 import '../../controllers/companion_controller.dart';
 
 class CompanionSelectionOverlay extends StatelessWidget {

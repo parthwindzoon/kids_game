@@ -303,7 +303,7 @@ class MiniGamesController extends GetxController
     'Zoo': [
       MiniGame('Learn Animals', 'Learn Animals.png', false),
       MiniGame('Animal Quiz', 'Animal Quiz.png', false),
-      MiniGame('Animal Sounds', 'Animals with Sounds.png', false),
+      // MiniGame('Animal Sounds', 'Animals with Sounds.png', false),
     ],
     'Playground': [
       MiniGame('Pop the Balloon', 'Pop_The_Baloon.png', false),
@@ -421,6 +421,9 @@ class MiniGamesController extends GetxController
         break;
       case 'Learn Numbers':
         game.overlays.add('learn_numbers');
+        break;
+      case 'Learn Animals':
+        game.overlays.add('learn_animals');
         break;
       case 'Simple Math':
         game.overlays.add('simple_math');

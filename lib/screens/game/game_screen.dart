@@ -94,7 +94,6 @@ class GameScreen extends StatelessWidget {
                 'animal_quiz': (context, game) {
                   return AnimalQuizOverlay(game: game);
                 },
-
               },
             ),
 

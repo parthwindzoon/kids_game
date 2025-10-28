@@ -13,19 +13,19 @@ class CompanionComponent extends SpriteAnimationComponent
 
   static const double _companionWidth = 42.0;
   static const double _companionHeight = 42.0;
-  static const double _minDistance = 60.0; // Minimum distance from player
-  static const double _maxDistance = 100.0; // Start following at this distance
-  static const double _followSpeed = 180.0; // Following speed
+  static const double _minDistance = 60.0;
+  static const double _maxDistance = 100.0;
+  static const double _followSpeed = 180.0;
 
   Vector2 velocity = Vector2.zero();
 
   late SpriteAnimation walkAnimation;
 
   String _currentCompanion = 'robo';
+  bool _isLoadingAnimation = false; // Flag to prevent concurrent loads
 
-  // Position history for delayed following
   final List<Vector2> _positionHistory = [];
-  static const int _historySize = 30; // Frames to delay
+  static const int _historySize = 30;
 
   CompanionComponent({
     required this.player,
@@ -54,11 +54,10 @@ class CompanionComponent extends SpriteAnimationComponent
       position: Vector2(_companionWidth * 0.2, _companionHeight * 0.1),
     ));
 
-    // Listen for companion changes
-    ever(companionController.selectedCompanion, (_) async {
-      final newCompanion = companionController.selectedCompanion.value;
-      if (_currentCompanion != newCompanion) {
-        _currentCompanion = newCompanion;
+    // Listen for companion changes with proper async handling
+    ever(companionController.selectedCompanion, (newCompanionId) async {
+      if (_currentCompanion != newCompanionId && !_isLoadingAnimation) {
+        _currentCompanion = newCompanionId;
         await _loadAnimation();
       }
     });
@@ -70,44 +69,82 @@ class CompanionComponent extends SpriteAnimationComponent
   }
 
   Future<void> _loadAnimation() async {
-    final companionController = Get.find<CompanionController>();
-    final companion = companionController.getCurrentCompanion();
+    if (_isLoadingAnimation) {
+      print('⚠️ Animation already loading, skipping...');
+      return;
+    }
 
-    if (companion == null) return;
+    _isLoadingAnimation = true;
 
-    final sprites = <Sprite>[];
+    try {
+      final companionController = Get.find<CompanionController>();
+      final companion = companionController.getCurrentCompanion();
 
-    // Load all walk frames
-    for (int i = 1; i <= companion.totalFrames; i++) {
-      try {
-        final sprite = await Sprite.load(
-            'companions/${companion.folderName}/walk_$i.png'
-        );
-        sprites.add(sprite);
-      } catch (e) {
-        print('⚠️ Error loading sprite $i for ${companion.folderName}: $e');
-        // Try fallback to robo
-        if (companion.folderName != 'robo') {
-          try {
-            final fallbackSprite = await Sprite.load('companions/robo/walk_$i.png');
-            sprites.add(fallbackSprite);
-          } catch (e2) {
-            print('⚠️ Fallback failed: $e2');
+      if (companion == null) {
+        print('⚠️ No companion found');
+        _isLoadingAnimation = false;
+        return;
+      }
+
+      // Only load if this is still the current companion
+      if (companion.id != _currentCompanion) {
+        print('⚠️ Companion changed during load, aborting');
+        _isLoadingAnimation = false;
+        return;
+      }
+
+      final sprites = <Sprite>[];
+
+      // Load all walk frames
+      for (int i = 1; i <= companion.totalFrames; i++) {
+        // Check if companion changed during loading
+        if (_currentCompanion != companion.id) {
+          print('⚠️ Companion changed during frame loading, aborting');
+          _isLoadingAnimation = false;
+          return;
+        }
+
+        try {
+          final sprite = await Sprite.load(
+              'companions/${companion.folderName}/walk_$i.png'
+          );
+          sprites.add(sprite);
+        } catch (e) {
+          print('⚠️ Error loading sprite $i for ${companion.folderName}: $e');
+          // Try fallback to robo
+          if (companion.folderName != 'robo') {
+            try {
+              final fallbackSprite = await Sprite.load('companions/robo/walk_$i.png');
+              sprites.add(fallbackSprite);
+            } catch (e2) {
+              print('⚠️ Fallback failed: $e2');
+            }
           }
         }
       }
-    }
 
-    if (sprites.isNotEmpty) {
-      walkAnimation = SpriteAnimation.spriteList(
-        sprites,
-        stepTime: 0.08, // Animation speed
-        loop: true,
-      );
-      animation = walkAnimation;
-      print('✅ Loaded ${sprites.length} frames for ${companion.name}');
-    } else {
-      print('❌ No sprites loaded for companion');
+      // Final check before setting animation
+      if (_currentCompanion != companion.id) {
+        print('⚠️ Companion changed after loading, discarding sprites');
+        _isLoadingAnimation = false;
+        return;
+      }
+
+      if (sprites.isNotEmpty) {
+        walkAnimation = SpriteAnimation.spriteList(
+          sprites,
+          stepTime: 0.08,
+          loop: true,
+        );
+        animation = walkAnimation;
+        print('✅ Loaded ${sprites.length} frames for ${companion.name}');
+      } else {
+        print('❌ No sprites loaded for companion');
+      }
+    } catch (e) {
+      print('❌ Error in _loadAnimation: $e');
+    } finally {
+      _isLoadingAnimation = false;
     }
   }
 
@@ -131,7 +168,7 @@ class CompanionComponent extends SpriteAnimationComponent
       final direction = (targetPosition - position);
       final distanceToTarget = direction.length;
 
-      if (distanceToTarget > 5.0) { // Small threshold to avoid jittering
+      if (distanceToTarget > 5.0) {
         // Normalize direction
         direction.normalize();
 
@@ -139,18 +176,16 @@ class CompanionComponent extends SpriteAnimationComponent
         velocity = direction * _followSpeed;
         position += velocity * dt;
 
-        // Face the direction of movement - SAME AS PLAYER
+        // Face the direction of movement
         if (velocity.x > 0.5) {
-          scale.x = -1; // Moving right, face right (flip sprite)
+          scale.x = -1;
         } else if (velocity.x < -0.5) {
-          scale.x = 1; // Moving left, face left (normal)
+          scale.x = 1;
         }
-        // If mostly vertical movement, keep current facing direction
       } else {
         velocity.setZero();
       }
     } else {
-      // Too close to player, stop moving
       velocity.setZero();
     }
 

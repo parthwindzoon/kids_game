@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:kids_game/game/overlay/counting_fun_overlay.dart';
 import 'package:kids_game/game/overlay/number_memory_overlay.dart';
 import 'package:kids_game/game/overlay/simple_math_overlay.dart';
+import 'package:kids_game/game/overlay/pet_shop_overlay.dart';
 import '../../controllers/coin_controller.dart';
 import '../../game/components/building_popup_overlay.dart';
 import '../../game/my_game.dart';
@@ -52,6 +53,9 @@ class GameScreen extends StatelessWidget {
                 },
                 'minigames_overlay': (context, game) {
                   return MiniGamesOverlay(game: game);
+                },
+                'pet_shop': (context, game) {
+                  return PetShopOverlay(game: game);
                 },
 
                 'learn_alphabets': (context, game) {

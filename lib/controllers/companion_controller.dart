@@ -1,12 +1,22 @@
 // lib/controllers/companion_controller.dart
 
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'coin_controller.dart';
 
 class CompanionController extends GetxController {
+  final _storage = GetStorage();
+
   // Current selected companion (default is robo)
   final selectedCompanion = 'robo'.obs;
 
-  // List of available companions - Robo is first
+  // Popup states for pet shop
+  final showPurchasePopup = false.obs;
+  final showInsufficientCoinsPopup = false.obs;
+  final popupScale = 0.0.obs;
+  final popupOpacity = 0.0.obs;
+
+  // List of available companions - Robo is first and unlocked by default
   final List<CompanionData> companions = [
     CompanionData(
       id: 'robo',
@@ -15,6 +25,7 @@ class CompanionController extends GetxController {
       color: 0xFF808080,
       totalFrames: 21,
       displayImageName: 'robo.png',
+      price: 0, // Free companion
     ),
     CompanionData(
       id: 'teddy',
@@ -23,6 +34,7 @@ class CompanionController extends GetxController {
       color: 0xFFD4A574,
       totalFrames: 12,
       displayImageName: 'teddy.png',
+      price: 1000,
     ),
     CompanionData(
       id: 'ducky',
@@ -31,6 +43,7 @@ class CompanionController extends GetxController {
       color: 0xFFFFF4E0,
       totalFrames: 12,
       displayImageName: 'ducky.png',
+      price: 1000,
     ),
     CompanionData(
       id: 'penguin',
@@ -39,6 +52,7 @@ class CompanionController extends GetxController {
       color: 0xFF4A90E2,
       totalFrames: 12,
       displayImageName: 'penguin.png',
+      price: 1000,
     ),
     CompanionData(
       id: 'bear',
@@ -47,12 +61,127 @@ class CompanionController extends GetxController {
       color: 0xFFFFB6C1,
       totalFrames: 12,
       displayImageName: 'bear.png',
+      price: 1000,
     ),
   ];
 
   void selectCompanion(String companionId) {
-    selectedCompanion.value = companionId;
-    update();
+    if (isCompanionUnlocked(companionId)) {
+      selectedCompanion.value = companionId;
+      update();
+      _saveSelectedCompanion();
+    }
+  }
+
+  bool isCompanionUnlocked(String companionId) {
+    if (companionId == 'robo') return true; // Robo is always unlocked
+    return _storage.read('companion_$companionId') ?? false;
+  }
+
+  void unlockCompanion(String companionId) {
+    _storage.write('companion_$companionId', true);
+    print('✅ Companion $companionId unlocked');
+  }
+
+  void purchaseCompanion(String companionId, CoinController coinController) {
+    final companion = companions.firstWhere((c) => c.id == companionId);
+
+    if (isCompanionUnlocked(companionId)) {
+      // Already unlocked, just select it
+      selectCompanion(companionId);
+      return;
+    }
+
+    if (coinController.coins.value >= companion.price) {
+      // Sufficient coins - proceed with purchase
+      coinController.spendCoins(companion.price);
+      unlockCompanion(companionId);
+      selectCompanion(companionId);
+      _showPurchaseSuccessPopup();
+    } else {
+      // Insufficient coins
+      _showInsufficientCoinsPopup();
+    }
+  }
+
+  void _showPurchaseSuccessPopup() {
+    showPurchasePopup.value = true;
+    _animatePopupIn();
+
+    // Auto-hide after 3 seconds
+    Future.delayed(const Duration(milliseconds: 3000), () {
+      if (showPurchasePopup.value) {
+        closePurchasePopup();
+      }
+    });
+  }
+
+  void _showInsufficientCoinsPopup() {
+    showInsufficientCoinsPopup.value = true;
+    _animatePopupIn();
+
+    // Auto-hide after 3 seconds
+    Future.delayed(const Duration(milliseconds: 3000), () {
+      if (showInsufficientCoinsPopup.value) {
+        closeInsufficientCoinsPopup();
+      }
+    });
+  }
+
+  void _animatePopupIn() {
+    popupScale.value = 0.0;
+    popupOpacity.value = 0.0;
+
+    final duration = 400;
+    final steps = 30;
+
+    for (int i = 0; i <= steps; i++) {
+      Future.delayed(Duration(milliseconds: (duration / steps * i).round()), () {
+        if (showPurchasePopup.value || showInsufficientCoinsPopup.value) {
+          final progress = i / steps;
+          // Bounce effect
+          final bounce = progress < 0.5
+              ? 4 * progress * progress * progress
+              : 1 - 4 * (1 - progress) * (1 - progress) * (1 - progress);
+          popupScale.value = bounce * 1.2;
+          popupOpacity.value = progress;
+        }
+      });
+    }
+  }
+
+  void closePurchasePopup() {
+    final duration = 300;
+    final steps = 20;
+
+    for (int i = 0; i <= steps; i++) {
+      Future.delayed(Duration(milliseconds: (duration / steps * i).round()), () {
+        final progress = i / steps;
+        popupScale.value = 1.2 - (0.3 * progress);
+        popupOpacity.value = 1.0 - progress;
+
+        if (i == steps) {
+          showPurchasePopup.value = false;
+        }
+      });
+    }
+  }
+
+  void closeInsufficientCoinsPopup() {
+    final duration = 300;
+    final steps = 20;
+
+    for (int i = 0; i <= steps; i++) {
+      Future.delayed(Duration(milliseconds: (duration / steps * i).round()), () {
+        final progress = i / steps;
+        popupScale.value = 1.2 - (0.3 * progress);
+        popupOpacity.value = 1.0 - progress;
+
+        if (i == steps) {
+          showInsufficientCoinsPopup.value = false;
+        }
+      });
+    }
   }
 
   CompanionData? getCurrentCompanion() {
@@ -65,14 +194,29 @@ class CompanionController extends GetxController {
     );
   }
 
+  void _saveSelectedCompanion() {
+    try {
+      _storage.write('selected_companion', selectedCompanion.value);
+    } catch (e) {
+      print('⚠️ Error saving selected companion: $e');
+    }
+  }
+
+  void _loadSelectedCompanion() {
+    try {
+      final savedCompanion = _storage.read('selected_companion');
+      if (savedCompanion != null && isCompanionUnlocked(savedCompanion)) {
+        selectedCompanion.value = savedCompanion;
+      }
+    } catch (e) {
+      print('⚠️ Error loading selected companion: $e');
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
-    // Load saved companion from local storage (optional)
-    // final savedCompanion = GetStorage().read('selected_companion');
-    // if (savedCompanion != null) {
-    //   selectedCompanion.value = savedCompanion;
-    // }
+    _loadSelectedCompanion();
   }
 }
 
@@ -83,6 +227,7 @@ class CompanionData {
   final int color;
   final int totalFrames;
   final String displayImageName; // Image with frame, companion, and name
+  final int price; // Price in coins
 
   CompanionData({
     required this.id,
@@ -91,6 +236,7 @@ class CompanionData {
     required this.color,
     required this.totalFrames,
     required this.displayImageName,
+    required this.price,
   });
 
   String get animationPath => 'assets/images/companions/$folderName/';

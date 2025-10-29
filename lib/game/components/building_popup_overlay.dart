@@ -77,7 +77,11 @@ class BuildingPopupOverlay extends StatelessWidget {
                         buildingName.toLowerCase().contains('wheel')) {
                       // If it's a casino/spin building, open lucky spin directly
                       game.overlays.add('lucky_spin');
+                    } else if (buildingName.contains('Pet Shop')) {
+                      // If it's a pet shop building, open pet shop
+                      game.overlays.add('pet_shop');
                     } else {
+                      print('i am here!');
                       // For other buildings, open mini games overlay
                       game.overlays.add('minigames_overlay');
                     }

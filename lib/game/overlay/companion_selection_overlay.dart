@@ -56,9 +56,17 @@ class CompanionSelectionOverlay extends StatelessWidget {
                       child: Center(
                         child: Padding(
                           padding: EdgeInsets.all(isTablet ? 60 : 40),
-                          child: _buildCompanionGrid(
-                            controller,
-                            isTablet,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Show unlocked companions
+                              Expanded(
+                                child: _buildUnlockedCompanionGrid(
+                                  controller,
+                                  isTablet,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -114,42 +122,93 @@ class CompanionSelectionOverlay extends StatelessWidget {
     );
   }
 
-  Widget _buildCompanionGrid(
+  Widget _buildUnlockedCompanionGrid(
       CompanionController controller,
       bool isTablet,
       ) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // First Row - 3 companions (Robo, Teddy, Ducky)
-        Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildCompanionOption(controller.companions[0], controller, isTablet),
-              SizedBox(width: isTablet ? 25 : 15),
-              _buildCompanionOption(controller.companions[1], controller, isTablet),
-              SizedBox(width: isTablet ? 25 : 15),
-              _buildCompanionOption(controller.companions[2], controller, isTablet),
-            ],
-          ),
-        ),
+    // Filter only unlocked companions
+    final unlockedCompanions = controller.companions
+        .where((companion) => controller.isCompanionUnlocked(companion.id))
+        .toList();
 
-        SizedBox(height: isTablet ? 30 : 20),
-
-        // Second Row - 2 companions (Penguin, Bear)
-        Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildCompanionOption(controller.companions[3], controller, isTablet),
-              SizedBox(width: isTablet ? 25 : 15),
-              _buildCompanionOption(controller.companions[4], controller, isTablet),
-            ],
+    if (unlockedCompanions.isEmpty) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.pets,
+            size: isTablet ? 80 : 60,
+            color: Colors.grey.shade400,
           ),
-        ),
-      ],
-    );
+          SizedBox(height: isTablet ? 20 : 15),
+          Text(
+            'No companions unlocked yet!',
+            style: TextStyle(
+              fontFamily: 'AkayaKanadaka',
+              fontSize: isTablet ? 24 : 18,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          SizedBox(height: isTablet ? 10 : 8),
+          Text(
+            'Visit the Pet Shop building on the map\nto unlock new companions!',
+            style: TextStyle(
+              fontFamily: 'AkayaKanadaka',
+              fontSize: isTablet ? 16 : 14,
+              color: Colors.grey.shade500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      );
+    }
+
+    // Build grid based on number of unlocked companions
+    if (unlockedCompanions.length <= 3) {
+      // Single row
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: unlockedCompanions
+            .map((companion) => Padding(
+          padding: EdgeInsets.symmetric(horizontal: isTablet ? 12 : 8),
+          child: _buildCompanionOption(companion, controller, isTablet),
+        ))
+            .toList(),
+      );
+    } else {
+      // Multiple rows
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // First row - up to 3 companions
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: unlockedCompanions
+                .take(3)
+                .map((companion) => Padding(
+              padding: EdgeInsets.symmetric(horizontal: isTablet ? 12 : 8),
+              child: _buildCompanionOption(companion, controller, isTablet),
+            ))
+                .toList(),
+          ),
+
+          if (unlockedCompanions.length > 3) ...[
+            SizedBox(height: isTablet ? 30 : 20),
+            // Second row - remaining companions
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: unlockedCompanions
+                  .skip(3)
+                  .map((companion) => Padding(
+                padding: EdgeInsets.symmetric(horizontal: isTablet ? 12 : 8),
+                child: _buildCompanionOption(companion, controller, isTablet),
+              ))
+                  .toList(),
+            ),
+          ],
+        ],
+      );
+    }
   }
 
   Widget _buildCompanionOption(
@@ -157,7 +216,7 @@ class CompanionSelectionOverlay extends StatelessWidget {
       CompanionController controller,
       bool isTablet,
       ) {
-    final optionSize = isTablet ? 200.0 : 140.0;
+    final optionSize = isTablet ? 160.0 : 120.0;
 
     return Obx(() {
       final isSelected = controller.selectedCompanion.value == companion.id;
@@ -170,7 +229,7 @@ class CompanionSelectionOverlay extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           width: optionSize,
-          height: optionSize,
+          height: optionSize + 40, // Extra height for name
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(15),
@@ -188,56 +247,85 @@ class CompanionSelectionOverlay extends StatelessWidget {
               ),
             ],
           ),
-          child: Stack(
+          child: Column(
             children: [
-              Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.all(isTablet ? 10 : 8),
-                child: Image.asset(
-                  companion.displayImagePath,
-                  fit: BoxFit.contain,
-                  gaplessPlayback: true,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Color(companion.color).withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(10),
+              // Main companion area
+              Expanded(
+                child: Stack(
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(isTablet ? 10 : 8),
+                      child: Image.asset(
+                        companion.displayImagePath,
+                        fit: BoxFit.contain,
+                        gaplessPlayback: true,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Color(companion.color).withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.pets,
+                              size: isTablet ? 60 : 40,
+                              color: Color(companion.color),
+                            ),
+                          );
+                        },
                       ),
-                      child: Icon(
-                        Icons.pets,
-                        size: isTablet ? 60 : 40,
-                        color: Color(companion.color),
+                    ),
+
+                    // Selection indicator
+                    if (isSelected)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF4CAF50),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 4,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: isTablet ? 16 : 12,
+                          ),
+                        ),
                       ),
-                    );
-                  },
+                  ],
                 ),
               ),
 
-              // Selection indicator
-              if (isSelected)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF4CAF50),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: isTablet ? 20 : 16,
-                    ),
+              // Companion name
+              Container(
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(15),
+                    bottomRight: Radius.circular(15),
                   ),
                 ),
+                child: Text(
+                  companion.name,
+                  style: TextStyle(
+                    fontFamily: 'AkayaKanadaka',
+                    fontSize: isTablet ? 16 : 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
             ],
           ),
         ),

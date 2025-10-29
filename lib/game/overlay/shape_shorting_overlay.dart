@@ -576,7 +576,7 @@ class ShapeSortingController extends GetxController {
 
     // Award coins
     final coinController = Get.find<CoinController>();
-    coinController.addCoins(5000);
+    coinController.addCoins(5);
   }
 
   void _animatePopupIn() {

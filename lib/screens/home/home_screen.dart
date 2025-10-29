@@ -31,16 +31,6 @@ class HomeScreen extends StatelessWidget {
             ),
             child: Stack(
               children: [
-                // Settings Button (from left)
-                // Obx(() => AnimatedPositioned(
-                //   duration: const Duration(milliseconds: 800),
-                //   curve: Curves.easeOutBack,
-                //   left: controller.showSettings.value
-                //       ? (isTablet ? 40 : 20)
-                //       : -100,
-                //   top: isTablet ? 40 : 20,
-                //   child: _buildSettingsButton(controller, isTablet),
-                // )),
 
                 // Coin Counter (from right)
                 Obx(() => AnimatedPositioned(
@@ -142,16 +132,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Widget _buildSettingsButton(HomeController controller, bool isTablet) {
-  //   return GestureDetector(
-  //     onTap: controller.openSettings,
-  //     child: Image.asset(
-  //       'assets/images/home/settings_btn.png',
-  //       width: isTablet ? 70 : 50,
-  //       height: isTablet ? 70 : 50,
-  //     ),
-  //   );
-  // }
 
   Widget _buildCoinCounter(bool isTablet) {
     final coinController = Get.find<CoinController>();
@@ -171,7 +151,8 @@ class HomeScreen extends StatelessWidget {
 
           // Coin count text
           Positioned(
-            right: isTablet ? 80 : 50,
+            right: isTablet ? 70 : 40,
+            bottom: isTablet ? 20 : 15,
             child: Obx(() => Text(
               '${coinController.coins.value}',
               style: TextStyle(

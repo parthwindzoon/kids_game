@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/character_controller.dart';
 import '../../controllers/companion_controller.dart';
+import '../../controllers/coin_controller.dart';
 
 class HomeController extends GetxController with GetSingleTickerProviderStateMixin {
   // Animation states
@@ -41,6 +42,18 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
     if (!Get.isRegistered<CompanionController>()) {
       Get.put(CompanionController());
     }
+
+    // Initialize coin controller and wait for it to load coins
+    if (!Get.isRegistered<CoinController>()) {
+      Get.put(CoinController());
+    }
+
+    // Ensure coin controller loads data from storage first
+    final coinController = Get.find<CoinController>();
+    // Force a refresh of coin display after controller is ready
+    Future.delayed(const Duration(milliseconds: 500), () {
+      coinController.coins.refresh();
+    });
   }
 
   Future<void> _preloadAllAssets() async {
@@ -101,27 +114,6 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
           }),
         );
       }
-
-      // IMPORTANT: Don't preload ALL companion walk animations on startup
-      // This causes memory issues. Only preload when overlay opens.
-      // Uncomment if you want to preload just the default companion (Robo)
-      /*
-      final defaultCompanion = companionController.getCurrentCompanion();
-      if (defaultCompanion != null) {
-        for (int i = 1; i <= defaultCompanion.totalFrames; i++) {
-          final frameImagePath = '${defaultCompanion.animationPath}walk_$i.png';
-          allPreloadTasks.add(
-            precacheImage(
-              AssetImage(frameImagePath),
-              context,
-            ).catchError((error) {
-              print('⚠️ Failed to preload $frameImagePath: $error');
-              return null;
-            }),
-          );
-        }
-      }
-      */
 
       await Future.wait(allPreloadTasks);
 

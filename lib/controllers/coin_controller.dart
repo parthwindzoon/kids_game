@@ -6,7 +6,7 @@ import 'package:get_storage/get_storage.dart';
 
 class CoinController extends GetxController {
   final RxInt coins = 0.obs;
-  final _storage = GetStorage();
+  late final GetStorage _storage;
 
   // Popup animation states
   final RxBool showCoinPopup = false.obs;
@@ -14,16 +14,45 @@ class CoinController extends GetxController {
   final RxDouble popupOpacity = 0.0.obs;
   final RxInt earnedCoins = 0.obs;
 
+  // Storage key constant
+  static const String _coinsKey = 'player_coins';
+
   @override
   void onInit() {
     super.onInit();
-    _loadCoins();
+    _initializeStorage();
+  }
+
+  Future<void> _initializeStorage() async {
+    try {
+      // Initialize storage
+      _storage = GetStorage();
+
+      // Wait for storage to be ready
+      await GetStorage.init();
+
+      // Load coins after storage is ready
+      _loadCoins();
+
+      print('✅ CoinController initialized with ${coins.value} coins');
+    } catch (e) {
+      print('⚠️ Error initializing storage: $e');
+      coins.value = 0;
+    }
   }
 
   void _loadCoins() {
     try {
-      coins.value = _storage.read('player_coins') ?? 0;
-      print('✅ Loaded coins: ${coins.value}');
+      final savedCoins = _storage.read(_coinsKey);
+      if (savedCoins != null) {
+        coins.value = savedCoins;
+        print('✅ Loaded coins from storage: ${coins.value}');
+      } else {
+        coins.value = 0;
+        print('ℹ️ No coins found in storage, starting with 0');
+        // Save initial value
+        _saveCoins();
+      }
     } catch (e) {
       print('⚠️ Error loading coins: $e');
       coins.value = 0;
@@ -45,12 +74,15 @@ class CoinController extends GetxController {
       coins.value -= amount;
       await _saveCoins();
       print('💸 Spent $amount coins. Remaining: ${coins.value}');
+    } else {
+      print('⚠️ Insufficient coins. Have: ${coins.value}, Need: $amount');
     }
   }
 
   Future<void> _saveCoins() async {
     try {
-      await _storage.write('player_coins', coins.value);
+      await _storage.write(_coinsKey, coins.value);
+      print('💾 Saved coins to storage: ${coins.value}');
     } catch (e) {
       print('⚠️ Error saving coins: $e');
     }
@@ -61,7 +93,7 @@ class CoinController extends GetxController {
     _animatePopupIn();
 
     // Auto hide after 2 seconds
-    Future.delayed(const Duration(milliseconds: 5000), () {
+    Future.delayed(const Duration(milliseconds: 2000), () {
       _animatePopupOut();
     });
   }
@@ -263,19 +295,6 @@ class _CoinRewardPopup extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              // SizedBox(width: isTablet ? 10 : 8),
-                              // Icon(
-                              //   Icons.monetization_on,
-                              //   color: Colors.white,
-                              //   size: isTablet ? 32 : 28,
-                              //   shadows: [
-                              //     Shadow(
-                              //       offset: const Offset(2, 2),
-                              //       blurRadius: 4,
-                              //       color: Colors.black.withOpacity(0.5),
-                              //     ),
-                              //   ],
-                              // ),
                             ],
                           ),
                         ],

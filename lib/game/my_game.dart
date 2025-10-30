@@ -84,6 +84,8 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
         position: companionSpawnPoint,
       );
 
+      companion!.priority = 99;
+
       world.add(companion!);
       print('✅ Companion loaded: ${currentCompanion.name}');
     }

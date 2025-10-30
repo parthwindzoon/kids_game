@@ -23,8 +23,8 @@ class CompanionController extends GetxController {
       name: 'Robo',
       folderName: 'robo',
       color: 0xFF808080,
-      totalFrames: 21,
-      idleFrames: 21, // NEW: Robo has 21 idle frames
+      totalFrames: 9,
+      idleFrames: 9, // NEW: Robo has 21 idle frames
       displayImageName: 'robo.png',
       price: 0, // Free companion
     ),

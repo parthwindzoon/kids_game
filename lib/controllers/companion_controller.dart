@@ -16,7 +16,7 @@ class CompanionController extends GetxController {
   final popupScale = 0.0.obs;
   final popupOpacity = 0.0.obs;
 
-  // List of available companions - Robo is first and unlocked by default
+  // List of available companions - Updated with idle frames
   final List<CompanionData> companions = [
     CompanionData(
       id: 'robo',
@@ -24,6 +24,7 @@ class CompanionController extends GetxController {
       folderName: 'robo',
       color: 0xFF808080,
       totalFrames: 21,
+      idleFrames: 21, // NEW: Robo has 21 idle frames
       displayImageName: 'robo.png',
       price: 0, // Free companion
     ),
@@ -33,6 +34,7 @@ class CompanionController extends GetxController {
       folderName: 'teddy',
       color: 0xFFD4A574,
       totalFrames: 12,
+      idleFrames: 12, // NEW: Teddy has 12 idle frames
       displayImageName: 'teddy.png',
       price: 1000,
     ),
@@ -42,6 +44,7 @@ class CompanionController extends GetxController {
       folderName: 'ducky',
       color: 0xFFFFF4E0,
       totalFrames: 12,
+      idleFrames: 12, // NEW: Ducky has 12 idle frames
       displayImageName: 'ducky.png',
       price: 1000,
     ),
@@ -51,6 +54,7 @@ class CompanionController extends GetxController {
       folderName: 'penguin',
       color: 0xFF4A90E2,
       totalFrames: 12,
+      idleFrames: 12, // NEW: Penguin has 12 idle frames
       displayImageName: 'penguin.png',
       price: 1000,
     ),
@@ -60,10 +64,13 @@ class CompanionController extends GetxController {
       folderName: 'bear',
       color: 0xFFFFB6C1,
       totalFrames: 12,
+      idleFrames: 12, // NEW: Bear has 12 idle frames
       displayImageName: 'bear.png',
       price: 1000,
     ),
   ];
+
+  // ... rest of the controller methods remain the same ...
 
   void selectCompanion(String companionId) {
     if (isCompanionUnlocked(companionId)) {
@@ -87,19 +94,16 @@ class CompanionController extends GetxController {
     final companion = companions.firstWhere((c) => c.id == companionId);
 
     if (isCompanionUnlocked(companionId)) {
-      // Already unlocked, just select it
       selectCompanion(companionId);
       return;
     }
 
     if (coinController.coins.value >= companion.price) {
-      // Sufficient coins - proceed with purchase
       coinController.spendCoins(companion.price);
       unlockCompanion(companionId);
       selectCompanion(companionId);
       _showPurchaseSuccessPopup();
     } else {
-      // Insufficient coins
       _showInsufficientCoinsPopup();
     }
   }
@@ -108,7 +112,6 @@ class CompanionController extends GetxController {
     showPurchasePopup.value = true;
     _animatePopupIn();
 
-    // Auto-hide after 3 seconds
     Future.delayed(const Duration(milliseconds: 3000), () {
       if (showPurchasePopup.value) {
         closePurchasePopup();
@@ -120,7 +123,6 @@ class CompanionController extends GetxController {
     showInsufficientCoinsPopup.value = true;
     _animatePopupIn();
 
-    // Auto-hide after 3 seconds
     Future.delayed(const Duration(milliseconds: 3000), () {
       if (showInsufficientCoinsPopup.value) {
         closeInsufficientCoinsPopup();
@@ -139,7 +141,6 @@ class CompanionController extends GetxController {
       Future.delayed(Duration(milliseconds: (duration / steps * i).round()), () {
         if (showPurchasePopup.value || showInsufficientCoinsPopup.value) {
           final progress = i / steps;
-          // Bounce effect
           final bounce = progress < 0.5
               ? 4 * progress * progress * progress
               : 1 - 4 * (1 - progress) * (1 - progress) * (1 - progress);
@@ -186,7 +187,7 @@ class CompanionController extends GetxController {
 
   CompanionData? getCurrentCompanion() {
     if (selectedCompanion.value.isEmpty) {
-      return companions[0]; // Return robo as default
+      return companions[0];
     }
     return companions.firstWhere(
           (comp) => comp.id == selectedCompanion.value,
@@ -225,9 +226,10 @@ class CompanionData {
   final String name;
   final String folderName;
   final int color;
-  final int totalFrames;
-  final String displayImageName; // Image with frame, companion, and name
-  final int price; // Price in coins
+  final int totalFrames; // Walk animation frames
+  final int idleFrames;  // NEW: Idle animation frames
+  final String displayImageName;
+  final int price;
 
   CompanionData({
     required this.id,
@@ -235,6 +237,7 @@ class CompanionData {
     required this.folderName,
     required this.color,
     required this.totalFrames,
+    required this.idleFrames, // NEW: Required parameter
     required this.displayImageName,
     required this.price,
   });

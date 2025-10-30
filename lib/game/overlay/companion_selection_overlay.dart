@@ -37,7 +37,7 @@ class CompanionSelectionOverlay extends StatelessWidget {
                   // Main Content
                   Center(
                     child: Container(
-                      width: size.width * 0.80,
+                      width: size.width * 0.85,
                       height: size.height * 0.70,
                       decoration: BoxDecoration(
                         image: const DecorationImage(
@@ -59,9 +59,9 @@ class CompanionSelectionOverlay extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Show unlocked companions
+                              // Show unlocked companions in scrollable row
                               Expanded(
-                                child: _buildUnlockedCompanionGrid(
+                                child: _buildUnlockedCompanionRow(
                                   controller,
                                   isTablet,
                                 ),
@@ -122,7 +122,7 @@ class CompanionSelectionOverlay extends StatelessWidget {
     );
   }
 
-  Widget _buildUnlockedCompanionGrid(
+  Widget _buildUnlockedCompanionRow(
       CompanionController controller,
       bool isTablet,
       ) {
@@ -163,52 +163,20 @@ class CompanionSelectionOverlay extends StatelessWidget {
       );
     }
 
-    // Build grid based on number of unlocked companions
-    if (unlockedCompanions.length <= 3) {
-      // Single row
-      return Row(
+    // Scrollable horizontal row of companions
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: isTablet ? 20 : 15),
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: unlockedCompanions
             .map((companion) => Padding(
-          padding: EdgeInsets.symmetric(horizontal: isTablet ? 12 : 8),
+          padding: EdgeInsets.symmetric(horizontal: isTablet ? 15 : 10),
           child: _buildCompanionOption(companion, controller, isTablet),
         ))
             .toList(),
-      );
-    } else {
-      // Multiple rows
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // First row - up to 3 companions
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: unlockedCompanions
-                .take(3)
-                .map((companion) => Padding(
-              padding: EdgeInsets.symmetric(horizontal: isTablet ? 12 : 8),
-              child: _buildCompanionOption(companion, controller, isTablet),
-            ))
-                .toList(),
-          ),
-
-          if (unlockedCompanions.length > 3) ...[
-            SizedBox(height: isTablet ? 30 : 20),
-            // Second row - remaining companions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: unlockedCompanions
-                  .skip(3)
-                  .map((companion) => Padding(
-                padding: EdgeInsets.symmetric(horizontal: isTablet ? 12 : 8),
-                child: _buildCompanionOption(companion, controller, isTablet),
-              ))
-                  .toList(),
-            ),
-          ],
-        ],
-      );
-    }
+      ),
+    );
   }
 
   Widget _buildCompanionOption(
@@ -216,7 +184,7 @@ class CompanionSelectionOverlay extends StatelessWidget {
       CompanionController controller,
       bool isTablet,
       ) {
-    final optionSize = isTablet ? 160.0 : 120.0;
+    final optionSize = isTablet ? 180.0 : 140.0;
 
     return Obx(() {
       final isSelected = controller.selectedCompanion.value == companion.id;
@@ -229,10 +197,10 @@ class CompanionSelectionOverlay extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           width: optionSize,
-          height: optionSize + 40, // Extra height for name
+          height: optionSize + 50, // Extra height for name
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade300,
               width: isSelected ? 4 : 2,
@@ -255,7 +223,7 @@ class CompanionSelectionOverlay extends StatelessWidget {
                   children: [
                     Container(
                       alignment: Alignment.center,
-                      padding: EdgeInsets.all(isTablet ? 10 : 8),
+                      padding: EdgeInsets.all(isTablet ? 15 : 10),
                       child: Image.asset(
                         companion.displayImagePath,
                         fit: BoxFit.contain,
@@ -268,7 +236,7 @@ class CompanionSelectionOverlay extends StatelessWidget {
                             ),
                             child: Icon(
                               Icons.pets,
-                              size: isTablet ? 60 : 40,
+                              size: isTablet ? 70 : 50,
                               color: Color(companion.color),
                             ),
                           );
@@ -297,7 +265,7 @@ class CompanionSelectionOverlay extends StatelessWidget {
                           child: Icon(
                             Icons.check,
                             color: Colors.white,
-                            size: isTablet ? 16 : 12,
+                            size: isTablet ? 18 : 14,
                           ),
                         ),
                       ),
@@ -307,20 +275,20 @@ class CompanionSelectionOverlay extends StatelessWidget {
 
               // Companion name
               Container(
-                height: 40,
+                height: 50,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade50,
                   borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(15),
-                    bottomRight: Radius.circular(15),
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
                   ),
                 ),
                 child: Text(
                   companion.name,
                   style: TextStyle(
                     fontFamily: 'AkayaKanadaka',
-                    fontSize: isTablet ? 16 : 12,
+                    fontSize: isTablet ? 18 : 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),

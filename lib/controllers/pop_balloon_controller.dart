@@ -1,5 +1,6 @@
 // lib/game/overlay/pop_balloon_controller.dart
 
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -144,27 +145,37 @@ class PopBalloonController extends GetxController with GetSingleTickerProviderSt
     }
   }
 
+  Timer? _balloonAnimationTimer;
+
   void _startBalloonAnimation() {
     animationController.repeat();
 
-    // Update balloon positions for floating effect
-    void updateBalloons() {
-      if (isClosed || isGameComplete.value) return;
-
-      final currentTime = DateTime.now().millisecondsSinceEpoch / 1000.0;
-
-      for (var balloon in balloons) {
-        if (!balloon.isPopped) {
-          balloon.currentY = balloon.y +
-              sin(currentTime * balloon.floatingSpeed + balloon.floatingOffset) * 15;
+    _balloonAnimationTimer?.cancel();
+    _balloonAnimationTimer = Timer.periodic(
+      const Duration(milliseconds: 50),
+          (timer) {
+        if (isClosed || isGameComplete.value) {
+          timer.cancel();
+          return;
         }
-      }
-      balloons.refresh();
 
-      Future.delayed(const Duration(milliseconds: 50), updateBalloons);
-    }
+        final currentTime = DateTime.now().millisecondsSinceEpoch / 1000.0;
+        for (var balloon in balloons) {
+          if (!balloon.isPopped) {
+            balloon.currentY = balloon.y +
+                sin(currentTime * balloon.floatingSpeed + balloon.floatingOffset) * 15;
+          }
+        }
+        balloons.refresh();
+      },
+    );
+  }
 
-    updateBalloons();
+  @override
+  void onClose() {
+    _balloonAnimationTimer?.cancel();
+    animationController.dispose();
+    super.onClose();
   }
 
   void popBalloon(String balloonId) async {
@@ -274,12 +285,6 @@ class PopBalloonController extends GetxController with GetSingleTickerProviderSt
     _generateNewTask();
     _generateBalloons();
     _startBalloonAnimation();
-  }
-
-  @override
-  void onClose() {
-    animationController.dispose();
-    super.onClose();
   }
 }
 

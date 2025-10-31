@@ -1,5 +1,7 @@
 // lib/controllers/coin_controller.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -27,9 +29,6 @@ class CoinController extends GetxController {
     try {
       // Initialize storage
       _storage = GetStorage();
-
-      // Wait for storage to be ready
-      await GetStorage.init();
 
       // Load coins after storage is ready
       _loadCoins();
@@ -98,7 +97,10 @@ class CoinController extends GetxController {
     });
   }
 
+  final List<Timer> _activeTimers = [];
+
   void _animatePopupIn() {
+    _cancelAllTimers();
     popupScale.value = 0.0;
     popupOpacity.value = 0.0;
 
@@ -106,18 +108,34 @@ class CoinController extends GetxController {
     final steps = 30;
 
     for (int i = 0; i <= steps; i++) {
-      Future.delayed(Duration(milliseconds: (duration / steps * i).round()), () {
-        if (showCoinPopup.value) {
-          final progress = i / steps;
-          // Bounce effect
-          final bounce = progress < 0.5
-              ? 4 * progress * progress * progress
-              : 1 - 4 * (1 - progress) * (1 - progress) * (1 - progress);
-          popupScale.value = bounce * 1.2;
-          popupOpacity.value = progress;
-        }
-      });
+      final timer = Timer(
+        Duration(milliseconds: (duration ~/ steps * i)),
+            () {
+          if (!isClosed && showCoinPopup.value) {
+            final progress = i / steps;
+            final bounce = progress < 0.5
+                ? 4 * progress * progress * progress
+                : 1 - 4 * (1 - progress) * (1 - progress) * (1 - progress);
+            popupScale.value = bounce * 1.2;
+            popupOpacity.value = progress;
+          }
+        },
+      );
+      _activeTimers.add(timer);
     }
+  }
+
+  void _cancelAllTimers() {
+    for (final timer in _activeTimers) {
+      timer.cancel();
+    }
+    _activeTimers.clear();
+  }
+
+  @override
+  void onClose() {
+    _cancelAllTimers();
+    super.onClose();
   }
 
   void _animatePopupOut() {

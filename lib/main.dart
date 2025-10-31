@@ -8,9 +8,9 @@ import 'controllers/coin_controller.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/game/game_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  GetStorage.init();
+  await GetStorage.init();
 
   // Initialize controllers
   Get.put(CharacterController());

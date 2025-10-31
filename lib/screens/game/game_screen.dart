@@ -25,22 +25,69 @@ import '../../game/overlay/pattern_recognition_overlay.dart';
 import '../../game/overlay/pop_balloon_overlay.dart';
 import '../../game/overlay/shape_shorting_overlay.dart';
 
-class GameScreen extends StatelessWidget {
+// ✅ FIX 1: Convert to StatefulWidget for proper lifecycle management
+class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
 
   @override
+  State<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends State<GameScreen> {
+  late final TiledGame _game;
+  bool _isGameInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeGame();
+  }
+
+  void _initializeGame() {
+    try {
+      _game = TiledGame();
+      _isGameInitialized = true;
+    } catch (e) {
+      print('❌ Error initializing game: $e');
+      _isGameInitialized = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    // ✅✅✅ THIS IS THE FIX ✅✅✅
+    // Call onRemove() to destroy the game and all its components.
+    if (_isGameInitialized) {
+      _game.onRemove();
+      print('🔥 GameScreen dispose: Called _game.onRemove()');
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        // Navigate back to home screen
-        Get.back();
-        return false;
+    if (!_isGameInitialized) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    // ✅ FIX 3: Use PopScope instead of deprecated WillPopScope
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          // Navigate back to home screen
+          Get.back();
+        }
       },
       child: Scaffold(
         body: Stack(
           children: [
-            GameWidget<TiledGame>.controlled(
-              gameFactory: TiledGame.new,
+            GameWidget<TiledGame>(
+              game: _game,
               overlayBuilderMap: {
                 'building_popup': (context, game) {
                   return BuildingPopupOverlay(game: game);
@@ -101,7 +148,9 @@ class GameScreen extends StatelessWidget {
               },
             ),
 
-            Get.find<CoinController>().buildCoinPopup(),
+            // Coin popup overlay
+            if (Get.isRegistered<CoinController>())
+              Get.find<CoinController>().buildCoinPopup(),
           ],
         ),
       ),

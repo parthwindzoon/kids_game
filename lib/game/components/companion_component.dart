@@ -1,7 +1,10 @@
 // lib/game/components/companion_component.dart
+// FIXED: Cache clearing moved to onRemove() to match component lifecycle
 
+import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kids_game/game/my_game.dart';
 import '../../controllers/companion_controller.dart';
@@ -19,14 +22,16 @@ class CompanionComponent extends SpriteAnimationComponent
 
   Vector2 velocity = Vector2.zero();
 
-  // NEW: Separate animations for idle and walk
   late SpriteAnimation idleAnimation;
   late SpriteAnimation walkAnimation;
 
   String _currentCompanion = 'robo';
   bool _isLoadingAnimation = false;
   bool _isDisposed = false;
-  bool _isMoving = false; // NEW: Track movement state
+  bool _isMoving = false;
+  bool _animationsLoaded = false;
+
+  late CompanionController _companionController;
 
   final List<Vector2> _positionHistory = [];
   static const int _historySize = 30;
@@ -46,12 +51,21 @@ class CompanionComponent extends SpriteAnimationComponent
     priority = 99;
 
     try {
-      final companionController = Get.find<CompanionController>();
-      final companion = companionController.getCurrentCompanion();
+      if (!Get.isRegistered<CompanionController>()) {
+        print('⚠️ CompanionController not registered');
+        _currentCompanion = 'robo';
+        await _loadDefaultAnimations();
+        return;
+      }
+
+      _companionController = Get.find<CompanionController>();
+      final companion = _companionController.getCurrentCompanion();
 
       if (companion != null) {
         _currentCompanion = companion.id;
-        await _loadAnimations(); // CHANGED: Load both animations
+        await _loadAnimations();
+      } else {
+        await _loadDefaultAnimations();
       }
 
       add(RectangleHitbox(
@@ -59,187 +73,248 @@ class CompanionComponent extends SpriteAnimationComponent
         position: Vector2(_companionWidth * 0.2, _companionHeight * 0.1),
       ));
 
-      // Initialize position history with player's starting position
       for (int i = 0; i < _historySize; i++) {
         _positionHistory.add(player.position.clone());
       }
+      opacity = 1.0;
+
+      // --- START DEBUG ---
+      print('✅ CompanionComponent loaded successfully for $_currentCompanion');
+      _debugPrintCache("CACHE STATE ON LOAD");
+      // --- END DEBUG ---
+
     } catch (e) {
       print('❌ Error in CompanionComponent onLoad: $e');
       _currentCompanion = 'robo';
+      await _loadDefaultAnimations();
     }
   }
 
-  // NEW: Method to manually update companion when returning from home
-  Future<void> refreshCompanion() async {
+  // Debug method to print cache contents
+  void _debugPrintCache(String title) {
     if (_isDisposed) return;
 
+    // Check if game reference and images cache are available
     try {
-      final companionController = Get.find<CompanionController>();
-      final companion = companionController.getCurrentCompanion();
-
-      if (companion != null && companion.id != _currentCompanion) {
-        print('🔄 Refreshing companion from ${_currentCompanion} to ${companion.id}');
-        _currentCompanion = companion.id;
-        await _loadAnimations(); // CHANGED: Load both animations
+      if (game.images.keys.isEmpty) {
+        print('--- $title (Cache is empty) ---');
+        return;
       }
+
+      print('--- $title (Total Cache Size: ${game.images.keys.length}) ---');
+      final companionAssets = game.images.keys.where((key) => key.contains('companions/'));
+
+      if (companionAssets.isEmpty) {
+        print('No "companions/" assets found in cache.');
+      } else {
+        print('Found ${companionAssets.length} "companions/" assets:');
+        companionAssets.forEach(print);
+      }
+      print('--------------------------------------------------');
     } catch (e) {
-      print('❌ Error refreshing companion: $e');
+      print('--- $title (Error accessing cache: $e) ---');
     }
   }
 
-  // UPDATED: Load both idle and walk animations
-  Future<void> _loadAnimations() async {
-    if (_isLoadingAnimation || _isDisposed) {
-      return;
+  Future<void> _clearOldCompanionAssets(String oldCompanionId) async {
+    print('🧹 Clearing cache for: $oldCompanionId');
+    try {
+      CompanionData? oldCompanionData;
+      try {
+        oldCompanionData = _companionController.companions.firstWhere(
+              (c) => c.id == oldCompanionId,
+        );
+      } catch (e) {
+        oldCompanionData = null;
+      }
+
+      if (oldCompanionData == null) {
+        print('⚠️ Could not find old companion data for $oldCompanionId to clear cache.');
+        return;
+      }
+
+      final imageCache = game.images;
+
+      int clearedIdle = 0;
+      for (int i = 1; i <= oldCompanionData.idleFrames; i++) {
+        final path = 'companions/${oldCompanionData.folderName}/idle_$i.png';
+        if (imageCache.containsKey(path)) {
+          imageCache.clear(path);
+          clearedIdle++;
+        }
+      }
+
+      int clearedWalk = 0;
+      for (int i = 1; i <= oldCompanionData.totalFrames; i++) {
+        final path = 'companions/${oldCompanionData.folderName}/walk_$i.png';
+        if (imageCache.containsKey(path)) {
+          imageCache.clear(path);
+          clearedWalk++;
+        }
+      }
+
+      print('✅ Cache cleared for $oldCompanionId ($clearedIdle idle, $clearedWalk walk frames)');
+
+    } catch (e) {
+      print('❌ Error clearing cache for $oldCompanionId: $e');
     }
+  }
+
+
+  Future<void> _loadAnimations() async {
+    if (_isLoadingAnimation || _isDisposed) return;
 
     _isLoadingAnimation = true;
+    _animationsLoaded = false;
 
     try {
       if (!Get.isRegistered<CompanionController>()) {
-        _isLoadingAnimation = false;
+        await _loadDefaultAnimations();
         return;
       }
 
-      final companionController = Get.find<CompanionController>();
-      final companion = companionController.getCurrentCompanion();
-
-      if (companion == null) {
-        _isLoadingAnimation = false;
-        return;
-      }
+      // Use the new _currentCompanion ID set in onLoad
+      final companion = _companionController.companions.firstWhere(
+              (c) => c.id == _currentCompanion,
+          orElse: () => _companionController.companions[0] // Fallback
+      );
 
       print('🔄 Loading animations for: ${companion.name}');
 
-      // Load idle animation
       await _loadIdleAnimation(companion);
-
-      // Load walk animation
       await _loadWalkAnimation(companion);
 
-      // Set initial animation to idle
-      if (!_isDisposed && mounted == true) {
+      if (!_isDisposed && idleAnimation != null && walkAnimation != null) {
         animation = idleAnimation;
-        print('✅ Both animations loaded successfully for ${companion.name}');
+        opacity = 1.0;
+        _animationsLoaded = true;
+        print('✅ Both animations loaded and ready for ${companion.name}');
       }
-
     } catch (e) {
-      print('❌ Error in _loadAnimations: $e');
+      print('❌ Error loading animations: $e');
+      await _loadDefaultAnimations();
     } finally {
       _isLoadingAnimation = false;
     }
   }
 
-  // NEW: Load idle animation frames
-  Future<void> _loadIdleAnimation(CompanionData companion) async {
-    final idleSprites = <Sprite>[];
-
-    // Use the specific idle frame count for each companion
-    for (int i = 1; i <= companion.idleFrames; i++) {
-      if (_isDisposed) return;
-
-      try {
-        final imagePath = 'companions/${companion.folderName}/idle_$i.png';
-        final sprite = await Sprite.load(imagePath);
-        idleSprites.add(sprite);
-      } catch (e) {
-        print('⚠️ Error loading idle frame $i for ${companion.folderName}: $e');
-
-        // Try fallback to robo
-        if (companion.folderName != 'robo') {
-          try {
-            final fallbackSprite = await Sprite.load('companions/robo/idle_$i.png');
-            idleSprites.add(fallbackSprite);
-          } catch (e2) {
-            print('❌ Idle fallback failed: $e2');
-            continue;
-          }
-        } else {
-          continue;
-        }
+  Future<void> _loadDefaultAnimations() async {
+    if (_isDisposed) return;
+    print('⚠️ Loading default robo animations');
+    _animationsLoaded = false;
+    try {
+      final idleSprites = await _loadSpriteFrames(folder: 'robo', prefix: 'idle', maxFrames: 10);
+      if (idleSprites.isEmpty) idleSprites.add(await _createPlaceholderSprite());
+      final walkSprites = await _loadSpriteFrames(folder: 'robo', prefix: 'walk', maxFrames: 10);
+      if (walkSprites.isEmpty) walkSprites.add(await _createPlaceholderSprite());
+      if (!_isDisposed) {
+        idleAnimation = SpriteAnimation.spriteList(idleSprites, stepTime: 0.1, loop: true);
+        walkAnimation = SpriteAnimation.spriteList(walkSprites, stepTime: 0.08, loop: true);
+        animation = idleAnimation;
+        opacity = 1.0;
+        _animationsLoaded = true;
       }
-    }
-
-    if (idleSprites.isNotEmpty && !_isDisposed) {
-      idleAnimation = SpriteAnimation.spriteList(
-        idleSprites,
-        stepTime: 0.1, // Slower for idle animation
-        loop: true,
-      );
-      print('✅ Idle animation loaded: ${idleSprites.length} frames for ${companion.name}');
+    } catch (e) {
+      print('❌ Error loading defaults: $e');
+      await _createEmergencyAnimation();
     }
   }
 
-  // UPDATED: Load walk animation frames
+  Future<void> _loadIdleAnimation(CompanionData companion) async {
+    final idleSprites = await _loadSpriteFrames(
+      folder: companion.folderName,
+      prefix: 'idle',
+      maxFrames: companion.idleFrames,
+      fallbackFolder: 'robo',
+    );
+    if (idleSprites.isEmpty && !_isDisposed) idleSprites.add(await _createPlaceholderSprite());
+    if (!_isDisposed && idleSprites.isNotEmpty) {
+      idleAnimation = SpriteAnimation.spriteList(idleSprites, stepTime: 0.1, loop: true);
+    }
+  }
+
   Future<void> _loadWalkAnimation(CompanionData companion) async {
-    final walkSprites = <Sprite>[];
+    final walkSprites = await _loadSpriteFrames(
+      folder: companion.folderName,
+      prefix: 'walk',
+      maxFrames: companion.totalFrames,
+      fallbackFolder: 'robo',
+    );
+    if (walkSprites.isEmpty && !_isDisposed) walkSprites.add(await _createPlaceholderSprite());
+    if (!_isDisposed && walkSprites.isNotEmpty) {
+      walkAnimation = SpriteAnimation.spriteList(walkSprites, stepTime: 0.08, loop: true);
+    }
+  }
 
-    for (int i = 1; i <= companion.totalFrames; i++) {
-      if (_isDisposed) return;
-
+  Future<List<Sprite>> _loadSpriteFrames({
+    required String folder,
+    required String prefix,
+    required int maxFrames,
+    String? fallbackFolder,
+  }) async {
+    final sprites = <Sprite>[];
+    for (int i = 1; i <= maxFrames; i++) {
+      if (_isDisposed) break;
       try {
-        final imagePath = 'companions/${companion.folderName}/walk_$i.png';
-        final sprite = await Sprite.load(imagePath);
-        walkSprites.add(sprite);
+        final sprite = await Sprite.load('companions/$folder/${prefix}_$i.png', images: game.images);
+        sprites.add(sprite);
       } catch (e) {
-        print('⚠️ Error loading walk frame $i for ${companion.folderName}: $e');
-
-        // Try fallback to robo
-        if (companion.folderName != 'robo') {
+        if (fallbackFolder != null && folder != fallbackFolder) {
           try {
-            final fallbackSprite = await Sprite.load('companions/robo/walk_$i.png');
-            walkSprites.add(fallbackSprite);
-          } catch (e2) {
-            print('❌ Walk fallback failed: $e2');
-            continue;
-          }
-        } else {
-          continue;
+            final sprite = await Sprite.load('companions/$fallbackFolder/${prefix}_$i.png', images: game.images);
+            sprites.add(sprite);
+          } catch (_) {}
         }
       }
     }
+    return sprites;
+  }
 
-    if (walkSprites.isNotEmpty && !_isDisposed) {
-      walkAnimation = SpriteAnimation.spriteList(
-        walkSprites,
-        stepTime: 0.08, // Faster for walk animation
-        loop: true,
-      );
-      print('✅ Walk animation loaded: ${walkSprites.length} frames');
+  Future<Sprite> _createPlaceholderSprite() async {
+    try {
+      return await Sprite.load('companions/robo/idle_1.png', images: game.images);
+    } catch (e) {
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(recorder);
+      final paint = Paint()..color = const Color(0xFF808080);
+      canvas.drawRect(const Rect.fromLTWH(0, 0, 42, 42), paint);
+      final picture = recorder.endRecording();
+      final image = await picture.toImage(42, 42);
+      return Sprite(image);
     }
+  }
+
+  Future<void> _createEmergencyAnimation() async {
+    if (_isDisposed) return;
+    final placeholder = await _createPlaceholderSprite();
+    idleAnimation = SpriteAnimation.spriteList([placeholder], stepTime: 0.1, loop: true);
+    walkAnimation = SpriteAnimation.spriteList([placeholder], stepTime: 0.08, loop: true);
+    animation = idleAnimation;
+    opacity = 1.0;
+    _animationsLoaded = true;
   }
 
   @override
   void update(double dt) {
     if (_isDisposed) return;
-
     try {
       super.update(dt);
-
       if (_positionHistory.isNotEmpty) {
         _positionHistory.removeAt(0);
         _positionHistory.add(player.position.clone());
-
         final targetPosition = _positionHistory.first;
         final distanceToPlayer = position.distanceTo(player.position);
-
         final wasMoving = _isMoving;
-
         if (distanceToPlayer > _minDistance) {
           final direction = (targetPosition - position);
           final distanceToTarget = direction.length;
-
           if (distanceToTarget > 5.0) {
             _isMoving = true;
             direction.normalize();
             velocity = direction * _followSpeed;
             position += velocity * dt;
-
-            if (velocity.x > 0.5) {
-              scale.x = -1;
-            } else if (velocity.x < -0.5) {
-              scale.x = 1;
-            }
+            if (velocity.x > 0.5) scale.x = -1;
+            else if (velocity.x < -0.5) scale.x = 1;
           } else {
             _isMoving = false;
             velocity.setZero();
@@ -248,78 +323,45 @@ class CompanionComponent extends SpriteAnimationComponent
           _isMoving = false;
           velocity.setZero();
         }
-
-        // NEW: Switch between idle and walk animations
-        if (_isMoving && !wasMoving) {
-          // Started moving - switch to walk
-          if (mounted == true) {
-            animation = walkAnimation;
-          }
-        } else if (!_isMoving && wasMoving) {
-          // Stopped moving - switch to idle
-          if (mounted == true) {
-            animation = idleAnimation;
-          }
+        if (_animationsLoaded && idleAnimation != null && walkAnimation != null) {
+          if (_isMoving && !wasMoving) animation = walkAnimation;
+          else if (!_isMoving && wasMoving) animation = idleAnimation;
         }
-
         _clampToMapBounds();
       }
     } catch (e) {
-      print('❌ Error in companion update: $e');
+      print('❌ Error in update: $e');
     }
   }
 
   void _clampToMapBounds() {
     const mapWidth = 20 * 64.0;
     const mapHeight = 20 * 64.0;
-
-    position.x = position.x.clamp(
-      _companionWidth / 2,
-      mapWidth - _companionWidth / 2,
-    );
-    position.y = position.y.clamp(
-      _companionHeight / 2,
-      mapHeight - _companionHeight / 2,
-    );
+    position.x = position.x.clamp(_companionWidth / 2, mapWidth - _companionWidth / 2);
+    position.y = position.y.clamp(_companionHeight / 2, mapHeight - _companionHeight / 2);
   }
 
   @override
   void onRemove() {
+    print('🔥 CompanionComponent onRemove() called for $_currentCompanion');
     _isDisposed = true;
-    _isLoadingAnimation = false;
     _positionHistory.clear();
+
+    // NEW: Clean up this component's assets
+    _clearOldCompanionAssets(_currentCompanion);
+
+    // --- START DEBUG ---
+    _debugPrintCache("CACHE STATE AFTER CLEANUP");
+    // --- END DEBUG ---
+
     super.onRemove();
   }
 
   @override
   void removeFromParent() {
+    // This is often called just before onRemove
+    print('🔥 CompanionComponent removeFromParent() called for $_currentCompanion');
     _isDisposed = true;
     super.removeFromParent();
   }
 }
-//```
-//
-//**Key changes made:**
-//
-//## **🆕 New Features Added:**
-//
-//1. **Separate Animations**: `idleAnimation` and `walkAnimation`
-//2. **Movement Tracking**: `_isMoving` flag to detect when companion moves
-//3. **Dynamic Switching**: Automatically switches between idle/walk based on movement
-//4. **Idle Frame Loading**: Loads `idle_1.png`, `idle_2.png`, etc.
-//
-//## **⚙️ How It Works:**
-//
-//- **When Still**: Shows idle animation (slower, 0.1s per frame)
-//- **When Moving**: Shows walk animation (faster, 0.08s per frame)
-//- **Auto-Switch**: Seamlessly transitions between animations based on movement
-//
-//## **📁 Expected Asset Structure:**
-//```
-//assets/images/companions/
-//├── robo/
-//│   ├── idle_1.png, idle_2.png, ..., idle_10.png
-//│   └── walk_1.png, walk_2.png, ..., walk_21.png
-//├── teddy/
-//│   ├── idle_1.png, idle_2.png, ..., idle_10.png
-//│   └── walk_1.png, walk_2.png, ..., walk_12.png

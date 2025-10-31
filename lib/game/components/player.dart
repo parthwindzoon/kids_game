@@ -1,5 +1,7 @@
 // lib/game/components/player.dart
 
+import 'dart:ui' as ui;
+import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/services.dart';
@@ -24,6 +26,10 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   bool _isMoving = false;
   String _currentCharacter = 'player';
 
+  // ✅ FIX 1: Add flags to prevent race conditions
+  bool _isReloadingAnimations = false;
+  bool _animationsLoaded = false;
+
   Player({required Vector2 position, this.joystick})
       : super(
     size: Vector2(_playerWidth, _playerHeight),
@@ -36,9 +42,14 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     await super.onLoad();
     priority = 100;
 
-    // Get current character from controller
-    final characterController = Get.find<CharacterController>();
-    _currentCharacter = characterController.selectedCharacter.value;
+    // ✅ FIX 2: Safe controller access with fallback
+    if (!Get.isRegistered<CharacterController>()) {
+      print('⚠️ CharacterController not registered, using default player');
+      _currentCharacter = 'player';
+    } else {
+      final characterController = Get.find<CharacterController>();
+      _currentCharacter = characterController.selectedCharacter.value;
+    }
 
     await _loadCharacterAnimations();
 
@@ -48,49 +59,59 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     ));
 
     // Listen for character changes
-    ever(characterController.selectedCharacter, (_) {
-      _onCharacterChanged();
-    });
+    if (Get.isRegistered<CharacterController>()) {
+      final characterController = Get.find<CharacterController>();
+      ever(characterController.selectedCharacter, (_) {
+        _onCharacterChanged();
+      });
+    }
   }
 
+  // ✅ FIX 3: Robust animation loading with fallbacks and placeholders
   Future<void> _loadCharacterAnimations() async {
+    _animationsLoaded = false;
+
+    if (!Get.isRegistered<CharacterController>()) {
+      await _loadDefaultAnimations();
+      return;
+    }
+
     final characterController = Get.find<CharacterController>();
     final character = characterController.getCurrentCharacter();
 
-    final idleSprites = <Sprite>[];
-    for (int i = 1; i <= 10; i++) {
-      try {
-        final sprite = await Sprite.load('${character.folderName}/idle_$i.png');
-        idleSprites.add(sprite);
-      } catch (e) {
-        print('Error loading idle sprite $i for ${character.folderName}: $e');
-        // Fallback to default character if images don't exist
-        if (character.folderName != 'player') {
-          final fallbackSprite = await Sprite.load('player/idle_$i.png');
-          idleSprites.add(fallbackSprite);
-        }
-      }
+    // Load idle animation
+    final idleSprites = await _loadAnimationFrames(
+      folder: character.folderName,
+      prefix: 'idle',
+      totalFrames: 10,
+      fallbackFolder: 'player',
+    );
+
+    // ✅ FIX 4: If no sprites loaded, create emergency placeholder
+    if (idleSprites.isEmpty) {
+      print('❌ CRITICAL: No idle sprites loaded for ${character.folderName}, using placeholder');
+      idleSprites.add(await _createPlaceholderSprite());
     }
+
     idleAnimation = SpriteAnimation.spriteList(
       idleSprites,
       stepTime: 0.1,
       loop: true,
     );
 
-    final walkSprites = <Sprite>[];
-    for (int i = 1; i <= 10; i++) {
-      try {
-        final sprite = await Sprite.load('${character.folderName}/walk_$i.png');
-        walkSprites.add(sprite);
-      } catch (e) {
-        print('Error loading walk sprite $i for ${character.folderName}: $e');
-        // Fallback to default character if images don't exist
-        if (character.folderName != 'player') {
-          final fallbackSprite = await Sprite.load('player/walk_$i.png');
-          walkSprites.add(fallbackSprite);
-        }
-      }
+    // Load walk animation
+    final walkSprites = await _loadAnimationFrames(
+      folder: character.folderName,
+      prefix: 'walk',
+      totalFrames: 10,
+      fallbackFolder: 'player',
+    );
+
+    if (walkSprites.isEmpty) {
+      print('❌ CRITICAL: No walk sprites loaded for ${character.folderName}, using placeholder');
+      walkSprites.add(await _createPlaceholderSprite());
     }
+
     walkAnimation = SpriteAnimation.spriteList(
       walkSprites,
       stepTime: 0.08,
@@ -98,20 +119,118 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     );
 
     animation = idleAnimation;
+    _animationsLoaded = true;
+    print('✅ Player animations loaded: ${idleSprites.length} idle, ${walkSprites.length} walk frames');
   }
 
+  // ✅ FIX 5: Helper method to load animation frames safely
+  Future<List<Sprite>> _loadAnimationFrames({
+    required String folder,
+    required String prefix,
+    required int totalFrames,
+    String? fallbackFolder,
+  }) async {
+    final sprites = <Sprite>[];
+
+    for (int i = 1; i <= totalFrames; i++) {
+      try {
+        final sprite = await Sprite.load('$folder/${prefix}_$i.png');
+        sprites.add(sprite);
+      } catch (e) {
+        print('⚠️ Error loading $prefix frame $i for $folder: $e');
+
+        // Try fallback folder
+        if (fallbackFolder != null && folder != fallbackFolder) {
+          try {
+            final fallbackSprite = await Sprite.load('$fallbackFolder/${prefix}_$i.png');
+            sprites.add(fallbackSprite);
+            print('✅ Loaded fallback sprite: $fallbackFolder/${prefix}_$i.png');
+          } catch (e2) {
+            print('❌ Fallback also failed for $prefix frame $i: $e2');
+            // Continue to next frame
+          }
+        }
+      }
+    }
+
+    return sprites;
+  }
+
+  // ✅ FIX 6: Load default player animations as absolute fallback
+  Future<void> _loadDefaultAnimations() async {
+    print('⚠️ Loading default player animations');
+
+    final idleSprites = await _loadAnimationFrames(
+      folder: 'player',
+      prefix: 'idle',
+      totalFrames: 10,
+      fallbackFolder: null,
+    );
+
+    if (idleSprites.isEmpty) {
+      idleSprites.add(await _createPlaceholderSprite());
+    }
+
+    final walkSprites = await _loadAnimationFrames(
+      folder: 'player',
+      prefix: 'walk',
+      totalFrames: 10,
+      fallbackFolder: null,
+    );
+
+    if (walkSprites.isEmpty) {
+      walkSprites.add(await _createPlaceholderSprite());
+    }
+
+    idleAnimation = SpriteAnimation.spriteList(idleSprites, stepTime: 0.1, loop: true);
+    walkAnimation = SpriteAnimation.spriteList(walkSprites, stepTime: 0.08, loop: true);
+    animation = idleAnimation;
+    _animationsLoaded = true;
+  }
+
+  // ✅ FIX 7: Emergency placeholder sprite generation
+  Future<Sprite> _createPlaceholderSprite() async {
+    try {
+      // Try to load the first idle frame of default player
+      return await Sprite.load('player/idle_1.png');
+    } catch (e) {
+      print('⚠️ Even default sprite failed, creating colored rectangle');
+      // Last resort: create a colored rectangle sprite
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(recorder);
+      final paint = Paint()..color = const Color(0xFFFF6B6B);
+      canvas.drawRect(const Rect.fromLTWH(0, 0, 42, 42), paint);
+      final picture = recorder.endRecording();
+      final image = await picture.toImage(42, 42);
+      return Sprite(image);
+    }
+  }
+
+  // ✅ FIX 8: Safe character change with animation reload protection
   Future<void> _onCharacterChanged() async {
+    if (!Get.isRegistered<CharacterController>()) return;
+
     final characterController = Get.find<CharacterController>();
     final newCharacter = characterController.selectedCharacter.value;
 
     if (_currentCharacter != newCharacter) {
+      _isReloadingAnimations = true;  // Block animation switches during reload
       _currentCharacter = newCharacter;
+
       await _loadCharacterAnimations();
+
+      _isReloadingAnimations = false;  // Re-enable animation switches
     }
   }
 
   @override
   void update(double dt) {
+    // ✅ FIX 9: Don't update animations during reload or before loaded
+    if (_isReloadingAnimations || !_animationsLoaded) {
+      super.update(dt);
+      return;
+    }
+
     super.update(dt);
 
     _updateDirectionFromJoystick();
@@ -190,11 +309,13 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     position.y = position.y.clamp(_playerHeight / 2, mapHeight - _playerHeight / 2);
   }
 
+  // ✅ FIX 10: Safer null checking for road layer
   bool _isOnRoad() {
     final tileX = (position.x / 64).floor();
     final tileY = (position.y / 64).floor();
     final roadLayer = game.mapComponent.tileMap.getLayer<TileLayer>('Road');
-    if (roadLayer == null) return false;
+
+    if (roadLayer?.tileData == null) return false;
 
     if (tileX < 0 || tileY < 0 ||
         tileX >= game.mapComponent.tileMap.map.width ||
@@ -202,13 +323,15 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
       return false;
     }
 
-    if (roadLayer.tileData != null &&
-        tileY < roadLayer.tileData!.length &&
-        tileX < roadLayer.tileData![tileY].length) {
-      final gid = roadLayer.tileData![tileY][tileX].tile;
-      return gid > 0;
+    final tileData = roadLayer!.tileData!;
+
+    // Check bounds before accessing nested array
+    if (tileY >= tileData.length || tileX >= tileData[tileY].length) {
+      return false;
     }
-    return false;
+
+    final gid = tileData[tileY][tileX].tile;
+    return gid > 0;
   }
 
   void _checkNearbyBuildings() {
@@ -221,8 +344,9 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     String? buildingInside;
 
     for (final obj in objectGroup.objects) {
+      // ✅ FIX 11: Safe property access
       final objType = obj.properties.getValue<String>('type');
-      if (objType != 'building_popup') continue;
+      if (objType == null || objType != 'building_popup') continue;
 
       final playerInsideBounds =
           position.x >= obj.x &&

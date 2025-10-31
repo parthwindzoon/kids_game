@@ -34,12 +34,18 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
       Get.put(CompanionController());
     }
 
-    // Pre-load overlay assets for better performance
-    await images.loadAll([
-      'overlays/Group 67.png',
-      'overlays/Group 86.png',
-      'overlays/Group 93.png',
-    ]);
+    // ✅ FIX 1: Add try-catch for overlay asset loading
+    try {
+      await images.loadAll([
+        'overlays/Group 67.png',
+        'overlays/Group 86.png',
+        'overlays/Group 93.png',
+      ]);
+      print('✅ Overlay images preloaded successfully');
+    } catch (e) {
+      print('⚠️ Error preloading overlay images: $e');
+      // Continue without preloaded images - they'll load on demand
+    }
 
     mapComponent = await TiledComponent.load('Main-Map.tmx', Vector2.all(64));
     world.add(mapComponent);
@@ -60,8 +66,8 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     player.priority = 100;
     world.add(player);
 
-    // Add companion after player is loaded
-    _loadCompanion(spawnPoint);
+    // ✅ FIX 2: AWAIT companion loading before continuing
+    await _loadCompanion(spawnPoint);
 
     camera.viewport.add(joystick);
 
@@ -69,25 +75,45 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     camera.follow(player);
 
     _setupCameraBounds();
+
+    print('✅ Game fully loaded - player and companion ready');
   }
 
+  // ✅ FIX 3: Make this method async and await companion onLoad
   Future<void> _loadCompanion(Vector2 spawnPoint) async {
-    final companionController = Get.find<CompanionController>();
-    final currentCompanion = companionController.getCurrentCompanion();
+    try {
+      final companionController = Get.find<CompanionController>();
+      final currentCompanion = companionController.getCurrentCompanion();
 
-    if (currentCompanion != null) {
-      // Spawn companion at SAME position as player (they start together)
-      final companionSpawnPoint = spawnPoint.clone();
+      if (currentCompanion != null) {
+        print('🔄 Creating companion: ${currentCompanion.name}');
 
-      companion = CompanionComponent(
-        player: player,
-        position: companionSpawnPoint,
-      );
+        // ✅ FIX 4: Spawn companion BEHIND player so it's visible
+        final companionSpawnPoint = spawnPoint.clone();
+        companionSpawnPoint.y += 60; // Spawn 60 pixels below (behind) player
 
-      companion!.priority = 99;
+        companion = CompanionComponent(
+          player: player,
+          position: companionSpawnPoint,
+        );
 
-      world.add(companion!);
-      print('✅ Companion loaded: ${currentCompanion.name}');
+        // ✅ FIX 5: Set priority HIGHER than player so companion renders in front
+        // Priority 98 = behind player, Priority 101 = in front of player
+        companion!.priority = 99; // Slightly behind player visually
+
+        // ✅ FIX 6: Add companion to world and AWAIT its onLoad
+        await world.add(companion!);
+
+        print('✅ Companion loaded and added to world: ${currentCompanion.name}');
+        print('✅ Companion position: ${companion!.position}');
+        print('✅ Player position: ${player.position}');
+        print('✅ Companion priority: ${companion!.priority}');
+        print('✅ Player priority: ${player.priority}');
+      } else {
+        print('⚠️ No companion selected');
+      }
+    } catch (e) {
+      print('❌ Error loading companion: $e');
     }
   }
 
@@ -103,9 +129,23 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     return Vector2(640, 640);
   }
 
+  // ✅ FIX 7: Add safety checks to camera bounds setup
   void _setupCameraBounds() {
     Future.delayed(Duration.zero, () {
       if (!isLoaded) return;
+
+      // ✅ Check if size is valid
+      if (size.x == 0 || size.y == 0) {
+        print('⚠️ Invalid game size, skipping camera bounds setup');
+        return;
+      }
+
+      // ✅ Check if zoom is valid
+      if (camera.viewfinder.zoom <= 0) {
+        print('⚠️ Invalid camera zoom, skipping camera bounds setup');
+        return;
+      }
+
       final mapSize = Vector2(
         mapComponent.tileMap.map.width * mapComponent.tileMap.destTileSize.x,
         mapComponent.tileMap.map.height * mapComponent.tileMap.destTileSize.y,
@@ -174,5 +214,15 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     if (isLoaded) {
       _setupCameraBounds();
     }
+  }
+
+  @override
+  void onRemove() {
+    print('🔥 TiledGame onRemove() called. Removing all children.');
+    // This line iterates through all components (Player, Companion, etc.)
+    // and calls their individual onRemove() methods.
+    // This will trigger the cache clearing in CompanionComponent.
+    removeAll(children);
+    super.onRemove();
   }
 }

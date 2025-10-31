@@ -15,11 +15,10 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
   late TiledComponent mapComponent;
   late Player player;
   late JoystickComponent joystick;
-  CompanionComponent? companion; // Companion component
+  CompanionComponent? companion;
 
   String? currentBuildingName;
-  bool overlayManuallyClosed = false; // Track if user closed the overlay
-
+  bool overlayManuallyClosed = false;
   String? selectedColoringSvgPath;
 
   @override
@@ -34,7 +33,6 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
       Get.put(CompanionController());
     }
 
-    // ✅ FIX 1: Add try-catch for overlay asset loading
     try {
       await images.loadAll([
         'overlays/Group 67.png',
@@ -44,7 +42,6 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
       print('✅ Overlay images preloaded successfully');
     } catch (e) {
       print('⚠️ Error preloading overlay images: $e');
-      // Continue without preloaded images - they'll load on demand
     }
 
     mapComponent = await TiledComponent.load('Main-Map.tmx', Vector2.all(64));
@@ -66,11 +63,10 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     player.priority = 100;
     world.add(player);
 
-    // ✅ FIX 2: AWAIT companion loading before continuing
+    // Load companion with proper error handling
     await _loadCompanion(spawnPoint);
 
     camera.viewport.add(joystick);
-
     camera.viewfinder.zoom = 1.0;
     camera.follow(player);
 
@@ -79,41 +75,43 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     print('✅ Game fully loaded - player and companion ready');
   }
 
-  // ✅ FIX 3: Make this method async and await companion onLoad
   Future<void> _loadCompanion(Vector2 spawnPoint) async {
     try {
+      // Longer delay to ensure everything is ready
+      await Future.delayed(const Duration(milliseconds: 300));
+
       final companionController = Get.find<CompanionController>();
       final currentCompanion = companionController.getCurrentCompanion();
 
       if (currentCompanion != null) {
         print('🔄 Creating companion: ${currentCompanion.name}');
 
-        // ✅ FIX 4: Spawn companion BEHIND player so it's visible
         final companionSpawnPoint = spawnPoint.clone();
-        companionSpawnPoint.y += 60; // Spawn 60 pixels below (behind) player
+        companionSpawnPoint.y += 60;
 
-        companion = CompanionComponent(
-          player: player,
-          position: companionSpawnPoint,
-        );
+        // Create companion with error handling
+        try {
+          companion = CompanionComponent(
+            player: player,
+            position: companionSpawnPoint,
+          );
 
-        // ✅ FIX 5: Set priority HIGHER than player so companion renders in front
-        // Priority 98 = behind player, Priority 101 = in front of player
-        companion!.priority = 99; // Slightly behind player visually
+          companion!.priority = 99;
 
-        // ✅ FIX 6: Add companion to world and AWAIT its onLoad
-        await world.add(companion!);
+          // Add companion - simplified without timeout
+          await world.add(companion!);
 
-        print('✅ Companion loaded and added to world: ${currentCompanion.name}');
-        print('✅ Companion position: ${companion!.position}');
-        print('✅ Player position: ${player.position}');
-        print('✅ Companion priority: ${companion!.priority}');
-        print('✅ Player priority: ${player.priority}');
+          print('✅ Companion loaded: ${currentCompanion.name}');
+        } catch (e) {
+          print('❌ Error adding companion to world: $e');
+          companion = null;
+        }
       } else {
         print('⚠️ No companion selected');
       }
     } catch (e) {
       print('❌ Error loading companion: $e');
+      companion = null;
     }
   }
 
@@ -129,18 +127,15 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     return Vector2(640, 640);
   }
 
-  // ✅ FIX 7: Add safety checks to camera bounds setup
   void _setupCameraBounds() {
     Future.delayed(Duration.zero, () {
       if (!isLoaded) return;
 
-      // ✅ Check if size is valid
       if (size.x == 0 || size.y == 0) {
         print('⚠️ Invalid game size, skipping camera bounds setup');
         return;
       }
 
-      // ✅ Check if zoom is valid
       if (camera.viewfinder.zoom <= 0) {
         print('⚠️ Invalid camera zoom, skipping camera bounds setup');
         return;
@@ -172,30 +167,23 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     });
   }
 
-  // FIXED: Updated overlay management to prevent double overlay opening
   void showBuildingOverlay(String buildingName) {
-    // Don't show if user manually closed it and still in same building
     if (overlayManuallyClosed && currentBuildingName == buildingName) {
       return;
     }
 
-    // If it's a different building, reset the closed flag
     if (currentBuildingName != buildingName) {
       overlayManuallyClosed = false;
     }
 
     if (currentBuildingName == buildingName) return;
 
-    // Hide all overlays first
     hideAllOverlays();
-
     currentBuildingName = buildingName;
 
     if (buildingName.toLowerCase() == 'home') {
-      // Show home button for Home building
       overlays.add('home_button');
     } else {
-      // FIXED: Show building popup first, not lucky spin directly
       overlays.add('building_popup');
     }
   }
@@ -218,11 +206,26 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
 
   @override
   void onRemove() {
-    print('🔥 TiledGame onRemove() called. Removing all children.');
-    // This line iterates through all components (Player, Companion, etc.)
-    // and calls their individual onRemove() methods.
-    // This will trigger the cache clearing in CompanionComponent.
-    removeAll(children);
+    print('🔥 TiledGame onRemove() called');
+
+    // Explicitly remove companion first
+    if (companion != null) {
+      try {
+        companion!.removeFromParent();
+        companion = null;
+        print('✅ Companion removed');
+      } catch (e) {
+        print('⚠️ Error removing companion: $e');
+      }
+    }
+
+    // Then remove all other children
+    try {
+      removeAll(children);
+    } catch (e) {
+      print('⚠️ Error removing children: $e');
+    }
+
     super.onRemove();
   }
 }

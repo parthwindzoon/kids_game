@@ -25,7 +25,6 @@ import '../../game/overlay/pattern_recognition_overlay.dart';
 import '../../game/overlay/pop_balloon_overlay.dart';
 import '../../game/overlay/shape_shorting_overlay.dart';
 
-// ✅ FIX 1: Convert to StatefulWidget for proper lifecycle management
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
 
@@ -34,7 +33,7 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  late final TiledGame _game;
+  TiledGame? _game;
   bool _isGameInitialized = false;
 
   @override
@@ -43,30 +42,50 @@ class _GameScreenState extends State<GameScreen> {
     _initializeGame();
   }
 
-  void _initializeGame() {
-    try {
-      _game = TiledGame();
-      _isGameInitialized = true;
-    } catch (e) {
-      print('❌ Error initializing game: $e');
-      _isGameInitialized = false;
-    }
-  }
-
   @override
   void dispose() {
-    // ✅✅✅ THIS IS THE FIX ✅✅✅
-    // Call onRemove() to destroy the game and all its components.
-    if (_isGameInitialized) {
-      _game.onRemove();
-      print('🔥 GameScreen dispose: Called _game.onRemove()');
+    print('🔥 GameScreen dispose called');
+
+    if (_game != null && _isGameInitialized) {
+      try {
+        // Remove game
+        _game!.onRemove();
+        _game = null;
+        print('✅ Game removed successfully');
+
+        // Force garbage collection hint
+        Future.delayed(const Duration(milliseconds: 100), () {
+          // This helps trigger GC
+        });
+      } catch (e) {
+        print('⚠️ Error removing game: $e');
+      }
     }
+
+    _isGameInitialized = false;
     super.dispose();
+  }
+
+  void _initializeGame() async {
+    try {
+      // Longer delay to ensure previous game is fully disposed
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      _game = TiledGame();
+      setState(() {
+        _isGameInitialized = true;
+      });
+    } catch (e) {
+      print('❌ Error initializing game: $e');
+      setState(() {
+        _isGameInitialized = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_isGameInitialized) {
+    if (!_isGameInitialized || _game == null) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
@@ -74,12 +93,10 @@ class _GameScreenState extends State<GameScreen> {
       );
     }
 
-    // ✅ FIX 3: Use PopScope instead of deprecated WillPopScope
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
-          // Navigate back to home screen
           Get.back();
         }
       },
@@ -87,7 +104,7 @@ class _GameScreenState extends State<GameScreen> {
         body: Stack(
           children: [
             GameWidget<TiledGame>(
-              game: _game,
+              game: _game!,
               overlayBuilderMap: {
                 'building_popup': (context, game) {
                   return BuildingPopupOverlay(game: game);
@@ -104,7 +121,6 @@ class _GameScreenState extends State<GameScreen> {
                 'pet_shop': (context, game) {
                   return PetShopOverlay(game: game);
                 },
-
                 'learn_alphabets': (context, game) {
                   return LearnAlphabetsOverlay(game: game);
                 },
@@ -148,7 +164,6 @@ class _GameScreenState extends State<GameScreen> {
               },
             ),
 
-            // Coin popup overlay
             if (Get.isRegistered<CoinController>())
               Get.find<CoinController>().buildCoinPopup(),
           ],

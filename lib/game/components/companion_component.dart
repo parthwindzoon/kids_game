@@ -1,5 +1,4 @@
 // lib/game/components/companion_component.dart
-// FIXED: Cache clearing moved to onRemove() to match component lifecycle
 
 import 'dart:ui' as ui;
 import 'package:flame/components.dart';
@@ -78,10 +77,7 @@ class CompanionComponent extends SpriteAnimationComponent
       }
       opacity = 1.0;
 
-      // --- START DEBUG ---
       print('✅ CompanionComponent loaded successfully for $_currentCompanion');
-      _debugPrintCache("CACHE STATE ON LOAD");
-      // --- END DEBUG ---
 
     } catch (e) {
       print('❌ Error in CompanionComponent onLoad: $e');
@@ -89,77 +85,6 @@ class CompanionComponent extends SpriteAnimationComponent
       await _loadDefaultAnimations();
     }
   }
-
-  // Debug method to print cache contents
-  void _debugPrintCache(String title) {
-    if (_isDisposed) return;
-
-    // Check if game reference and images cache are available
-    try {
-      if (game.images.keys.isEmpty) {
-        print('--- $title (Cache is empty) ---');
-        return;
-      }
-
-      print('--- $title (Total Cache Size: ${game.images.keys.length}) ---');
-      final companionAssets = game.images.keys.where((key) => key.contains('companions/'));
-
-      if (companionAssets.isEmpty) {
-        print('No "companions/" assets found in cache.');
-      } else {
-        print('Found ${companionAssets.length} "companions/" assets:');
-        companionAssets.forEach(print);
-      }
-      print('--------------------------------------------------');
-    } catch (e) {
-      print('--- $title (Error accessing cache: $e) ---');
-    }
-  }
-
-  Future<void> _clearOldCompanionAssets(String oldCompanionId) async {
-    print('🧹 Clearing cache for: $oldCompanionId');
-    try {
-      CompanionData? oldCompanionData;
-      try {
-        oldCompanionData = _companionController.companions.firstWhere(
-              (c) => c.id == oldCompanionId,
-        );
-      } catch (e) {
-        oldCompanionData = null;
-      }
-
-      if (oldCompanionData == null) {
-        print('⚠️ Could not find old companion data for $oldCompanionId to clear cache.');
-        return;
-      }
-
-      final imageCache = game.images;
-
-      int clearedIdle = 0;
-      for (int i = 1; i <= oldCompanionData.idleFrames; i++) {
-        final path = 'companions/${oldCompanionData.folderName}/idle_$i.png';
-        if (imageCache.containsKey(path)) {
-          imageCache.clear(path);
-          clearedIdle++;
-        }
-      }
-
-      int clearedWalk = 0;
-      for (int i = 1; i <= oldCompanionData.totalFrames; i++) {
-        final path = 'companions/${oldCompanionData.folderName}/walk_$i.png';
-        if (imageCache.containsKey(path)) {
-          imageCache.clear(path);
-          clearedWalk++;
-        }
-      }
-
-      print('✅ Cache cleared for $oldCompanionId ($clearedIdle idle, $clearedWalk walk frames)');
-
-    } catch (e) {
-      print('❌ Error clearing cache for $oldCompanionId: $e');
-    }
-  }
-
 
   Future<void> _loadAnimations() async {
     if (_isLoadingAnimation || _isDisposed) return;
@@ -173,10 +98,9 @@ class CompanionComponent extends SpriteAnimationComponent
         return;
       }
 
-      // Use the new _currentCompanion ID set in onLoad
       final companion = _companionController.companions.firstWhere(
               (c) => c.id == _currentCompanion,
-          orElse: () => _companionController.companions[0] // Fallback
+          orElse: () => _companionController.companions[0]
       );
 
       print('🔄 Loading animations for: ${companion.name}');
@@ -347,19 +271,14 @@ class CompanionComponent extends SpriteAnimationComponent
     _isDisposed = true;
     _positionHistory.clear();
 
-    // NEW: Clean up this component's assets
-    _clearOldCompanionAssets(_currentCompanion);
-
-    // --- START DEBUG ---
-    _debugPrintCache("CACHE STATE AFTER CLEANUP");
-    // --- END DEBUG ---
+    // Don't clear cache - let Flutter manage it automatically
+    // Cache staying in memory is good - makes subsequent loads instant
 
     super.onRemove();
   }
 
   @override
   void removeFromParent() {
-    // This is often called just before onRemove
     print('🔥 CompanionComponent removeFromParent() called for $_currentCompanion');
     _isDisposed = true;
     super.removeFromParent();

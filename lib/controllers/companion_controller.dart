@@ -1,5 +1,6 @@
 // lib/controllers/companion_controller.dart
 
+import 'package:flame/flame.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'coin_controller.dart';
@@ -72,11 +73,56 @@ class CompanionController extends GetxController {
 
   // ... rest of the controller methods remain the same ...
 
-  void selectCompanion(String companionId) {
+  void selectCompanion(String companionId) async {
     if (isCompanionUnlocked(companionId)) {
+      final oldCompanionId = selectedCompanion.value;
+
+      // If actually changing companion, clear old companion's cache
+      if (oldCompanionId != companionId) {
+        print('🔄 Changing companion from $oldCompanionId to $companionId');
+        await _clearCompanionImageCache(oldCompanionId);
+
+        // Add delay to let cache clear
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+
       selectedCompanion.value = companionId;
       update();
       _saveSelectedCompanion();
+    }
+  }
+
+// Add this new method
+  Future<void> _clearCompanionImageCache(String companionId) async {
+    try {
+      print('🧹 Clearing image cache for companion: $companionId');
+
+      final companion = companions.firstWhereOrNull((c) => c.id == companionId);
+      if (companion == null) return;
+
+      // Clear idle animation frames
+      for (int i = 1; i <= companion.idleFrames; i++) {
+        final path = 'companions/${companion.folderName}/idle_$i.png';
+        try {
+          Flame.images.clear(path);
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+
+      // Clear walk animation frames
+      for (int i = 1; i <= companion.totalFrames; i++) {
+        final path = 'companions/${companion.folderName}/walk_$i.png';
+        try {
+          Flame.images.clear(path);
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+
+      print('✅ Image cache cleared for: $companionId');
+    } catch (e) {
+      print('⚠️ Error clearing image cache: $e');
     }
   }
 

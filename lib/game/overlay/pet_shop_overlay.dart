@@ -288,206 +288,192 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
       CoinController coinController,
       bool isTablet,
       ) {
-    final optionSize = isTablet ? 180.0 : 140.0; // Adjusted for horizontal layout
+    final optionSize = isTablet ? 180.0 : 140.0;
 
+    // ✅ NOW WRAP WITH OBX - but only observe the specific unlock status
     return Obx(() {
-      try {
-        final isUnlocked = companionController.isCompanionUnlocked(companion.id);
-        final isSelected = companionController.selectedCompanion.value == companion.id;
+      // ✅ This is now reactive and will update when unlocked
+      final isUnlocked = companionController.unlockedCompanions[companion.id] ??
+          (companion.id == 'robo'); // Robo is always unlocked
 
-        return GestureDetector(
-          onTap: () async {
-            try {
-              // Add small delay to prevent rapid tapping
-              await Future.delayed(const Duration(milliseconds: 150));
+      return GestureDetector(
+        onTap: () async {
+          try {
+            await Future.delayed(const Duration(milliseconds: 150));
 
-              print('Companion tapped: ${companion.id}, Unlocked: $isUnlocked');
+            print('Companion tapped: ${companion.id}, Unlocked: $isUnlocked');
 
-              if (!isUnlocked) {
-                // Only allow purchase if locked - no selection here
-                print('Attempting to purchase companion: ${companion.id}');
-                companionController.purchaseCompanion(companion.id, coinController);
-              } else {
-                // If already unlocked, show a message that they need to go to companion selection
-                print('Companion already owned. Go to companion selection to switch.');
-                // You could add a toast/snackbar here if needed
-              }
-            } catch (e) {
-              print('Error in companion purchase: $e');
-              // Handle error gracefully without crashing
+            if (!isUnlocked) {
+              // Purchase locked companion
+              print('Attempting to purchase companion: ${companion.id}');
+              companionController.purchaseCompanion(companion.id, coinController);
+            } else {
+              // Show message that companion is already owned
+              Get.snackbar(
+                'Already Owned',
+                'Go to Companion Selection from Home to switch to ${companion.name}!',
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: const Color(0xFF4CAF50).withOpacity(0.9),
+                colorText: Colors.white,
+                duration: const Duration(seconds: 2),
+                margin: EdgeInsets.all(isTablet ? 20 : 15),
+                borderRadius: 15,
+                icon: const Icon(Icons.pets, color: Colors.white),
+              );
             }
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Main companion container
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200), // Reduced animation duration
-                width: optionSize,
-                height: optionSize,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
+          } catch (e) {
+            print('Error in companion purchase: $e');
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Main companion container
+            Container(
+              width: optionSize,
+              height: optionSize,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isUnlocked
+                      ? const Color(0xFF4CAF50) // Green for owned
+                      : Colors.red.shade300, // Red for locked
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
                     color: isUnlocked
-                        ? const Color(0xFF4CAF50) // Green for owned
-                        : Colors.red.shade300,    // Red for locked
-                    width: 2,
+                        ? const Color(0xFF4CAF50).withOpacity(0.2)
+                        : Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: isUnlocked
-                          ? const Color(0xFF4CAF50).withOpacity(0.2)
-                          : Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    // Companion image
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(isTablet ? 15 : 12),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: Image.asset(
-                          companion.displayImagePath,
-                          fit: BoxFit.contain,
-                          gaplessPlayback: true,
-                          color: isUnlocked ? null : Colors.grey,
-                          colorBlendMode: isUnlocked ? null : BlendMode.saturation,
-                          // Add memory optimization
-                          cacheWidth: isTablet ? 200 : 150,
-                          cacheHeight: isTablet ? 200 : 150,
-                          filterQuality: FilterQuality.medium,
-                          errorBuilder: (context, error, stackTrace) {
-                            print('Error loading companion image: $error');
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: Color(companion.color).withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Icon(
-                                Icons.pets,
-                                size: isTablet ? 60 : 45,
-                                color: Color(companion.color),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-
-                    // Lock overlay for locked companions
-                    if (!isUnlocked)
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.lock,
-                            size: isTablet ? 40 : 30,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                ],
               ),
-
-              SizedBox(height: 8),
-
-              // Price display (like in reference image)
-              if (!isUnlocked)
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 12 : 10,
-                    vertical: isTablet ? 8 : 6,
+              child: Stack(
+                children: [
+                  // Companion image
+                  Container(
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.all(isTablet ? 15 : 12),
+                    child: Image.asset(
+                      companion.displayImagePath,
+                      fit: BoxFit.contain,
+                      gaplessPlayback: true,
+                      color: isUnlocked ? null : Colors.grey,
+                      colorBlendMode: isUnlocked ? null : BlendMode.saturation,
+                      cacheWidth: isTablet ? 200 : 150,
+                      cacheHeight: isTablet ? 200 : 150,
+                      filterQuality: FilterQuality.medium,
+                      errorBuilder: (context, error, stackTrace) {
+                        print('Error loading companion image: $error');
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Color(companion.color).withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(
+                            Icons.pets,
+                            size: isTablet ? 60 : 45,
+                            color: Color(companion.color),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF00BCD4), // Cyan color like in reference
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+
+                  // Lock overlay for locked companions
+                  if (!isUnlocked)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Coin icon
-                      Container(
-                        width: isTablet ? 24 : 20,
-                        height: isTablet ? 24 : 20,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFFD700),
-                          shape: BoxShape.circle,
-                        ),
+                      child: Center(
                         child: Icon(
-                          Icons.monetization_on,
-                          size: isTablet ? 16 : 14,
-                          color: Colors.orange,
-                        ),
-                      ),
-                      SizedBox(width: 6),
-                      Text(
-                        '${companion.price}',
-                        style: TextStyle(
-                          fontFamily: 'AkayaKanadaka',
-                          fontSize: isTablet ? 16 : 14,
-                          fontWeight: FontWeight.bold,
+                          Icons.lock,
+                          size: isTablet ? 40 : 30,
                           color: Colors.white,
                         ),
                       ),
-                    ],
-                  ),
-                )
-              else
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 12 : 10,
-                    vertical: isTablet ? 8 : 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'OWNED',
-                    style: TextStyle(
-                      fontFamily: 'AkayaKanadaka',
-                      fontSize: isTablet ? 14 : 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
                     ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 8),
+
+            // Price display
+            if (!isUnlocked)
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 12 : 10,
+                  vertical: isTablet ? 8 : 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00BCD4),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: isTablet ? 24 : 20,
+                      height: isTablet ? 24 : 20,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFD700),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.monetization_on,
+                        size: isTablet ? 16 : 14,
+                        color: Colors.orange,
+                      ),
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      '${companion.price}',
+                      style: TextStyle(
+                        fontFamily: 'AkayaKanadaka',
+                        fontSize: isTablet ? 16 : 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 12 : 10,
+                  vertical: isTablet ? 8 : 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'OWNED',
+                  style: TextStyle(
+                    fontFamily: 'AkayaKanadaka',
+                    fontSize: isTablet ? 14 : 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-            ],
-          ),
-        );
-      } catch (e) {
-        print('Error building companion item: $e');
-        // Return a simple error widget
-        return Container(
-          width: optionSize,
-          height: optionSize + 40,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Center(
-            child: Icon(Icons.error, color: Colors.red),
-          ),
-        );
-      }
+              ),
+          ],
+        ),
+      );
     });
   }
 

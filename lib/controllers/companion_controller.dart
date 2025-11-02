@@ -11,6 +11,8 @@ class CompanionController extends GetxController {
   // Current selected companion (default is robo)
   final selectedCompanion = 'robo'.obs;
 
+  final RxMap<String, bool> unlockedCompanions = <String, bool>{}.obs;
+
   // Popup states for pet shop
   final showPurchasePopup = false.obs;
   final showInsufficientCoinsPopup = false.obs;
@@ -128,11 +130,20 @@ class CompanionController extends GetxController {
 
   bool isCompanionUnlocked(String companionId) {
     if (companionId == 'robo') return true; // Robo is always unlocked
-    return _storage.read('companion_$companionId') ?? false;
+
+    // ✅ Check reactive map first, then fall back to storage
+    if (unlockedCompanions.containsKey(companionId)) {
+      return unlockedCompanions[companionId] ?? false;
+    }
+
+    final unlocked = _storage.read('companion_$companionId') ?? false;
+    unlockedCompanions[companionId] = unlocked; // Cache in reactive map
+    return unlocked;
   }
 
   void unlockCompanion(String companionId) {
     _storage.write('companion_$companionId', true);
+    unlockedCompanions[companionId] = true;
     print('✅ Companion $companionId unlocked');
   }
 
@@ -140,14 +151,14 @@ class CompanionController extends GetxController {
     final companion = companions.firstWhere((c) => c.id == companionId);
 
     if (isCompanionUnlocked(companionId)) {
-      selectCompanion(companionId);
+      // selectCompanion(companionId);
       return;
     }
 
     if (coinController.coins.value >= companion.price) {
       coinController.spendCoins(companion.price);
       unlockCompanion(companionId);
-      selectCompanion(companionId);
+      // selectCompanion(companionId);
       _showPurchaseSuccessPopup();
     } else {
       _showInsufficientCoinsPopup();
@@ -264,6 +275,16 @@ class CompanionController extends GetxController {
   void onInit() {
     super.onInit();
     _loadSelectedCompanion();
+    _loadUnlockedCompanions();
+  }
+
+  void _loadUnlockedCompanions() {
+    for (final companion in companions) {
+      final unlocked = _storage.read('companion_${companion.id}') ?? false;
+      unlockedCompanions[companion.id] = unlocked;
+    }
+    // Robo is always unlocked
+    unlockedCompanions['robo'] = true;
   }
 }
 

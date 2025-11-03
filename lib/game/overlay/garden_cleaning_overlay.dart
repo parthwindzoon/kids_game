@@ -46,105 +46,103 @@ class GardenCleaningOverlay extends StatelessWidget {
           ),
 
           // Top UI Elements
-          SafeArea(
-            child: Stack(
-              children: [
-                // Title
-                Positioned(
-                  top: isTablet ? 20 : 15,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isTablet ? 30 : 20,
-                        vertical: isTablet ? 15 : 10,
-                      ),
-                      // decoration: BoxDecoration(
-                      //   color: Colors.white.withOpacity(0.9),
-                      //   borderRadius: BorderRadius.circular(30),
-                      //   border: Border.all(
-                      //     color: const Color(0xFF4CAF50),
-                      //     width: 3,
-                      //   ),
-                      //   boxShadow: [
-                      //     BoxShadow(
-                      //       color: Colors.black.withOpacity(0.2),
-                      //       blurRadius: 10,
-                      //       offset: const Offset(0, 4),
-                      //     ),
-                      //   ],
-                      // ),
-                      child: Text(
-                        'Clean the garden',
-                        style: TextStyle(
-                          fontFamily: 'AkayaKanadaka',
-                          fontSize: isTablet ? 36 : 28,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFFFF0000),
-                          shadows: [
-                            Shadow(
-                              offset: const Offset(2, 2),
-                              blurRadius: 3,
-                              color: Colors.white,
-                            ),
-                          ],
-                        ),
-                      ),
+          Stack(
+            children: [
+              // Title
+              Positioned(
+                top: isTablet ? 20 : 15,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 30 : 20,
+                      vertical: isTablet ? 15 : 10,
                     ),
-                  ),
-                ),
-
-                // Back Button (top-left)
-                Positioned(
-                  top: isTablet ? 20 : 15,
-                  left: isTablet ? 20 : 15,
-                  child: GestureDetector(
-                    onTap: () {
-                      controller.dispose();
-                      Get.delete<GardenCleaningController>();
-                      game.overlays.remove('garden_cleaning');
-                      game.overlays.add('minigames_overlay');
-                    },
-                    child: Image.asset(
-                      'assets/images/back_btn.png',
-                      width: isTablet ? 70 : 55,
-                      height: isTablet ? 70 : 55,
-                    ),
-                  ),
-                ),
-
-                // Score Display (top-right)
-                Positioned(
-                  top: isTablet ? 20 : 15,
-                  right: isTablet ? 20 : 15,
-                  child: Obx(() => Container(
-                    width: isTablet ? 180 : 140,
-                    height: isTablet ? 70 : 55,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/score_bg.png'),
-                        fit: BoxFit.fill,
-                      ),
-                    ),
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: isTablet ? 8 : 6),
-                        child: Text(
-                          'Score-${controller.score.value}',
-                          style: TextStyle(
-                            fontFamily: 'AkayaKanadaka',
-                            fontSize: isTablet ? 24 : 18,
-                            fontWeight: FontWeight.bold,
+                    // decoration: BoxDecoration(
+                    //   color: Colors.white.withOpacity(0.9),
+                    //   borderRadius: BorderRadius.circular(30),
+                    //   border: Border.all(
+                    //     color: const Color(0xFF4CAF50),
+                    //     width: 3,
+                    //   ),
+                    //   boxShadow: [
+                    //     BoxShadow(
+                    //       color: Colors.black.withOpacity(0.2),
+                    //       blurRadius: 10,
+                    //       offset: const Offset(0, 4),
+                    //     ),
+                    //   ],
+                    // ),
+                    child: Text(
+                      'Clean the garden',
+                      style: TextStyle(
+                        fontFamily: 'AkayaKanadaka',
+                        fontSize: isTablet ? 36 : 28,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFFFF0000),
+                        shadows: [
+                          Shadow(
+                            offset: const Offset(2, 2),
+                            blurRadius: 3,
                             color: Colors.white,
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Back Button (top-left)
+              Positioned(
+                top: isTablet ? 20 : 15,
+                left: isTablet ? 20 : 15,
+                child: GestureDetector(
+                  onTap: () {
+                    controller.dispose();
+                    Get.delete<GardenCleaningController>();
+                    game.overlays.remove('garden_cleaning');
+                    game.overlays.add('minigames_overlay');
+                  },
+                  child: Image.asset(
+                    'assets/images/back_btn.png',
+                    width: isTablet ? 70 : 55,
+                    height: isTablet ? 70 : 55,
+                  ),
+                ),
+              ),
+
+              // Score Display (top-right)
+              Positioned(
+                top: isTablet ? 20 : 15,
+                right: isTablet ? 20 : 15,
+                child: Obx(() => Container(
+                  width: isTablet ? 180 : 140,
+                  height: isTablet ? 70 : 55,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/score_bg.png'),
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: isTablet ? 8 : 6),
+                      child: Text(
+                        'Score-${controller.score.value}',
+                        style: TextStyle(
+                          fontFamily: 'AkayaKanadaka',
+                          fontSize: isTablet ? 24 : 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                  )),
-                ),
-              ],
-            ),
+                  ),
+                )),
+              ),
+            ],
           ),
 
           // Completion Popup

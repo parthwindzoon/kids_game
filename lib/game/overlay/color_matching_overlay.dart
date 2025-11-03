@@ -50,7 +50,7 @@ class ColorMatchingOverlay extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: isTablet ? 40 : 30),
+                  SizedBox(height: isTablet ? 30 : 15),
 
                   // Instruction text
                   Text(
@@ -63,7 +63,7 @@ class ColorMatchingOverlay extends StatelessWidget {
                     ),
                   ),
 
-                  SizedBox(height: isTablet ? 40 : 30),
+                  SizedBox(height: isTablet ? 30 : 15),
 
                   // Target color box
                   Obx(() => AnimatedContainer(
@@ -83,7 +83,7 @@ class ColorMatchingOverlay extends StatelessWidget {
                     ),
                   )),
 
-                  SizedBox(height: isTablet ? 50 : 40),
+                  SizedBox(height: isTablet ? 30 : 15),
 
                   // Color options (circles)
                   Padding(

@@ -111,26 +111,10 @@ class CountingFunOverlay extends StatelessWidget {
                 game.overlays.remove('counting_fun');
                 game.overlays.add('minigames_overlay');
               },
-              child: Container(
-                width: isTablet ? 60 : 45,
-                height: isTablet ? 60 : 45,
-                decoration: BoxDecoration(
-                  color: Colors.orange,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: isTablet ? 30 : 24,
-                ),
+              child: Image.asset(
+                'assets/images/back_btn.png',
+                width: isTablet ? 80 : 60,
+                height: isTablet ? 80 : 60,
               ),
             ),
           ),

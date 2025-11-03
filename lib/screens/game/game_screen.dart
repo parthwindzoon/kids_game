@@ -66,6 +66,61 @@ class _GameScreenState extends State<GameScreen> {
     super.dispose();
   }
 
+  // ✅ ADD THIS NEW METHOD
+  Widget _buildLoadingScreen(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.shortestSide > 600;
+
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/home/background.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Loading text
+              Text(
+                'Loading...',
+                style: TextStyle(
+                  fontFamily: 'AkayaKanadaka',
+                  fontSize: isTablet ? 48 : 36,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      offset: const Offset(2, 2),
+                      blurRadius: 4,
+                      color: Colors.black.withOpacity(0.5),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: isTablet ? 30 : 20),
+
+              // Loading indicator
+              SizedBox(
+                width: isTablet ? 60 : 50,
+                height: isTablet ? 60 : 50,
+                child: CircularProgressIndicator(
+                  strokeWidth: isTablet ? 6 : 5,
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _initializeGame() async {
     try {
       // Longer delay to ensure previous game is fully disposed
@@ -86,25 +141,22 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_isGameInitialized || _game == null) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return _buildLoadingScreen(context);
     }
 
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          Get.back();
-        }
+        // if (!didPop) {
+        //   Get.back();
+        // }
       },
       child: Scaffold(
         body: Stack(
           children: [
             GameWidget<TiledGame>(
               game: _game!,
+              loadingBuilder: (context) => _buildLoadingScreen(context),
               overlayBuilderMap: {
                 'building_popup': (context, game) {
                   return BuildingPopupOverlay(game: game);

@@ -46,176 +46,174 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
             fit: BoxFit.cover,
           ),
         ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // Main Content
-              Center(
-                child: Container(
-                  width: size.width * 0.85,
-                  height: size.height * 0.75,
-                  margin: EdgeInsets.only(top: isTablet ? 80 : 60), // Added margin to create space below title
-                  decoration: BoxDecoration(
-                    image: const DecorationImage(
-                      image: AssetImage('assets/images/change_character/white_bg.png'),
-                      fit: BoxFit.fill,
-                    ),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
+        child: Stack(
+          children: [
+            // Main Content
+            Center(
+              child: Container(
+                width: size.width * 0.85,
+                height: size.height * 0.75,
+                margin: EdgeInsets.only(top: isTablet ? 80 : 60), // Added margin to create space below title
+                decoration: BoxDecoration(
+                  image: const DecorationImage(
+                    image: AssetImage('assets/images/change_character/white_bg.png'),
+                    fit: BoxFit.fill,
                   ),
-                  child: Padding(
-                    padding: EdgeInsets.all(isTablet ? 60 : 40),
-                    child: _buildCompanionGrid(
-                      companionController,
-                      coinController,
-                      isTablet,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
                     ),
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(isTablet ? 60 : 40),
+                  child: _buildCompanionGrid(
+                    companionController,
+                    coinController,
+                    isTablet,
                   ),
                 ),
               ),
+            ),
 
-              // Title at the top
-              Positioned(
-                top: isTablet ? 60 : 30, // Moved title higher to create more space
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.store,
-                        size: isTablet ? 50 : 40,
+            // Title at the top
+            Positioned(
+              top: isTablet ? 60 : 30, // Moved title higher to create more space
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.store,
+                      size: isTablet ? 50 : 40,
+                      color: const Color(0xFFFF6B35),
+                    ),
+                    SizedBox(width: isTablet ? 15 : 10),
+                    Text(
+                      'Buy Pet',
+                      style: TextStyle(
+                        fontFamily: 'AkayaKanadaka',
+                        fontSize: isTablet ? 48 : 36,
+                        fontWeight: FontWeight.bold,
                         color: const Color(0xFFFF6B35),
+                        shadows: [
+                          Shadow(
+                            offset: const Offset(2, 2),
+                            blurRadius: 5,
+                            color: Colors.black.withOpacity(0.3),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: isTablet ? 15 : 10),
-                      Text(
-                        'Buy Pet',
-                        style: TextStyle(
-                          fontFamily: 'AkayaKanadaka',
-                          fontSize: isTablet ? 48 : 36,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFFFF6B35),
-                          shadows: [
-                            Shadow(
-                              offset: const Offset(2, 2),
-                              blurRadius: 5,
-                              color: Colors.black.withOpacity(0.3),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+            ),
 
-              // Back Button (top-left)
-              Positioned(
-                top: isTablet ? 20 : 10,
-                left: isTablet ? 20 : 10,
-                child: GestureDetector(
-                  onTap: () {
-                    try {
-                      // Close pet shop overlay and return to game
-                      widget.game.overlays.remove('pet_shop');
-                    } catch (e) {
-                      print('Error closing pet shop: $e');
-                    }
+            // Back Button (top-left)
+            Positioned(
+              top: isTablet ? 20 : 10,
+              left: isTablet ? 20 : 10,
+              child: GestureDetector(
+                onTap: () {
+                  try {
+                    // Close pet shop overlay and return to game
+                    widget.game.overlays.remove('pet_shop');
+                  } catch (e) {
+                    print('Error closing pet shop: $e');
+                  }
+                },
+                child: Image.asset(
+                  'assets/images/back_btn.png',
+                  width: isTablet ? 80 : 60,
+                  height: isTablet ? 80 : 60,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: isTablet ? 80 : 60,
+                      height: isTablet ? 80 : 60,
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.arrow_back, color: Colors.white),
+                    );
                   },
-                  child: Image.asset(
-                    'assets/images/back_btn.png',
-                    width: isTablet ? 80 : 60,
-                    height: isTablet ? 80 : 60,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: isTablet ? 80 : 60,
-                        height: isTablet ? 80 : 60,
-                        decoration: BoxDecoration(
-                          color: Colors.orange,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(Icons.arrow_back, color: Colors.white),
-                      );
-                    },
-                  ),
                 ),
               ),
+            ),
 
-              // Coins Display (top-right)
-              Positioned(
-                top: isTablet ? 20 : 10,
-                right: isTablet ? 20 : 10,
-                child: Obx(() => Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 20 : 15,
-                    vertical: isTablet ? 12 : 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFD700).withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(color: Colors.white, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+            // Coins Display (top-right)
+            Positioned(
+              top: isTablet ? 20 : 10,
+              right: isTablet ? 20 : 10,
+              child: Obx(() => Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 20 : 15,
+                  vertical: isTablet ? 12 : 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD700).withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/images/home/coin_simple.png',
+                      width: isTablet ? 30 : 24,
+                      height: isTablet ? 30 : 24,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.monetization_on,
+                          color: Colors.orange,
+                          size: isTablet ? 30 : 24,
+                        );
+                      },
+                    ),
+                    SizedBox(width: isTablet ? 10 : 8),
+                    Text(
+                      '${coinController.coins.value}',
+                      style: TextStyle(
+                        fontFamily: 'AkayaKanadaka',
+                        fontSize: isTablet ? 20 : 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset(
-                        'assets/images/home/coin_simple.png',
-                        width: isTablet ? 30 : 24,
-                        height: isTablet ? 30 : 24,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            Icons.monetization_on,
-                            color: Colors.orange,
-                            size: isTablet ? 30 : 24,
-                          );
-                        },
-                      ),
-                      SizedBox(width: isTablet ? 10 : 8),
-                      Text(
-                        '${coinController.coins.value}',
-                        style: TextStyle(
-                          fontFamily: 'AkayaKanadaka',
-                          fontSize: isTablet ? 20 : 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
-              ),
+                    ),
+                  ],
+                ),
+              )),
+            ),
 
-              // Purchase Success Popup
-              Obx(() {
-                if (!companionController.showPurchasePopup.value) {
-                  return const SizedBox.shrink();
-                }
-                return _buildPurchasePopup(companionController, isTablet);
-              }),
+            // Purchase Success Popup
+            Obx(() {
+              if (!companionController.showPurchasePopup.value) {
+                return const SizedBox.shrink();
+              }
+              return _buildPurchasePopup(companionController, isTablet);
+            }),
 
-              // Insufficient Coins Popup
-              Obx(() {
-                if (!companionController.showInsufficientCoinsPopup.value) {
-                  return const SizedBox.shrink();
-                }
-                return _buildInsufficientCoinsPopup(companionController, isTablet);
-              }),
-            ],
-          ),
+            // Insufficient Coins Popup
+            Obx(() {
+              if (!companionController.showInsufficientCoinsPopup.value) {
+                return const SizedBox.shrink();
+              }
+              return _buildInsufficientCoinsPopup(companionController, isTablet);
+            }),
+          ],
         ),
       );
     } catch (e) {

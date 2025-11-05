@@ -46,122 +46,107 @@ class AnimalQuizOverlay extends StatelessWidget {
             ),
           ),
 
-          SafeArea(
-            child: Stack(
-              children: [
-                // Back Button (top-left)
-                Positioned(
-                  top: isTablet ? 20 : 10,
-                  left: isTablet ? 20 : 10,
-                  child: GestureDetector(
-                    onTap: () {
-                      controller.dispose();
-                      Get.delete<AnimalQuizController>();
-                      game.overlays.remove('animal_quiz');
-                      game.overlays.add('minigames_overlay');
-                    },
-                    child: Container(
-                      width: isTablet ? 60 : 50,
-                      height: isTablet ? 60 : 50,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFA500),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                      ),
-                      child: Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: isTablet ? 30 : 24,
-                      ),
-                    ),
-                  ),
+          Stack(
+            children: [
+              // Back Button (top-left)
+              Positioned(
+                top: isTablet ? 20 : 10,
+                left: isTablet ? 20 : 10,
+                child: GestureDetector(
+                  onTap: () {
+                    controller.dispose();
+                    Get.delete<AnimalQuizController>();
+                    game.overlays.remove('animal_quiz');
+                    game.overlays.add('minigames_overlay');
+                  },
+                  child: Image.asset('assets/images/back_btn.png'),
                 ),
+              ),
 
-                // Title (top-center)
-                Positioned(
-                  top: isTablet ? 20 : 10,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Text(
-                      'Animal Quiz',
-                      style: TextStyle(
-                        fontFamily: 'AkayaKanadaka',
-                        fontSize: isTablet ? 42 : 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            offset: const Offset(0, 2),
-                            blurRadius: 4,
-                            color: const Color(0xFFFF6B6B),
-                          ),
-                          Shadow(
-                            offset: const Offset(0, -2),
-                            blurRadius: 4,
-                            color: const Color(0xFFFF6B6B),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Score (top-right)
-                Positioned(
-                  top: isTablet ? 20 : 10,
-                  right: isTablet ? 20 : 10,
-                  child: Obx(() => Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 25 : 20,
-                      vertical: isTablet ? 12 : 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00BCD4),
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: Colors.white, width: 3),
-                    ),
-                    child: Text(
-                      'Score-${controller.score.value}',
-                      style: TextStyle(
-                        fontFamily: 'AkayaKanadaka',
-                        fontSize: isTablet ? 22 : 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  )),
-                ),
-
-                // Main Content
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(height: isTablet ? 100 : 80),
-
-                      // Question Text
-                      Text(
-                        'which animal is this?',
-                        style: TextStyle(
-                          fontFamily: 'AkayaKanadaka',
-                          fontSize: isTablet ? 32 : 26,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+              // Title (top-center)
+              Positioned(
+                top: isTablet ? 20 : 10,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Text(
+                    'Animal Quiz',
+                    style: TextStyle(
+                      fontFamily: 'AkayaKanadaka',
+                      fontSize: isTablet ? 42 : 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          offset: const Offset(0, 2),
+                          blurRadius: 4,
+                          color: const Color(0xFFFF6B6B),
                         ),
-                      ),
-
-                      SizedBox(height: isTablet ? 40 : 30),
-
-                      // Game Layout (Animal Image + Options in Grid)
-                      Obx(() => _buildGameLayout(controller, isTablet)),
-
-                      const Spacer(),
-                    ],
+                        Shadow(
+                          offset: const Offset(0, -2),
+                          blurRadius: 4,
+                          color: const Color(0xFFFF6B6B),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+
+              // Score (top-right)
+              Positioned(
+                top: isTablet ? 20 : 10,
+                right: isTablet ? 20 : 10,
+                child: Obx(() => Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 25 : 20,
+                    vertical: isTablet ? 12 : 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00BCD4),
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: Colors.white, width: 3),
+                  ),
+                  child: Text(
+                    'Score-${controller.score.value}',
+                    style: TextStyle(
+                      fontFamily: 'AkayaKanadaka',
+                      fontSize: isTablet ? 22 : 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                )),
+              ),
+
+              // Main Content
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: isTablet ? 100 : 80),
+
+                    // Question Text
+                    Text(
+                      'which animal is this?',
+                      style: TextStyle(
+                        fontFamily: 'AkayaKanadaka',
+                        fontSize: isTablet ? 32 : 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+
+                    SizedBox(height: isTablet ? 40 : 30),
+
+                    // Game Layout (Animal Image + Options in Grid)
+                    Obx(() => _buildGameLayout(controller, isTablet)),
+
+                    const Spacer(),
+                  ],
+                ),
+              ),
+            ],
           ),
 
           // Success Popup

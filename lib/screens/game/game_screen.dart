@@ -147,9 +147,9 @@ class _GameScreenState extends State<GameScreen> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        // if (!didPop) {
-        //   Get.back();
-        // }
+        if (!didPop) {
+          Get.back();
+        }
       },
       child: Scaffold(
         body: Stack(

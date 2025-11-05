@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:kids_game/game/my_game.dart';
 import '../../controllers/image_selection_controller.dart';
-import '../../routes/app_pages.dart';
 
 class ImageSelectionView extends GetView<ImageSelectionController> {
   final TiledGame game;
@@ -18,92 +17,90 @@ class ImageSelectionView extends GetView<ImageSelectionController> {
       fit: StackFit.expand,
       children: [
         Image.asset('assets/images/coloring/image.png', fit: BoxFit.cover),
-        SafeArea(
-          child: Stack(
-            children: [
-              // Title (animated from top) - Similar to mini games
-              Obx(() {
-                final animValue = controller.titleAnimation.value.clamp(0.0, 1.0);
-                return Positioned(
-                  top: isTablet ? 80 : 60,
-                  left: 0,
-                  right: 0,
-                  child: Opacity(
-                    opacity: animValue,
-                    child: Transform.translate(
-                      offset: Offset(0, -50 * (1 - animValue)),
-                      child: Center(
-                        child: Text(
-                          "Color Filling",
-                          style: TextStyle(
-                            fontFamily: 'AkayaKanadaka',
-                            fontSize: isTablet ? 56 : 42,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                offset: const Offset(3, 3),
-                                blurRadius: 5,
-                                color: Colors.black.withOpacity(0.3),
-                              ),
-                            ],
-                          ),
+        Stack(
+          children: [
+            // Title (animated from top) - Similar to mini games
+            Obx(() {
+              final animValue = controller.titleAnimation.value.clamp(0.0, 1.0);
+              return Positioned(
+                top: isTablet ? 80 : 60,
+                left: 0,
+                right: 0,
+                child: Opacity(
+                  opacity: animValue,
+                  child: Transform.translate(
+                    offset: Offset(0, -50 * (1 - animValue)),
+                    child: Center(
+                      child: Text(
+                        "Color Filling",
+                        style: TextStyle(
+                          fontFamily: 'AkayaKanadaka',
+                          fontSize: isTablet ? 56 : 42,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              offset: const Offset(3, 3),
+                              blurRadius: 5,
+                              color: Colors.black.withOpacity(0.3),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                );
-              }),
+                ),
+              );
+            }),
 
-              // Horizontal Carousel - Similar to mini games
-              Center(
-                child: SizedBox(
-                  height: isTablet ? 450 : 380,
-                  child: PageView.builder(
-                    controller: controller.pageController,
-                    itemCount: controller.svgImages.length,
-                    itemBuilder: (context, index) {
-                      final svgPath = controller.svgImages[index];
+            // Horizontal Carousel - Similar to mini games
+            Center(
+              child: SizedBox(
+                height: isTablet ? 450 : 380,
+                child: PageView.builder(
+                  controller: controller.pageController,
+                  itemCount: controller.svgImages.length,
+                  itemBuilder: (context, index) {
+                    final svgPath = controller.svgImages[index];
 
-                      return AnimatedBuilder(
-                        animation: controller.pageController,
-                        builder: (context, child) {
-                          double value = 1.0;
-                          if (controller.pageController.position.haveDimensions) {
-                            value = controller.pageController.page! - index;
-                            value = (1 - (value.abs() * 0.25)).clamp(0.75, 1.0);
-                          }
-                          return Center(
-                            child: Transform.scale(
-                              scale: value,
-                              child: Opacity(
-                                opacity: value,
-                                child: child,
-                              ),
+                    return AnimatedBuilder(
+                      animation: controller.pageController,
+                      builder: (context, child) {
+                        double value = 1.0;
+                        if (controller.pageController.position.haveDimensions) {
+                          value = controller.pageController.page! - index;
+                          value = (1 - (value.abs() * 0.25)).clamp(0.75, 1.0);
+                        }
+                        return Center(
+                          child: Transform.scale(
+                            scale: value,
+                            child: Opacity(
+                              opacity: value,
+                              child: child,
                             ),
-                          );
-                        },
-                        child: _buildImageCard(svgPath, index, isTablet),
-                      );
-                    },
-                  ),
-                ),
-              ),
-
-              // Back Button (top-left)
-              Positioned(
-                top: isTablet ? 20 : 10,
-                left: isTablet ? 20 : 10,
-                child: GestureDetector(
-                  onTap: () {
-                    game.overlays.remove('image_selection_overlay');
-                    Get.delete<ImageSelectionController>();
+                          ),
+                        );
+                      },
+                      child: _buildImageCard(svgPath, index, isTablet),
+                    );
                   },
-                  child: Image.asset('assets/images/back_btn.png', width: isTablet ? 80 : 60),
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // Back Button (top-left)
+            Positioned(
+              top: isTablet ? 20 : 10,
+              left: isTablet ? 20 : 10,
+              child: GestureDetector(
+                onTap: () {
+                  game.overlays.remove('image_selection_overlay');
+                  Get.delete<ImageSelectionController>();
+                },
+                child: Image.asset('assets/images/back_btn.png', width: isTablet ? 80 : 60),
+              ),
+            ),
+          ],
         ),
       ],
     );

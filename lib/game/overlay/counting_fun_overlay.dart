@@ -35,7 +35,7 @@ class CountingFunOverlay extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: isTablet ? 80 : 60),
+                SizedBox(height: isTablet ? 40 : 30),
 
                 // Title - "Counting Fun" with white text and red outline
                 Stack(

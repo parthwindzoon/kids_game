@@ -98,8 +98,8 @@ class _SplashScreenState extends State<SplashScreen>
               position: _slideAnimation,
               child: Image.asset(
                 'assets/images/home/learnberry.png',
-                width: isTablet ? 400 : 300,
-                height: isTablet ? 400 : 300,
+                width: isTablet ? 800 : 600,
+                height: isTablet ? 800 : 600,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
                   return Icon(

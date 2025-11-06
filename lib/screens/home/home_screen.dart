@@ -26,11 +26,12 @@ class HomeScreen extends StatelessWidget {
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: const AssetImage('assets/images/home/background.png'),
-                fit: isTablet ? BoxFit.fill : BoxFit.cover,
+                fit: BoxFit.cover,
               ),
             ),
             child: Stack(
               children: [
+                // ... (Coin Counter, Title, Owl, Deer widgets remain unchanged) ...
 
                 // Coin Counter (from right)
                 Obx(() => AnimatedPositioned(
@@ -91,22 +92,17 @@ class HomeScreen extends StatelessWidget {
                   )),
                 ),
 
+
+                // --- MODIFICATION 1: Removed AnimatedSlide wrapper ---
                 // Play Game Group with Lion (from bottom)
                 Align(
                   alignment: Alignment.bottomCenter,
-                  child: Obx(() => AnimatedSlide(
-                    duration: const Duration(milliseconds: 800),
-                    curve: Curves.easeOutBack,
-                    offset: controller.showPlayGameGroup.value
-                        ? Offset.zero
-                        : const Offset(0, 2),
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        bottom: isTablet ? 20 : 0,
-                      ),
-                      child: _buildPlayGameGroupWithLion(controller, isTablet),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      bottom: isTablet ? 20 : 0,
                     ),
-                  )),
+                    child: _buildPlayGameGroupWithLion(controller, isTablet),
+                  ),
                 ),
               ],
             ),
@@ -132,6 +128,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // ... (_buildCoinCounter and _buildTitle methods remain unchanged) ...
 
   Widget _buildCoinCounter(bool isTablet) {
     final coinController = Get.find<CoinController>();
@@ -185,6 +182,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // --- MODIFICATION 2: Animations moved INSIDE this method ---
   Widget _buildPlayGameGroupWithLion(HomeController controller, bool isTablet) {
     final groupWidth = isTablet ? 720.0 : 500.0;
     final groupHeight = isTablet ? 180.0 : 140.0;
@@ -198,19 +196,105 @@ class HomeScreen extends StatelessWidget {
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
-          // Base purple container
-          Positioned(
-            top: lionSize * 0.5,
-            left: 0,
-            right: 0,
-            bottom: arrowSize * 0.5,
-            child: Image.asset(
-              'assets/images/home/play_group_base.png',
-              fit: BoxFit.fill,
-            ),
-          ),
+          // --- This AnimatedSlide now wraps the GROUP elements ---
+          Obx(() => AnimatedSlide(
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeOutBack,
+            offset: controller.showPlayGameGroup.value
+                ? Offset.zero
+                : const Offset(0, 2), // Slide from BOTTOM
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                // Base purple container
+                Positioned(
+                  top: lionSize * 0.5,
+                  left: 0,
+                  right: 0,
+                  bottom: arrowSize * 0.5,
+                  child: Image.asset(
+                    'assets/images/home/play_group_base.png',
+                    fit: BoxFit.fill,
+                  ),
+                ),
 
-          // Lion sitting on the EDGE of purple container
+                // Character Button (left side)
+                Positioned(
+                  left: isTablet ? 70 : 50,
+                  top: lionSize * 0.5 + (isTablet ? 60 : 50),
+                  child: GestureDetector(
+                    onTap: controller.openCharacterSelection,
+                    child: Image.asset(
+                      'assets/images/home/character_btn.png',
+                      width: isTablet ? 190 : 150,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+
+                // Play Game Text
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: lionSize * 0.5 + (isTablet ? 15 : 10),
+                  child: Center(
+                    child: Text(
+                      'Play Game',
+                      style: TextStyle(
+                        fontFamily: 'AkayaKanadaka',
+                        fontSize: isTablet ? 36 : 28,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white,
+                        letterSpacing: 0,
+                        shadows: [
+                          Shadow(
+                            offset: const Offset(0, 2),
+                            blurRadius: 3.8,
+                            color: Colors.black.withValues(alpha: 0.25),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Arrow Button
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 30,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: controller.navigateToGame,
+                      child: Image.asset(
+                        'assets/images/home/arrow_btn.png',
+                        width: arrowSize,
+                        height: arrowSize,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Companion Button (right side)
+                Positioned(
+                  right: isTablet ? 70 : 50,
+                  top: lionSize * 0.5 + (isTablet ? 60 : 50),
+                  child: GestureDetector(
+                    onTap: controller.openCompanionSelection,
+                    child: Image.asset(
+                      'assets/images/home/companion_btn.png',
+                      width: isTablet ? 190 : 150,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )),
+
+          // --- Lion is now a SIBLING to the group animation ---
           Positioned(
             top: -50,
             left: 0,
@@ -220,7 +304,7 @@ class HomeScreen extends StatelessWidget {
               curve: Curves.easeOutBack,
               offset: controller.showLion.value
                   ? Offset.zero
-                  : const Offset(0, -3),
+                  : const Offset(0, -4), // Slide from TOP
               child: Center(
                 child: Image.asset(
                   'assets/images/home/lion.png',
@@ -229,78 +313,6 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             )),
-          ),
-
-          // Character Button (left side)
-          Positioned(
-            left: isTablet ? 70 : 50,
-            top: lionSize * 0.5 + (isTablet ? 60 : 50),
-            child: GestureDetector(
-              onTap: controller.openCharacterSelection,
-              child: Image.asset(
-                'assets/images/home/character_btn.png',
-                width: isTablet ? 190 : 150,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-
-          // Play Game Text
-          Positioned(
-            left: 0,
-            right: 0,
-            top: lionSize * 0.5 + (isTablet ? 15 : 10),
-            child: Center(
-              child: Text(
-                'Play Game',
-                style: TextStyle(
-                  fontFamily: 'AkayaKanadaka',
-                  fontSize: isTablet ? 36 : 28,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white,
-                  letterSpacing: 0,
-                  shadows: [
-                    Shadow(
-                      offset: const Offset(0, 2),
-                      blurRadius: 3.8,
-                      color: Colors.black.withValues(alpha: 0.25),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Arrow Button
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 30,
-            child: Center(
-              child: GestureDetector(
-                onTap: controller.navigateToGame,
-                child: Image.asset(
-                  'assets/images/home/arrow_btn.png',
-                  width: arrowSize,
-                  height: arrowSize,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-          ),
-
-          // Companion Button (right side)
-          Positioned(
-            right: isTablet ? 70 : 50,
-            top: lionSize * 0.5 + (isTablet ? 60 : 50),
-            child: GestureDetector(
-              onTap: controller.openCompanionSelection,
-              child: Image.asset(
-                'assets/images/home/companion_btn.png',
-                width: isTablet ? 190 : 150,
-                fit: BoxFit.contain,
-              ),
-            ),
           ),
         ],
       ),

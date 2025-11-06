@@ -340,7 +340,7 @@ class WheelPainter extends CustomPainter {
     if (prize.type == PrizeType.companion) {
       // Draw penguin icon for companion
       if (penguinImage != null) {
-        final iconSize = isTablet ? 28.0 : 22.0;
+        final iconSize = isTablet ? 50.0 : 40.0;
         final srcRect = Rect.fromLTWH(
           0,
           0,
@@ -355,7 +355,7 @@ class WheelPainter extends CustomPainter {
         canvas.drawImageRect(penguinImage!, srcRect, dstRect, Paint());
       } else {
         // Fallback while image is loading
-        final iconSize = isTablet ? 28.0 : 22.0;
+        final iconSize = isTablet ? 50.0 : 40.0;
         final paint = Paint()
           ..color = Colors.white
           ..style = PaintingStyle.fill;

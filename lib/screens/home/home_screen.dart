@@ -178,8 +178,8 @@ class HomeScreen extends StatelessWidget {
   Widget _buildTitle(bool isTablet) {
     return Center(
       child: Image.asset(
-        'assets/images/home/title.png',
-        width: isTablet ? 500 : 300,
+        'assets/images/home/learnberry.png',
+        width: isTablet ? 600 : 400,
         fit: BoxFit.contain,
       ),
     );

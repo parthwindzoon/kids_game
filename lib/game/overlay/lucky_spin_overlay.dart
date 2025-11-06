@@ -193,8 +193,8 @@ class LuckySpinOverlay extends StatelessWidget {
             top: 0,
             child: Image.asset(
               'assets/images/lucky_spin/wheel_point.png',
-              width: isTablet ? 46 : 160,
-              height: isTablet ? 46 : 160,
+              width: isTablet ? 200 : 160,
+              height: isTablet ? 200 : 160,
               fit: BoxFit.contain,
             ),
           ),
@@ -220,10 +220,10 @@ class WheelPainter extends CustomPainter {
     final segmentAngle = 2 * pi / n;
 
     // Subtle dividers and labels
-    final dividerPaint = Paint()
-      ..color = Colors.white.withOpacity(0.16)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
+    // final dividerPaint = Paint()
+    //   ..color = Colors.white.withOpacity(0.16)
+    //   ..style = PaintingStyle.stroke
+    //   ..strokeWidth = 1.2;
 
     final textStyle = TextStyle(
       color: Colors.white,
@@ -235,15 +235,15 @@ class WheelPainter extends CustomPainter {
     );
 
     // Draw slice dividers (optional – aligns with your existing wheel art)
-    for (int i = 0; i < n; i++) {
-      final start = i * segmentAngle;
-      final p1 = center;
-      final p2 = Offset(
-        center.dx + radius * cos(start - pi / 2),
-        center.dy + radius * sin(start - pi / 2),
-      );
-      canvas.drawLine(p1, p2, dividerPaint);
-    }
+    // for (int i = 0; i < n; i++) {
+      // final start = i * segmentAngle;
+      // final p1 = center;
+      // final p2 = Offset(
+      //   center.dx + radius * cos(start - pi / 2),
+      //   center.dy + radius * sin(start - pi / 2),
+      // );
+      // canvas.drawLine(p1, p2, dividerPaint);
+    // }
 
     // Draw labels at each slice center
     for (int i = 0; i < n; i++) {

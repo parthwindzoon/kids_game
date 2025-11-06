@@ -5,6 +5,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:kids_game/controllers/character_controller.dart';
 import 'package:kids_game/controllers/companion_controller.dart';
 import 'controllers/coin_controller.dart';
+import 'screens/splash/splash_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/game/game_screen.dart';
 
@@ -41,8 +42,13 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',
+      initialRoute: '/splash',
       getPages: [
+        GetPage(
+          name: '/splash',
+          page: () => const SplashScreen(),
+          transition: Transition.noTransition,
+        ),
         GetPage(
           name: '/',
           page: () => const HomeScreen(),

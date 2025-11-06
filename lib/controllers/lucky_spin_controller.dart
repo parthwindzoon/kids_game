@@ -208,7 +208,7 @@ class LuckySpinController extends GetxController
 
   Future<void> _playSuccessSound() async {
     try {
-      await FlameAudio.play('win.mp3', volume: 0.8);
+      await FlameAudio.play('success.mp3', volume: 0.8);
     } catch (_) {}
   }
 }

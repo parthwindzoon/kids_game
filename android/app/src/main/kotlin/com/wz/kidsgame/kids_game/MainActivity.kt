@@ -1,4 +1,4 @@
-package com.wz.kidsgame.kids_game
+package com.learnberry.kidsgame
 
 import io.flutter.embedding.android.FlutterActivity
 

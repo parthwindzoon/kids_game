@@ -1,7 +1,9 @@
 // lib/game/overlay/lucky_spin_overlay.dart
 
 import 'dart:math';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:kids_game/game/my_game.dart';
 import 'package:get_storage/get_storage.dart';
@@ -10,13 +12,38 @@ import '../../controllers/lucky_spin_controller.dart';
 import '../../controllers/coin_controller.dart';
 import '../../controllers/companion_controller.dart';
 
-class LuckySpinOverlay extends StatelessWidget {
+class LuckySpinOverlay extends StatefulWidget {
   final TiledGame game;
 
   const LuckySpinOverlay({super.key, required this.game});
 
   @override
+  State<LuckySpinOverlay> createState() => _LuckySpinOverlayState();
+}
+
+class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
+  ui.Image? penguinImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPenguinImage();
+  }
+
+  Future<void> _loadPenguinImage() async {
+    final data = await rootBundle.load('assets/images/companions/penguin.png');
+    final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+    final frame = await codec.getNextFrame();
+    if (mounted) {
+      setState(() {
+        penguinImage = frame.image;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final game = widget.game;
     final controller = Get.put(LuckySpinController(), permanent: true);
     final coinController = Get.find<CoinController>();
     final size = MediaQuery.of(context).size;
@@ -250,7 +277,7 @@ class LuckySpinOverlay extends StatelessWidget {
                   IgnorePointer(
                     child: CustomPaint(
                       size: Size(wheelSize, wheelSize),
-                      painter: WheelPainter(controller.prizes, controller, isTablet),
+                      painter: WheelPainter(controller.prizes, controller, isTablet, penguinImage),
                     ),
                   ),
                 ],
@@ -279,8 +306,9 @@ class WheelPainter extends CustomPainter {
   final List<SpinPrize> prizes;
   final LuckySpinController controller;
   final bool isTablet;
+  final ui.Image? penguinImage;
 
-  WheelPainter(this.prizes, this.controller, this.isTablet);
+  WheelPainter(this.prizes, this.controller, this.isTablet, this.penguinImage);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -311,34 +339,28 @@ class WheelPainter extends CustomPainter {
   void _drawPrizeLabel(Canvas canvas, SpinPrize prize, Size size) {
     if (prize.type == PrizeType.companion) {
       // Draw penguin icon for companion
-      final iconSize = isTablet ? 28.0 : 22.0;
-      final iconRect = Rect.fromCenter(
-        center: Offset.zero,
-        width: iconSize,
-        height: iconSize,
-      );
-
-      // Note: We can't directly draw images in CustomPainter without preloading
-      // So we'll draw a simple representation
-      final paint = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.fill;
-
-      canvas.drawCircle(Offset.zero, iconSize / 2, paint);
-
-      // Draw simple penguin representation
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: '🐧',
-          style: TextStyle(fontSize: isTablet ? 20 : 16),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-
-      textPainter.paint(
-        canvas,
-        Offset(-textPainter.width / 2, -textPainter.height / 2),
-      );
+      if (penguinImage != null) {
+        final iconSize = isTablet ? 28.0 : 22.0;
+        final srcRect = Rect.fromLTWH(
+          0,
+          0,
+          penguinImage!.width.toDouble(),
+          penguinImage!.height.toDouble(),
+        );
+        final dstRect = Rect.fromCenter(
+          center: Offset.zero,
+          width: iconSize,
+          height: iconSize,
+        );
+        canvas.drawImageRect(penguinImage!, srcRect, dstRect, Paint());
+      } else {
+        // Fallback while image is loading
+        final iconSize = isTablet ? 28.0 : 22.0;
+        final paint = Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(Offset.zero, iconSize / 2, paint);
+      }
     } else if (prize.type == PrizeType.coins) {
       // Draw coin icon + amount for coins
       final textStyle = TextStyle(

@@ -23,11 +23,13 @@ class LuckySpinOverlay extends StatefulWidget {
 
 class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
   ui.Image? penguinImage;
+  ui.Image? coinImage;
 
   @override
   void initState() {
     super.initState();
     _loadPenguinImage();
+    _loadCoinImage();
   }
 
   Future<void> _loadPenguinImage() async {
@@ -37,6 +39,17 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
     if (mounted) {
       setState(() {
         penguinImage = frame.image;
+      });
+    }
+  }
+
+  Future<void> _loadCoinImage() async {
+    final data = await rootBundle.load('assets/images/lucky_spin/coin.png');
+    final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+    final frame = await codec.getNextFrame();
+    if (mounted) {
+      setState(() {
+        coinImage = frame.image;
       });
     }
   }
@@ -277,7 +290,13 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
                   IgnorePointer(
                     child: CustomPaint(
                       size: Size(wheelSize, wheelSize),
-                      painter: WheelPainter(controller.prizes, controller, isTablet, penguinImage),
+                      painter: WheelPainter(
+                        controller.prizes,
+                        controller,
+                        isTablet,
+                        penguinImage,
+                        coinImage,
+                      ),
                     ),
                   ),
                 ],
@@ -307,8 +326,15 @@ class WheelPainter extends CustomPainter {
   final LuckySpinController controller;
   final bool isTablet;
   final ui.Image? penguinImage;
+  final ui.Image? coinImage;
 
-  WheelPainter(this.prizes, this.controller, this.isTablet, this.penguinImage);
+  WheelPainter(
+      this.prizes,
+      this.controller,
+      this.isTablet,
+      this.penguinImage,
+      this.coinImage,
+      );
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -363,29 +389,70 @@ class WheelPainter extends CustomPainter {
       }
     } else if (prize.type == PrizeType.coins) {
       // Draw coin icon + amount for coins
-      final textStyle = TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.w800,
-        fontSize: size.width >= 300 ? 14 : 12,
-        shadows: const [
-          Shadow(blurRadius: 2, color: Colors.black54, offset: Offset(0, 1)),
-        ],
-      );
+      if (coinImage != null) {
+        final iconSize = isTablet ? 30.0 : 24.0;
 
-      // Draw coin emoji
-      final coinPainter = TextPainter(
-        text: TextSpan(
-          text: '🪙 ${prize.amount}',
-          style: textStyle,
-        ),
-        textDirection: TextDirection.ltr,
-        textAlign: TextAlign.center,
-      )..layout();
+        // Calculate total width to center both coin and text together
+        final textStyle = TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w800,
+          fontSize: size.width >= 300 ? 16 : 14,
+          shadows: const [
+            Shadow(blurRadius: 2, color: Colors.black54, offset: Offset(0, 1)),
+          ],
+        );
 
-      coinPainter.paint(
-        canvas,
-        Offset(-coinPainter.width / 2, -coinPainter.height / 2),
-      );
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: '${prize.amount}',
+            style: textStyle,
+          ),
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.center,
+        )..layout();
+
+        final spacing = 5.0; // 5 pixels spacing between coin and text
+        final totalWidth = iconSize + spacing + textPainter.width;
+        final startX = -totalWidth / 2;
+
+        // Draw coin image
+        final srcRect = Rect.fromLTWH(
+          0,
+          0,
+          coinImage!.width.toDouble(),
+          coinImage!.height.toDouble(),
+        );
+        final dstRect = Rect.fromCenter(
+          center: Offset(startX + iconSize / 2, 0),
+          width: iconSize,
+          height: iconSize,
+        );
+        canvas.drawImageRect(coinImage!, srcRect, dstRect, Paint());
+
+        // Draw amount text
+        textPainter.paint(
+          canvas,
+          Offset(startX + iconSize + spacing, -textPainter.height / 2),
+        );
+      } else {
+        // Fallback if image not loaded yet
+        final textStyle = TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w800,
+          fontSize: size.width >= 300 ? 14 : 12,
+          shadows: const [
+            Shadow(blurRadius: 2, color: Colors.black54, offset: Offset(0, 1)),
+          ],
+        );
+
+        final tp = TextPainter(
+          text: TextSpan(text: '${prize.amount}', style: textStyle),
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.center,
+        )..layout();
+
+        tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
+      }
     } else {
       // Draw text for other prizes
       final textStyle = TextStyle(

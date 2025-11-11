@@ -150,6 +150,8 @@ class LearnAnimalsOverlay extends StatelessWidget {
                 Get.delete<LearnAnimalsController>();
                 game.overlays.remove('learn_animals');
                 game.overlays.add('minigames_overlay');
+
+                game.resumeBackgroundMusic();
               },
               child: Image.asset('assets/images/back_btn.png'),
             ),
@@ -287,6 +289,8 @@ class LearnAnimalsOverlay extends StatelessWidget {
                           child: GestureDetector(
                             onTap: () {
                               controller.closePopup();
+
+                              game.resumeBackgroundMusic();
                             },
                             child: Image.asset(
                               'assets/images/overlays/Group 86.png',

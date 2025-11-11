@@ -104,6 +104,8 @@ class SimpleMathOverlay extends StatelessWidget {
                 Get.delete<SimpleMathController>();
                 game.overlays.remove('simple_math');
                 game.overlays.add('minigames_overlay');
+
+                game.resumeBackgroundMusic();
               },
               child: Image.asset(
                 'assets/images/back_btn.png',

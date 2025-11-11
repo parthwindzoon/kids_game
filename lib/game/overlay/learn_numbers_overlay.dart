@@ -123,6 +123,8 @@ class LearnNumbersOverlay extends StatelessWidget {
                 Get.delete<LearnNumbersController>();
                 game.overlays.remove('learn_numbers');
                 game.overlays.add('minigames_overlay');
+
+                game.resumeBackgroundMusic();
               },
               child: Image.asset('assets/images/back_btn.png'),
             ),
@@ -254,6 +256,8 @@ class LearnNumbersOverlay extends StatelessWidget {
                           child: GestureDetector(
                             onTap: () {
                               controller.closePopup();
+
+                              game.resumeBackgroundMusic();
                             },
                             child: Image.asset(
                               'assets/images/overlays/Group 86.png',

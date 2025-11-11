@@ -113,6 +113,8 @@ class PopBalloonOverlay extends StatelessWidget {
                 Get.delete<PopBalloonController>();
                 game.overlays.remove('pop_balloon');
                 game.overlays.add('minigames_overlay');
+
+                game.resumeBackgroundMusic();
               },
               child: Image.asset(
                 'assets/images/back_btn.png',
@@ -412,6 +414,8 @@ class PopBalloonOverlay extends StatelessWidget {
                           Get.delete<PopBalloonController>();
                           game.overlays.remove('pop_balloon');
                           game.overlays.add('minigames_overlay');
+
+                          game.resumeBackgroundMusic();
                         },
                         child: Image.asset(
                           'assets/images/overlays/Group 86.png',

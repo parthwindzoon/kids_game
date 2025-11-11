@@ -15,6 +15,8 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   static const double _playerWidth = 42.0;
   static const double _playerHeight = 42.0;
 
+  bool get isMoving => _isMoving;
+
   Vector2 direction = Vector2.zero();
   Vector2 velocity = Vector2.zero();
   final Set<LogicalKeyboardKey> _keysPressed = <LogicalKeyboardKey>{};

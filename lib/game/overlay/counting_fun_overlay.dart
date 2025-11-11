@@ -110,6 +110,8 @@ class CountingFunOverlay extends StatelessWidget {
                 Get.delete<CountingFunController>();
                 game.overlays.remove('counting_fun');
                 game.overlays.add('minigames_overlay');
+
+                game.resumeBackgroundMusic();
               },
               child: Image.asset(
                 'assets/images/back_btn.png',
@@ -599,6 +601,8 @@ class CountingFunOverlay extends StatelessWidget {
                           Get.delete<CountingFunController>();
                           game.overlays.remove('counting_fun');
                           game.overlays.add('minigames_overlay');
+
+                          game.resumeBackgroundMusic();
                         },
                         child: Image.asset(
                           'assets/images/overlays/Group 86.png',

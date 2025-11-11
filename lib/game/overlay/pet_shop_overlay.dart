@@ -124,6 +124,8 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
                   try {
                     // Close pet shop overlay and return to game
                     widget.game.overlays.remove('pet_shop');
+
+                    widget.game.resumeBackgroundMusic();
                   } catch (e) {
                     print('Error closing pet shop: $e');
                   }

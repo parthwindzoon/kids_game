@@ -49,7 +49,7 @@ class HomeScreen extends StatelessWidget {
                   duration: const Duration(milliseconds: 800),
                   curve: Curves.easeOutBack,
                   top: controller.showTitle.value
-                      ? (isTablet ? 60 : 30)
+                      ? (isTablet ? 60 : 10)
                       : -150,
                   left: 0,
                   right: 0,
@@ -176,7 +176,7 @@ class HomeScreen extends StatelessWidget {
     return Center(
       child: Image.asset(
         'assets/images/home/learnberry.png',
-        width: isTablet ? 600 : 400,
+        width: isTablet ? 600 : 450,
         fit: BoxFit.contain,
       ),
     );

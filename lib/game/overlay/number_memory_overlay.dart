@@ -109,6 +109,8 @@ class NumberMemoryOverlay extends StatelessWidget {
                 Get.delete<NumberMemoryController>();
                 game.overlays.remove('number_memory');
                 game.overlays.add('minigames_overlay');
+
+                game.resumeBackgroundMusic();
               },
               child: Image.asset('assets/images/back_btn.png'),
             ),
@@ -438,6 +440,8 @@ class NumberMemoryOverlay extends StatelessWidget {
                           Get.delete<NumberMemoryController>();
                           game.overlays.remove('number_memory');
                           game.overlays.add('minigames_overlay');
+
+                          game.resumeBackgroundMusic();
                         },
                         child: Image.asset(
                           'assets/images/overlays/Group 86.png',

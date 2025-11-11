@@ -7,6 +7,7 @@ import 'package:flame/input.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'components/player.dart';
 import 'components/companion_component.dart';
 import '../controllers/companion_controller.dart';
@@ -20,6 +21,9 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
   String? currentBuildingName;
   bool overlayManuallyClosed = false;
   String? selectedColoringSvgPath;
+
+  // Background music control
+  bool _isBgmPlaying = false;
 
   @override
   bool get debugMode => false;
@@ -72,7 +76,51 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
 
     _setupCameraBounds();
 
+    // Start background music
+    _startBackgroundMusic();
+
     print('✅ Game fully loaded - player and companion ready');
+  }
+
+  // Start background music
+  Future<void> _startBackgroundMusic() async {
+    try {
+      if (!_isBgmPlaying) {
+        await FlameAudio.bgm.play('LearnBerry Jingle.mp3', volume: 0.5);
+        _isBgmPlaying = true;
+        print('🎵 Background music started');
+      }
+    } catch (e) {
+      print('⚠️ Error starting background music: $e');
+    }
+  }
+
+  // Stop background music (called when entering mini games)
+  void stopBackgroundMusic() {
+    try {
+      if (_isBgmPlaying) {
+        FlameAudio.bgm.pause();
+        _isBgmPlaying = false;
+        print('🔇 Background music stopped');
+      }
+    } catch (e) {
+      print('⚠️ Error stopping background music: $e');
+    }
+  }
+
+  // Resume background music (called when returning to main game)
+  Future<void> resumeBackgroundMusic() async {
+    try {
+      if (!_isBgmPlaying) {
+        await FlameAudio.bgm.resume();
+        _isBgmPlaying = true;
+        print('🎵 Background music resumed');
+      }
+    } catch (e) {
+      print('⚠️ Error resuming background music: $e');
+      // If resume fails, try playing again
+      _startBackgroundMusic();
+    }
   }
 
   Future<void> _loadCompanion(Vector2 spawnPoint) async {
@@ -207,6 +255,9 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
   @override
   void onRemove() {
     print('🔥 TiledGame onRemove() called');
+
+    // Stop background music when game is removed
+    stopBackgroundMusic();
 
     // Explicitly remove companion first
     if (companion != null) {

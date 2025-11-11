@@ -89,6 +89,8 @@ class ShapeSortingOverlay extends StatelessWidget {
                 Get.delete<ShapeSortingController>();
                 game.overlays.remove('shape_sorting');
                 game.overlays.add('minigames_overlay');
+
+                game.resumeBackgroundMusic();
               },
                 child: Image.asset('assets/images/back_btn.png')
             ),
@@ -454,6 +456,8 @@ class ShapeSortingOverlay extends StatelessWidget {
                           Get.delete<ShapeSortingController>();
                           game.overlays.remove('shape_sorting');
                           game.overlays.add('minigames_overlay');
+
+                          game.resumeBackgroundMusic();
                         },
                         child: Image.asset(
                           'assets/images/overlays/Group 86.png',
@@ -576,7 +580,7 @@ class ShapeSortingController extends GetxController {
 
     // Award coins
     final coinController = Get.find<CoinController>();
-    coinController.addCoins(5000);
+    coinController.addCoins(5);
   }
 
   void _animatePopupIn() {

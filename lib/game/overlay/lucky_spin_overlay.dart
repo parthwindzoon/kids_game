@@ -94,6 +94,8 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
             onTap: () {
               game.overlays.remove('lucky_spin');
               Get.delete<LuckySpinController>();
+
+              game.resumeBackgroundMusic();
             },
             child: Image.asset(
               'assets/images/back_btn.png',

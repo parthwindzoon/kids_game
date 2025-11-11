@@ -411,6 +411,8 @@ class MiniGamesController extends GetxController
   void navigateToMiniGame(String gameName) {
     print('Navigating to: $gameName');
 
+    game.stopBackgroundMusic();
+
     // Remove current overlay
     game.overlays.remove('minigames_overlay');
 

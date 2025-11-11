@@ -114,6 +114,8 @@ class ColorMatchingOverlay extends StatelessWidget {
                 Get.delete<ColorMatchingController>();
                 game.overlays.remove('color_matching');
                 game.overlays.add('minigames_overlay');
+
+                game.resumeBackgroundMusic();
               },
               child: Image.asset('assets/images/back_btn.png')  ,
             ),
@@ -512,6 +514,8 @@ class ColorMatchingOverlay extends StatelessWidget {
                           Get.delete<ColorMatchingController>();
                           game.overlays.remove('color_matching');
                           game.overlays.add('minigames_overlay');
+
+                          game.resumeBackgroundMusic();
                         },
                         child: Image.asset(
                           'assets/images/overlays/Group 86.png',

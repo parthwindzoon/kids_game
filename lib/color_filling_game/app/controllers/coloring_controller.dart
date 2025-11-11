@@ -10,7 +10,7 @@ class ColoringController extends GetxController with WidgetsBindingObserver {
   var history = <List<DrawingPoint>>[].obs;
   final transformationController = TransformationController();
   var currentPath = <DrawingPoint>[].obs;
-  Rx<Color> selectedColor = Colors.red.obs;
+  Rx<Color> selectedColor = Rx<Color>(Colors.red);
   var isPanEnabled = true.obs;
   int activePointerCount = 0;
   bool isDrawing = false;
@@ -58,15 +58,39 @@ class ColoringController extends GetxController with WidgetsBindingObserver {
 
   // --- No other methods need to be changed ---
   final List<Color> availableColors = [
+    // Row 1: Hot colors
     Colors.red,
-    Colors.orange,
-    Colors.yellow,
-    Colors.green,
-    Colors.blue,
-    Colors.purple,
     Colors.pink,
+    Colors.purpleAccent,
+    Colors.deepOrange,
+    Colors.orange,
+
+    // Row 2: Warm/Yellows
+    Colors.amber,
+    Colors.yellow,
+    Colors.lime,
+    Colors.lightGreen,
+    Colors.green,
+
+    // Row 3: Cool/Blues
+    Colors.teal,
+    Colors.cyan,
+    Colors.lightBlue,
+    Colors.blue,
+    Colors.indigo,
+
+    // Row 4: Deep colors
+    Colors.purple,
+    Colors.deepPurple,
+    Colors.blueGrey,
     Colors.brown,
+    Colors.grey,
+
+    // Row 5: Basics
     Colors.black,
+    const Color(0xFF5D4037), // Dark Brown
+    const Color(0xFFFFCCBC), // Skin tone / Light orange
+    const Color(0xFFBDBDBD), // Light Grey
     Colors.white,
   ];
 

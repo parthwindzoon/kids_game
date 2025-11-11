@@ -486,6 +486,8 @@ class PatternRecognitionOverlay extends StatelessWidget {
                           Get.delete<PatternRecognitionController>();
                           game.overlays.remove('pattern_recognition');
                           game.overlays.add('minigames_overlay');
+
+                          game.resumeBackgroundMusic();
                         },
                         child: Image.asset(
                           'assets/images/overlays/Group 86.png',
@@ -718,6 +720,8 @@ class PatternRecognitionController extends GetxController {
   void handleBackButton() {
     game.overlays.remove('pattern_recognition');
     game.overlays.add('minigames_overlay');
+
+    game.resumeBackgroundMusic();
     Get.delete<PatternRecognitionController>();
   }
 }

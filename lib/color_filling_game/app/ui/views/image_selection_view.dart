@@ -96,6 +96,8 @@ class ImageSelectionView extends GetView<ImageSelectionController> {
                 onTap: () {
                   game.overlays.remove('image_selection_overlay');
                   Get.delete<ImageSelectionController>();
+
+                  game.resumeBackgroundMusic();
                 },
                 child: Image.asset('assets/images/back_btn.png', width: isTablet ? 80 : 60),
               ),

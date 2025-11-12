@@ -51,8 +51,8 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     mapComponent = await TiledComponent.load('Main-Map.tmx', Vector2.all(64));
     world.add(mapComponent);
 
-    final knobPaint = Paint()..color = Colors.white.withOpacity(0.5);
-    final backgroundPaint = Paint()..color = Colors.grey.withOpacity(0.3);
+    final knobPaint = Paint()..color = Colors.white.withValues(alpha: 0.5);
+    final backgroundPaint = Paint()..color = Colors.grey.withValues(alpha: 0.3);
 
     joystick = JoystickComponent(
       knob: CircleComponent(radius: 25, paint: knobPaint),
@@ -71,7 +71,7 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     await _loadCompanion(spawnPoint);
 
     camera.viewport.add(joystick);
-    camera.viewfinder.zoom = 1.0;
+    _setInitialZoom();
     camera.follow(player);
 
     _setupCameraBounds();
@@ -80,6 +80,33 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     _startBackgroundMusic();
 
     print('✅ Game fully loaded - player and companion ready');
+  }
+
+  // *** NEW METHOD: Set zoom based on screen size ***
+  void _setInitialZoom() {
+    // Wait for size to be available
+    Future.delayed(Duration.zero, () {
+      if (size.x == 0 || size.y == 0) {
+        // Size not ready yet, try again
+        Future.delayed(const Duration(milliseconds: 100), _setInitialZoom);
+        return;
+      }
+
+      // Check if tablet/big screen (shortest side > 600)
+      final shortestSide = size.x < size.y ? size.x : size.y;
+      final isTablet = shortestSide > 600;
+
+      if (isTablet) {
+        camera.viewfinder.zoom = 1.3;
+        print('📱 Big screen detected - Zoom set to 1.3');
+      } else {
+        camera.viewfinder.zoom = 1.0;
+        print('📱 Phone detected - Zoom set to 1.0');
+      }
+
+      // Recalculate camera bounds after zoom change
+      _setupCameraBounds();
+    });
   }
 
   // Start background music
@@ -96,7 +123,7 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
   }
 
   // Stop background music (called when entering mini games)
-  void stopBackgroundMusic() {
+  void pauseBackgroundMusic() {
     try {
       if (_isBgmPlaying) {
         FlameAudio.bgm.pause();
@@ -248,6 +275,7 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
     if (isLoaded) {
+      _setInitialZoom();
       _setupCameraBounds();
     }
   }
@@ -257,7 +285,7 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     print('🔥 TiledGame onRemove() called');
 
     // Stop background music when game is removed
-    stopBackgroundMusic();
+    pauseBackgroundMusic();
 
     // Explicitly remove companion first
     if (companion != null) {

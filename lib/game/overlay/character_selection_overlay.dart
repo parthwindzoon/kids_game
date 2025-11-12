@@ -42,7 +42,7 @@ class CharacterSelectionOverlay extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -91,7 +91,7 @@ class CharacterSelectionOverlay extends StatelessWidget {
                         Shadow(
                           offset: const Offset(2, 2),
                           blurRadius: 5,
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withValues(alpha: 0.3),
                         ),
                       ],
                     ),
@@ -325,8 +325,8 @@ class CharacterSelectionOverlay extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: isSelected
-                      ? const Color(0xFF4CAF50).withOpacity(0.3)
-                      : Colors.black.withOpacity(0.1),
+                      ? const Color(0xFF4CAF50).withValues(alpha: 0.3)
+                      : Colors.black.withValues(alpha: 0.1),
                   blurRadius: isSelected ? 10 : 5,
                   offset: const Offset(0, 2),
                 ),

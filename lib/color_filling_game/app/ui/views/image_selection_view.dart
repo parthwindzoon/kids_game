@@ -42,7 +42,7 @@ class ImageSelectionView extends GetView<ImageSelectionController> {
                             Shadow(
                               offset: const Offset(3, 3),
                               blurRadius: 5,
-                              color: Colors.black.withOpacity(0.3),
+                              color: Colors.black.withValues(alpha: 0.3),
                             ),
                           ],
                         ),
@@ -146,7 +146,7 @@ class ImageSelectionView extends GetView<ImageSelectionController> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.orange.withOpacity(0.3),
+                                color: Colors.orange.withValues(alpha: 0.3),
                                 blurRadius: 20,
                                 spreadRadius: 5,
                               ),
@@ -163,7 +163,7 @@ class ImageSelectionView extends GetView<ImageSelectionController> {
                             color: Colors.white,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
+                                color: Colors.black.withValues(alpha: 0.3),
                                 blurRadius: 15,
                                 offset: const Offset(0, 8),
                               ),

@@ -172,7 +172,7 @@ class LearnNumbersOverlay extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -230,7 +230,7 @@ class LearnNumbersOverlay extends StatelessWidget {
           controller.closePopup();
         },
         child: Container(
-          color: Colors.black.withOpacity(0.5 * opacity),
+          color: Colors.black.withValues(alpha: 0.5 * opacity),
           child: Center(
             child: GestureDetector(
               onTap: () {}, // Prevent closing when tapping inside popup
@@ -256,8 +256,6 @@ class LearnNumbersOverlay extends StatelessWidget {
                           child: GestureDetector(
                             onTap: () {
                               controller.closePopup();
-
-                              game.resumeBackgroundMusic();
                             },
                             child: Image.asset(
                               'assets/images/overlays/Group 86.png',
@@ -284,7 +282,7 @@ class LearnNumbersOverlay extends StatelessWidget {
                                   Shadow(
                                     offset: const Offset(3, 3),
                                     blurRadius: 5,
-                                    color: Colors.black.withOpacity(0.3),
+                                    color: Colors.black.withValues(alpha: 0.3),
                                   ),
                                 ],
                               ),

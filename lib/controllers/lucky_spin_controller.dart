@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:get_storage/get_storage.dart';
+import '../service/ad_service.dart';
 import 'coin_controller.dart';
 import 'companion_controller.dart';
 
@@ -15,7 +16,7 @@ class LuckySpinController extends GetxController
 
   final RxBool isSpinning = false.obs;
   final RxDouble wheelRotation = 0.0.obs;
-  final RxBool canSpin = true.obs;
+  final RxBool canSpin = true.obs; // This is the daily free spin
 
   final RxBool showResultPopup = false.obs;
   final RxString lastWonPrize = ''.obs;
@@ -26,6 +27,16 @@ class LuckySpinController extends GetxController
   final _storage = GetStorage();
 
   static const String _lastSpinDateKey = 'last_spin_date';
+
+  // --- NEW: Ad-related State ---
+  final AdService _adService = Get.find<AdService>();
+  final RxInt adSpinsWatched = 0.obs; // Tracks progress from 0 to 3
+  final RxInt bonusSpinsAvailable = 0.obs; // Spins earned from ads
+
+  /// The number of ads a user must watch to earn one bonus spin.
+  static const int maxAdsPerSpin = 3;
+  static const String _adWatchCountKey = 'ad_watch_count';
+  // --- End NEW ---
 
   final List<SpinPrize> prizes = [
     SpinPrize(name: '5 Coins', type: PrizeType.coins, amount: 5, probability: 0.30),
@@ -48,6 +59,19 @@ class LuckySpinController extends GetxController
     return k * _sliceDeg;
   }
 
+  // --- NEW: Computed Properties ---
+  /// Can the user watch an ad?
+  /// Yes, if their daily spin is used AND they don't have a bonus spin waiting.
+  RxBool get canWatchAd =>
+      (!canSpin.value && bonusSpinsAvailable.value == 0).obs;
+
+  /// Does the user have *any* way to spin? (Daily OR bonus)
+  RxBool get hasAnySpin => (canSpin.value || bonusSpinsAvailable.value > 0).obs;
+
+  /// Is the rewarded ad ready to be shown?
+  RxBool get isAdReady => _adService.isRewardedAdReady;
+  // --- End NEW ---
+
   @override
   void onInit() {
     super.onInit();
@@ -56,6 +80,9 @@ class LuckySpinController extends GetxController
       duration: const Duration(milliseconds: 3400),
     );
     _checkSpinAvailability();
+
+    // <-- NEW: Load ad watch progress -->
+    adSpinsWatched.value = _storage.read<int>(_adWatchCountKey) ?? 0;
   }
 
   void _checkSpinAvailability() {
@@ -83,14 +110,54 @@ class LuckySpinController extends GetxController
     super.onClose();
   }
 
+  // --- NEW: Ad Methods ---
+  /// Called by the UI when the "Watch Ad" button is pressed.
+  void showAdForSpin() {
+    _adService.showRewardedAd(
+      onReward: () {
+        // This callback runs after the ad is successfully watched.
+        _onAdRewardGranted();
+      },
+    );
+  }
+
+  /// Handles the logic after a reward is granted.
+  void _onAdRewardGranted() {
+    adSpinsWatched.value++;
+    _storage.write(_adWatchCountKey, adSpinsWatched.value);
+
+    // Check if they have watched enough ads
+    if (adSpinsWatched.value >= maxAdsPerSpin) {
+      bonusSpinsAvailable.value++; // Grant one bonus spin
+      adSpinsWatched.value = 0; // Reset the counter
+      _storage.write(_adWatchCountKey, 0); // Save the reset
+    }
+  }
+  // --- End NEW ---
+
   Future<void> spinWheel() async {
-    if (isSpinning.value || !canSpin.value) return;
+    // <-- MODIFIED: Check for *any* spin -->
+    if (isSpinning.value || !hasAnySpin.value) return;
+
+    // <-- NEW: Determine which spin type is being used -->
+    bool isBonusSpin = false;
+    if (bonusSpinsAvailable.value > 0) {
+      bonusSpinsAvailable.value--;
+      isBonusSpin = true;
+    } else if (canSpin.value) {
+      // This is the daily spin
+      isBonusSpin = false;
+    } else {
+      return; // Should not happen if UI is correct
+    }
+    // --- End NEW ---
 
     isSpinning.value = true;
     _playSpinSound();
 
     selectedSegment = _selectPrizeSegment();
 
+    // ... (Animation logic remains the same) ...
     final int n = prizes.length;
     final double segmentAngle = 360.0 / n;
     final double current = wheelRotation.value % 360.0;
@@ -116,7 +183,8 @@ class LuckySpinController extends GetxController
     animationController.reset();
 
     _stopSpinSound();
-    await _applyPrizeOutcome(prizes[selectedSegment]);
+    // <-- MODIFIED: Pass spin type to outcome -->
+    await _applyPrizeOutcome(prizes[selectedSegment], isBonusSpin: isBonusSpin);
 
     await Future<void>.delayed(const Duration(milliseconds: 350));
     showResultPopup.value = true;
@@ -133,7 +201,9 @@ class LuckySpinController extends GetxController
     return prizes.length - 1;
   }
 
-  Future<void> _applyPrizeOutcome(SpinPrize prize) async {
+  // <-- MODIFIED: Accept `isBonusSpin` to know when to call _markSpinUsed -->
+  Future<void> _applyPrizeOutcome(SpinPrize prize,
+      {required bool isBonusSpin}) async {
     lastWonPrize.value = prize.name;
     lastWonAmount.value = prize.amount;
     lastWonPrizeType.value = prize.type;
@@ -144,8 +214,8 @@ class LuckySpinController extends GetxController
         final coinController = Get.find<CoinController>();
         await coinController.addCoins(prize.amount);
         _playSuccessSound();
-        // Mark spin as used (unless it's spin again)
-        _markSpinUsed();
+        // Only mark daily spin as used
+        if (!isBonusSpin) _markSpinUsed();
         break;
 
       case PrizeType.companion:
@@ -159,22 +229,25 @@ class LuckySpinController extends GetxController
             lastWonPrize.value = 'Already Owned!';
           }
         }
-        _markSpinUsed();
+        if (!isBonusSpin) _markSpinUsed();
         break;
 
       case PrizeType.bonusSpin:
       // Don't mark spin as used - user can spin again
         _playSuccessSound();
+        // <-- MODIFIED: Grant a bonus spin -->
+        bonusSpinsAvailable.value++;
         break;
 
       case PrizeType.tryTomorrow:
       // No reward - mark spin as used
-        _markSpinUsed();
+        if (!isBonusSpin) _markSpinUsed();
         break;
     }
   }
 
   void _markSpinUsed() {
+    // This function now *only* marks the DAILY spin as used
     final now = DateTime.now();
     _storage.write(_lastSpinDateKey, now.toIso8601String());
     canSpin.value = false;
@@ -186,12 +259,8 @@ class LuckySpinController extends GetxController
     lastWonAmount.value = 0;
     lastWonPrizeType.value = PrizeType.tryTomorrow;
 
-    // Check if user got bonus spin
-    if (canSpin.value) {
-      // User can spin again
-    } else {
-      // Spin is done for today
-    }
+    // <-- MODIFIED: Removed old logic -->
+    // State is now handled by `hasAnySpin` computed property
   }
 
   Future<void> _playSpinSound() async {

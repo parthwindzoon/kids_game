@@ -37,11 +37,11 @@ class ColorMatchingOverlay extends StatelessWidget {
               width: size.width * (isTablet ? 0.75 : 0.85),
               height: size.height * (isTablet ? 0.65 : 0.70),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.95),
+                color: Colors.white.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -75,7 +75,7 @@ class ColorMatchingOverlay extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 10,
                           offset: const Offset(0, 5),
                         ),
@@ -141,7 +141,7 @@ class ColorMatchingOverlay extends StatelessWidget {
                     Shadow(
                       offset: const Offset(2, 2),
                       blurRadius: 3,
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                     ),
                   ],
                 ),
@@ -182,7 +182,7 @@ class ColorMatchingOverlay extends StatelessWidget {
                 border: Border.all(color: Colors.white, width: 3),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -244,7 +244,7 @@ class ColorMatchingOverlay extends StatelessWidget {
           border: Border.all(color: Colors.white, width: 3),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -260,7 +260,7 @@ class ColorMatchingOverlay extends StatelessWidget {
       final opacity = controller.successPopupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -328,7 +328,7 @@ class ColorMatchingOverlay extends StatelessWidget {
       final opacity = controller.wrongPopupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -400,7 +400,7 @@ class ColorMatchingOverlay extends StatelessWidget {
       final opacity = controller.popupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -484,7 +484,7 @@ class ColorMatchingOverlay extends StatelessWidget {
                               borderRadius: BorderRadius.circular(25),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),

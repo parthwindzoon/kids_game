@@ -57,14 +57,15 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
   @override
   Widget build(BuildContext context) {
     final game = widget.game;
-    final controller = Get.put(LuckySpinController(), permanent: true);
+    // <-- MODIFIED: Removed `permanent: true` -->
+    final controller = Get.put(LuckySpinController());
     final coinController = Get.find<CoinController>();
     final size = MediaQuery.of(context).size;
     final isTablet = size.shortestSide >= 600;
 
     return Stack(
       children: [
-        // Background Image
+        // ... (Background Image remains the same) ...
         Positioned.fill(
           child: Image.asset(
             'assets/images/home/background.png',
@@ -86,7 +87,7 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
           ),
         ),
 
-        // Back Button (top-left)
+        // ... (Back Button remains the same) ...
         Positioned(
           top: isTablet ? 20 : 15,
           left: isTablet ? 20 : 15,
@@ -94,7 +95,6 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
             onTap: () {
               game.overlays.remove('lucky_spin');
               Get.delete<LuckySpinController>();
-
               game.resumeBackgroundMusic();
             },
             child: Image.asset(
@@ -121,7 +121,7 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
           ),
         ),
 
-        // Coin Container (top-right) - Using coin.png as background
+        // ... (Coin Container remains the same) ...
         Positioned(
           top: isTablet ? 20 : 15,
           right: isTablet ? 20 : 15,
@@ -131,7 +131,6 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Background coin image
                 Image.asset(
                   'assets/images/home/coin.png',
                   width: isTablet ? 200 : 150,
@@ -146,7 +145,6 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
                     );
                   },
                 ),
-                // Coin count text
                 Positioned(
                   right: isTablet ? 70 : 40,
                   bottom: isTablet ? 20 : 15,
@@ -161,7 +159,7 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
                         Shadow(
                           offset: const Offset(1, 1),
                           blurRadius: 2,
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.black.withValues(alpha: 0.5),
                         ),
                       ],
                     ),
@@ -180,74 +178,15 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
               // Wheel
               _buildWheelArea(controller, isTablet),
 
-              SizedBox(height: isTablet ? 30 : 20),
+              SizedBox(height: isTablet ? 30 : 0),
 
-              // Spin button with gradient
-              Obx(() {
-                final spinning = controller.isSpinning.value;
-                final canSpin = controller.canSpin.value;
-
-                return GestureDetector(
-                  onTap: (spinning || !canSpin) ? null : controller.spinWheel,
-                  child: Container(
-                    width: isTablet ? 200 : 160,
-                    height: isTablet ? 60 : 50,
-                    decoration: BoxDecoration(
-                      gradient: (spinning || !canSpin)
-                          ? LinearGradient(
-                        colors: [
-                          Colors.grey.shade400,
-                          Colors.grey.shade600,
-                        ],
-                      )
-                          : const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Color(0xFFFF9800), // Orange
-                          Color(0xFFFFFFFF), // White
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        spinning
-                            ? 'Spinning...'
-                            : !canSpin
-                            ? 'Spin Tomorrow'
-                            : 'SPIN',
-                        style: TextStyle(
-                          fontFamily: 'AkayaKanadaka',
-                          fontWeight: FontWeight.w800,
-                          fontSize: isTablet ? 20 : 16,
-                          letterSpacing: 1.2,
-                          color: (spinning || !canSpin) ? Colors.white : Colors.black87,
-                          shadows: [
-                            Shadow(
-                              offset: const Offset(1, 1),
-                              blurRadius: 2,
-                              color: Colors.black.withOpacity(0.2),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
+              // <-- MODIFIED: Replaced button with a new helper widget -->
+              _buildButtonArea(controller, isTablet),
             ],
           ),
         ),
 
-        // Result popup
+        // ... (Result popup remains the same) ...
         Obx(() => controller.showResultPopup.value
             ? _ResultPopup(
           onOk: () {
@@ -263,7 +202,154 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
     );
   }
 
+  // <-- NEW: This widget builds the button area -->
+  Widget _buildButtonArea(LuckySpinController controller, bool isTablet) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+
+      children: [
+        // --- 1. SPIN BUTTON (with updated logic) ---
+        Obx(() {
+          final spinning = controller.isSpinning.value;
+          // <-- MODIFIED: Check `hasAnySpin` -->
+          final hasSpin = controller.hasAnySpin.value;
+          final isDisabled = spinning || !hasSpin;
+
+          // <-- MODIFIED: More descriptive button text -->
+          String buttonText = 'Spin Tomorrow';
+          if (spinning) {
+            buttonText = 'Spinning...';
+          } else if (controller.bonusSpinsAvailable.value > 0) {
+            buttonText = 'SPIN (${controller.bonusSpinsAvailable.value} LEFT)';
+          } else if (controller.canSpin.value) {
+            buttonText = 'SPIN (DAILY)';
+          }
+          // ---
+
+          return GestureDetector(
+            onTap: isDisabled ? null : controller.spinWheel,
+            child: Container(
+              width: isTablet ? 220 : 180, // Slightly wider
+              height: isTablet ? 60 : 50,
+              decoration: BoxDecoration(
+                gradient: isDisabled
+                    ? LinearGradient(
+                  colors: [
+                    Colors.grey.shade400,
+                    Colors.grey.shade600,
+                  ],
+                )
+                    : const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFFFF9800), // Orange
+                    Color(0xFFFFFFFF), // White
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  buttonText, // <-- Use new text
+                  style: TextStyle(
+                    fontFamily: 'AkayaKanadaka',
+                    fontWeight: FontWeight.w800,
+                    fontSize: isTablet ? 18 : 14,
+                    letterSpacing: 1.2,
+                    color: isDisabled ? Colors.white : Colors.black87,
+                    shadows: [
+                      Shadow(
+                        offset: const Offset(1, 1),
+                        blurRadius: 2,
+                        color: Colors.black.withValues(alpha: 0.2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+
+        SizedBox(width: 10,),
+
+        // --- 2. WATCH AD BUTTON (NEW) ---
+        Obx(() {
+          // Use the controller's logic to decide if button should show
+          if (!controller.canWatchAd.value) {
+            return const SizedBox.shrink();
+          }
+
+          final adIsReady = controller.isAdReady.value;
+
+          // --- NEW TEXT LOGIC ---
+          final adsWatched = controller.adSpinsWatched.value;
+          final adsNeeded = LuckySpinController.maxAdsPerSpin;
+          final buttonText = adIsReady
+              ? 'Watch Ad ($adsWatched/$adsNeeded)'
+              : 'Loading Ad...';
+          // ---
+
+          return GestureDetector(
+            onTap: adIsReady ? controller.showAdForSpin : null,
+            child: Container(
+              width: isTablet ? 220 : 180,
+              height: isTablet ? 60 : 50,
+              decoration: BoxDecoration(
+                gradient: !adIsReady
+                    ? LinearGradient(
+                  colors: [
+                    Colors.grey.shade400,
+                    Colors.grey.shade600,
+                  ],
+                )
+                    : const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF4CAF50), // Green
+                    Color(0xFFFFFFFF), // White
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  buttonText, // <-- Use the new button text
+                  style: TextStyle(
+                    fontFamily: 'AkayaKanadaka',
+                    fontWeight: FontWeight.w800,
+                    fontSize: isTablet ? 18 : 14,
+                    letterSpacing: 1.2,
+                    color: !adIsReady ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+  // --- End NEW ---
+
   Widget _buildWheelArea(LuckySpinController controller, bool isTablet) {
+    // ... (This widget remains unchanged from your file) ...
     final wheelSize = isTablet ? 350.0 : 280.0;
 
     return SizedBox(
@@ -322,7 +408,7 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
   }
 }
 
-// Painter: labels with icons
+// ... (WheelPainter class remains unchanged from your file) ...
 class WheelPainter extends CustomPainter {
   final List<SpinPrize> prizes;
   final LuckySpinController controller;
@@ -488,7 +574,7 @@ class WheelPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Result Popup
+// ... (_ResultPopup class remains unchanged from your file) ...
 class _ResultPopup extends StatelessWidget {
   final VoidCallback onOk;
   final String title;
@@ -537,7 +623,6 @@ class _ResultPopup extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 15),
-
                   if (prizeType == PrizeType.companion) ...[
                     // Show penguin image for companion
                     Image.asset(

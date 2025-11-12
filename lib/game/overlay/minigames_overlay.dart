@@ -63,7 +63,7 @@ class MiniGamesOverlay extends StatelessWidget {
                               Shadow(
                                 offset: const Offset(3, 3),
                                 blurRadius: 5,
-                                color: Colors.black.withOpacity(0.3),
+                                color: Colors.black.withValues(alpha: 0.3),
                               ),
                             ],
                           ),
@@ -163,12 +163,12 @@ class MiniGamesOverlay extends StatelessWidget {
                       vertical: isTablet ? 12 : 10,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFA500).withOpacity(0.9),
+                      color: const Color(0xFFFFA500).withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(25),
                       border: Border.all(color: Colors.white, width: 3),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.orange.withOpacity(0.4),
+                          color: Colors.orange.withValues(alpha: 0.4),
                           blurRadius: 15,
                           spreadRadius: 2,
                           offset: const Offset(0, 4),
@@ -186,7 +186,7 @@ class MiniGamesOverlay extends StatelessWidget {
                           Shadow(
                             offset: const Offset(2, 2),
                             blurRadius: 3,
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                           ),
                         ],
                       ),
@@ -218,7 +218,7 @@ class MiniGamesOverlay extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.cyan.withOpacity(0.3),
+                            color: Colors.cyan.withValues(alpha: 0.3),
                             blurRadius: 20,
                             spreadRadius: 5,
                           ),
@@ -235,7 +235,7 @@ class MiniGamesOverlay extends StatelessWidget {
                         color: Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -411,7 +411,7 @@ class MiniGamesController extends GetxController
   void navigateToMiniGame(String gameName) {
     print('Navigating to: $gameName');
 
-    game.stopBackgroundMusic();
+    game.pauseBackgroundMusic();
 
     // Remove current overlay
     game.overlays.remove('minigames_overlay');

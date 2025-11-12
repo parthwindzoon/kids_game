@@ -68,7 +68,7 @@ class PopBalloonOverlay extends StatelessWidget {
                       border: Border.all(color: Colors.white, width: 3),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 5,
                           offset: const Offset(0, 2),
                         ),
@@ -155,7 +155,7 @@ class PopBalloonOverlay extends StatelessWidget {
                 Shadow(
                   offset: const Offset(3, 3),
                   blurRadius: 5,
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                 ),
               ],
             ),
@@ -172,12 +172,12 @@ class PopBalloonOverlay extends StatelessWidget {
                 vertical: isTablet ? 8 : 5,
               ),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(25),
                 border: Border.all(color: const Color(0xFFFFA500), width: 3),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -252,7 +252,7 @@ class PopBalloonOverlay extends StatelessWidget {
                         Shadow(
                           offset: const Offset(2, 2),
                           blurRadius: 3,
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.black.withValues(alpha: 0.5),
                         ),
                       ],
                     ),
@@ -286,7 +286,7 @@ class PopBalloonOverlay extends StatelessWidget {
         border: Border.all(color: Colors.white, width: 3),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -305,7 +305,7 @@ class PopBalloonOverlay extends StatelessWidget {
       final opacity = controller.popupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -384,7 +384,7 @@ class PopBalloonOverlay extends StatelessWidget {
                               borderRadius: BorderRadius.circular(25),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),

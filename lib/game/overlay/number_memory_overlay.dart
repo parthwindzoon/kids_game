@@ -83,7 +83,7 @@ class NumberMemoryOverlay extends StatelessWidget {
                       Shadow(
                         offset: const Offset(1, 1),
                         blurRadius: 2,
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withValues(alpha: 0.5),
                       ),
                     ],
                   ),
@@ -240,7 +240,7 @@ class NumberMemoryOverlay extends StatelessWidget {
                   width: cardSize,
                   height: cardSize,
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.3),
+                    color: Colors.green.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: Colors.green,
@@ -272,7 +272,7 @@ class NumberMemoryOverlay extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -305,7 +305,7 @@ class NumberMemoryOverlay extends StatelessWidget {
             : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -335,7 +335,7 @@ class NumberMemoryOverlay extends StatelessWidget {
       final opacity = controller.popupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -410,7 +410,7 @@ class NumberMemoryOverlay extends StatelessWidget {
                               borderRadius: BorderRadius.circular(25),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),

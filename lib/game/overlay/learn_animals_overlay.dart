@@ -201,7 +201,7 @@ class LearnAnimalsOverlay extends StatelessWidget {
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -263,7 +263,7 @@ class LearnAnimalsOverlay extends StatelessWidget {
           controller.closePopup();
         },
         child: Container(
-          color: Colors.black.withOpacity(0.5 * opacity),
+          color: Colors.black.withValues(alpha: 0.5 * opacity),
           child: Center(
             child: GestureDetector(
               onTap: () {}, // Prevent closing when tapping inside popup
@@ -289,8 +289,6 @@ class LearnAnimalsOverlay extends StatelessWidget {
                           child: GestureDetector(
                             onTap: () {
                               controller.closePopup();
-
-                              game.resumeBackgroundMusic();
                             },
                             child: Image.asset(
                               'assets/images/overlays/Group 86.png',

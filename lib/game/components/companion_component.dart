@@ -218,8 +218,6 @@ class CompanionComponent extends SpriteAnimationComponent
     _animationsLoaded = true;
   }
 
-  // lib/game/components/companion_component.dart
-
   @override
   void update(double dt) {
     if (_isDisposed) return;
@@ -228,62 +226,31 @@ class CompanionComponent extends SpriteAnimationComponent
       if (_positionHistory.isNotEmpty) {
         _positionHistory.removeAt(0);
         _positionHistory.add(player.position.clone());
-
         final targetPosition = _positionHistory.first;
         final distanceToPlayer = position.distanceTo(player.position);
-
-        // --- Start of Velocity Calculation ---
+        final wasMoving = _isMoving;
         if (distanceToPlayer > _minDistance) {
           final direction = (targetPosition - position);
           final distanceToTarget = direction.length;
-
-          if (distanceToTarget > 0.5) {
+          if (distanceToTarget > 5.0) {
+            _isMoving = true;
             direction.normalize();
             velocity = direction * _followSpeed;
-
+            position += velocity * dt;
             if (velocity.x > 0.5) scale.x = -1;
             else if (velocity.x < -0.5) scale.x = 1;
-
           } else {
+            _isMoving = false;
             velocity.setZero();
           }
         } else {
+          _isMoving = false;
           velocity.setZero();
         }
-        // --- End of Velocity Calculation ---
-
-        // Apply the calculated velocity to the position
-        position += velocity * dt;
-
-
-        // ************************************************
-        // --- THIS IS THE NEW ANIMATION LOGIC ---
-        // ************************************************
         if (_animationsLoaded && idleAnimation != null && walkAnimation != null) {
-
-          // Check the companion's own speed
-          bool isCompanionMoving = velocity.length2 > 0.01;
-
-          // Check the player's state using the new getter
-          bool isPlayerMoving = player.isMoving;
-
-          // If EITHER the player is moving OR the companion is moving...
-          if (isPlayerMoving || isCompanionMoving) {
-            // ...play the walk animation.
-            if (animation != walkAnimation) {
-              animation = walkAnimation;
-            }
-          } else {
-            // ...otherwise, play the idle animation.
-            if (animation != idleAnimation) {
-              animation = idleAnimation;
-            }
-          }
+          if (_isMoving && !wasMoving) animation = walkAnimation;
+          else if (!_isMoving && wasMoving) animation = idleAnimation;
         }
-        // ************************************************
-        // --- END OF NEW LOGIC ---
-        // ************************************************
-
         _clampToMapBounds();
       }
     } catch (e) {

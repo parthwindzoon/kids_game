@@ -62,7 +62,7 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -105,7 +105,7 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
                           Shadow(
                             offset: const Offset(2, 2),
                             blurRadius: 5,
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                           ),
                         ],
                       ),
@@ -159,12 +159,12 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
                   vertical: isTablet ? 12 : 8,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFD700).withOpacity(0.9),
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(color: Colors.white, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -313,7 +313,7 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
                 'Already Owned',
                 'Go to Companion Selection from Home to switch to ${companion.name}!',
                 snackPosition: SnackPosition.TOP,
-                backgroundColor: const Color(0xFF4CAF50).withOpacity(0.9),
+                backgroundColor: const Color(0xFF4CAF50).withValues(alpha: 0.9),
                 colorText: Colors.white,
                 duration: const Duration(seconds: 2),
                 margin: EdgeInsets.all(isTablet ? 20 : 15),
@@ -344,8 +344,8 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
                 boxShadow: [
                   BoxShadow(
                     color: isUnlocked
-                        ? const Color(0xFF4CAF50).withOpacity(0.2)
-                        : Colors.black.withOpacity(0.1),
+                        ? const Color(0xFF4CAF50).withValues(alpha: 0.2)
+                        : Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -370,7 +370,7 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
                         print('Error loading companion image: $error');
                         return Container(
                           decoration: BoxDecoration(
-                            color: Color(companion.color).withOpacity(0.3),
+                            color: Color(companion.color).withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(15),
                           ),
                           child: Icon(
@@ -387,7 +387,7 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
                   if (!isUnlocked)
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Center(
@@ -416,7 +416,7 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -484,7 +484,7 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
         final opacity = controller.popupOpacity.value;
 
         return Container(
-          color: Colors.black.withOpacity(0.6 * opacity),
+          color: Colors.black.withValues(alpha: 0.6 * opacity),
           child: Center(
             child: Transform.scale(
               scale: scale,
@@ -559,7 +559,7 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                    color: Colors.black.withValues(alpha: 0.2),
                                     blurRadius: 5,
                                     offset: const Offset(0, 2),
                                   ),
@@ -599,7 +599,7 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
         final opacity = controller.popupOpacity.value;
 
         return Container(
-          color: Colors.black.withOpacity(0.6 * opacity),
+          color: Colors.black.withValues(alpha: 0.6 * opacity),
           child: Center(
             child: Transform.scale(
               scale: scale,
@@ -674,7 +674,7 @@ class _PetShopOverlayState extends State<PetShopOverlay> with AutomaticKeepAlive
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                    color: Colors.black.withValues(alpha: 0.2),
                                     blurRadius: 5,
                                     offset: const Offset(0, 2),
                                   ),

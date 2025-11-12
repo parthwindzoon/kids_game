@@ -198,7 +198,7 @@ class _CoinRewardPopup extends StatelessWidget {
     return Positioned.fill(
       child: IgnorePointer(
         child: Container(
-          color: Colors.black.withOpacity(0.3 * opacity),
+          color: Colors.black.withValues(alpha: 0.3 * opacity),
           child: Center(
             child: Transform.scale(
               scale: scale,
@@ -223,12 +223,12 @@ class _CoinRewardPopup extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFFD700).withOpacity(0.5),
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.5),
                         blurRadius: 30,
                         spreadRadius: 10,
                       ),
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -251,7 +251,7 @@ class _CoinRewardPopup extends StatelessWidget {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.5),
+                                  color: Colors.white.withValues(alpha: 0.5),
                                   blurRadius: 20,
                                   spreadRadius: 5,
                                 ),
@@ -285,7 +285,7 @@ class _CoinRewardPopup extends StatelessWidget {
                                 Shadow(
                                   offset: const Offset(2, 2),
                                   blurRadius: 4,
-                                  color: Colors.black.withOpacity(0.5),
+                                  color: Colors.black.withValues(alpha: 0.5),
                                 ),
                               ],
                             ),
@@ -308,7 +308,7 @@ class _CoinRewardPopup extends StatelessWidget {
                                     Shadow(
                                       offset: const Offset(2, 2),
                                       blurRadius: 4,
-                                      color: Colors.black.withOpacity(0.5),
+                                      color: Colors.black.withValues(alpha: 0.5),
                                     ),
                                   ],
                                 ),
@@ -336,7 +336,7 @@ class _CoinRewardPopup extends StatelessWidget {
         left: isTablet ? 20 : 15,
         child: Icon(
           Icons.star,
-          color: Colors.white.withOpacity(0.8),
+          color: Colors.white.withValues(alpha: 0.8),
           size: isTablet ? 24 : 20,
         ),
       ),
@@ -346,7 +346,7 @@ class _CoinRewardPopup extends StatelessWidget {
         right: isTablet ? 20 : 15,
         child: Icon(
           Icons.star,
-          color: Colors.white.withOpacity(0.8),
+          color: Colors.white.withValues(alpha: 0.8),
           size: isTablet ? 24 : 20,
         ),
       ),
@@ -356,7 +356,7 @@ class _CoinRewardPopup extends StatelessWidget {
         left: isTablet ? 30 : 25,
         child: Icon(
           Icons.star,
-          color: Colors.white.withOpacity(0.6),
+          color: Colors.white.withValues(alpha: 0.6),
           size: isTablet ? 18 : 16,
         ),
       ),
@@ -366,7 +366,7 @@ class _CoinRewardPopup extends StatelessWidget {
         right: isTablet ? 30 : 25,
         child: Icon(
           Icons.star,
-          color: Colors.white.withOpacity(0.6),
+          color: Colors.white.withValues(alpha: 0.6),
           size: isTablet ? 18 : 16,
         ),
       ),

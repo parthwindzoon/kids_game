@@ -31,90 +31,88 @@ class CompanionSelectionOverlay extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-            child: SafeArea(
-              child: Stack(
-                children: [
-                  // Main Content
-                  Center(
-                    child: Container(
-                      width: size.width * 0.85,
-                      height: size.height * 0.70,
-                      decoration: BoxDecoration(
-                        image: const DecorationImage(
-                          image: AssetImage('assets/images/change_character/white_bg.png'),
-                          fit: BoxFit.fill,
-                        ),
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
+            child: Stack(
+              children: [
+                // Main Content
+                Center(
+                  child: Container(
+                    width: size.width * 0.85,
+                    height: size.height * 0.70,
+                    decoration: BoxDecoration(
+                      image: const DecorationImage(
+                        image: AssetImage('assets/images/change_character/white_bg.png'),
+                        fit: BoxFit.fill,
                       ),
-                      child: Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(isTablet ? 60 : 40),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Show unlocked companions in scrollable row
-                              Expanded(
-                                child: _buildUnlockedCompanionRow(
-                                  controller,
-                                  isTablet,
-                                ),
-                              ),
-                            ],
-                          ),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
                         ),
-                      ),
+                      ],
                     ),
-                  ),
-
-                  // Title at the top
-                  Positioned(
-                    top: isTablet ? 100 : 10,
-                    left: 0,
-                    right: 0,
                     child: Center(
-                      child: Text(
-                        'Select Companion',
-                        style: TextStyle(
-                          fontFamily: 'AkayaKanadaka',
-                          fontSize: isTablet ? 48 : 36,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFFFF6B35),
-                          shadows: [
-                            Shadow(
-                              offset: const Offset(2, 2),
-                              blurRadius: 5,
-                              color: Colors.black.withOpacity(0.3),
+                      child: Padding(
+                        padding: EdgeInsets.all(isTablet ? 60 : 40),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Show unlocked companions in scrollable row
+                            Expanded(
+                              child: _buildUnlockedCompanionRow(
+                                controller,
+                                isTablet,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
                   ),
+                ),
 
-                  // Back Button (top-left)
-                  Positioned(
-                    top: isTablet ? 20 : 10,
-                    left: isTablet ? 20 : 10,
-                    child: GestureDetector(
-                      onTap: () {
-                        homeController.closeCompanionSelection();
-                      },
-                      child: Image.asset(
-                        'assets/images/back_btn.png',
-                        width: isTablet ? 80 : 60,
-                        height: isTablet ? 80 : 60,
+                // Title at the top
+                Positioned(
+                  top: isTablet ? 100 : 10,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Text(
+                      'Select Companion',
+                      style: TextStyle(
+                        fontFamily: 'AkayaKanadaka',
+                        fontSize: isTablet ? 48 : 36,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFFFF6B35),
+                        shadows: [
+                          Shadow(
+                            offset: const Offset(2, 2),
+                            blurRadius: 5,
+                            color: Colors.black.withValues(alpha: 0.3),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                // Back Button (top-left)
+                Positioned(
+                  top: isTablet ? 20 : 10,
+                  left: isTablet ? 20 : 10,
+                  child: GestureDetector(
+                    onTap: () {
+                      homeController.closeCompanionSelection();
+                    },
+                    child: Image.asset(
+                      'assets/images/back_btn.png',
+                      width: isTablet ? 80 : 60,
+                      height: isTablet ? 80 : 60,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -208,8 +206,8 @@ class CompanionSelectionOverlay extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: isSelected
-                    ? const Color(0xFF4CAF50).withOpacity(0.4)
-                    : Colors.black.withOpacity(0.1),
+                    ? const Color(0xFF4CAF50).withValues(alpha: 0.4)
+                    : Colors.black.withValues(alpha: 0.1),
                 blurRadius: isSelected ? 15 : 8,
                 offset: const Offset(0, 4),
               ),
@@ -231,7 +229,7 @@ class CompanionSelectionOverlay extends StatelessWidget {
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             decoration: BoxDecoration(
-                              color: Color(companion.color).withOpacity(0.3),
+                              color: Color(companion.color).withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
@@ -243,55 +241,7 @@ class CompanionSelectionOverlay extends StatelessWidget {
                         },
                       ),
                     ),
-
-                    // Selection indicator
-                    if (isSelected)
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF4CAF50),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: isTablet ? 18 : 14,
-                          ),
-                        ),
-                      ),
                   ],
-                ),
-              ),
-
-              // Companion name
-              Container(
-                height: 50,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
-                ),
-                child: Text(
-                  companion.name,
-                  style: TextStyle(
-                    fontFamily: 'AkayaKanadaka',
-                    fontSize: isTablet ? 18 : 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
                 ),
               ),
             ],

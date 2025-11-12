@@ -56,7 +56,7 @@ class ShapeSortingOverlay extends StatelessWidget {
                           Shadow(
                             offset: const Offset(3, 3),
                             blurRadius: 5,
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                           ),
                         ],
                       ),
@@ -110,7 +110,7 @@ class ShapeSortingOverlay extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 5,
                     offset: const Offset(0, 2),
                   ),
@@ -178,9 +178,9 @@ class ShapeSortingOverlay extends StatelessWidget {
                 ..scale(isHovering ? 1.1 : 1.0),
               decoration: BoxDecoration(
                 color: isMatched
-                    ? Colors.green.withOpacity(0.2)
+                    ? Colors.green.withValues(alpha: 0.2)
                     : isHovering
-                    ? Colors.blue.withOpacity(0.1)
+                    ? Colors.blue.withValues(alpha: 0.1)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(
@@ -306,7 +306,7 @@ class ShapeSortingOverlay extends StatelessWidget {
               borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
+                  color: Colors.black.withValues(alpha: 0.15),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -352,7 +352,7 @@ class ShapeSortingOverlay extends StatelessWidget {
       final opacity = controller.popupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -426,7 +426,7 @@ class ShapeSortingOverlay extends StatelessWidget {
                               borderRadius: BorderRadius.circular(25),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),

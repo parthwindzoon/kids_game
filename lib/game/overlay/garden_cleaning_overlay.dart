@@ -60,7 +60,7 @@ class GardenCleaningOverlay extends StatelessWidget {
                       vertical: isTablet ? 15 : 10,
                     ),
                     // decoration: BoxDecoration(
-                    //   color: Colors.white.withOpacity(0.9),
+                    //   color: Colors.white.withValues(alpha: 0.9),
                     //   borderRadius: BorderRadius.circular(30),
                     //   border: Border.all(
                     //     color: const Color(0xFF4CAF50),
@@ -68,7 +68,7 @@ class GardenCleaningOverlay extends StatelessWidget {
                     //   ),
                     //   boxShadow: [
                     //     BoxShadow(
-                    //       color: Colors.black.withOpacity(0.2),
+                    //       color: Colors.black.withValues(alpha: 0.2),
                     //       blurRadius: 10,
                     //       offset: const Offset(0, 4),
                     //     ),
@@ -294,7 +294,7 @@ class GardenCleaningOverlay extends StatelessWidget {
       final opacity = controller.popupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -369,7 +369,7 @@ class GardenCleaningOverlay extends StatelessWidget {
                               borderRadius: BorderRadius.circular(25),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),

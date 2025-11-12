@@ -41,6 +41,7 @@ dependencies:
   flutter_svg: ^2.2.1
   get_storage: ^2.1.1
   flutter_launcher_icons: ^0.14.4
+  google_mobile_ads: ^6.0.0
 
 dev_dependencies:
   flutter_test:

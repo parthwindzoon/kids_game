@@ -17,7 +17,7 @@ class StrokeSlider extends StatelessWidget {
         width: 60,
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.7),
+          color: Colors.white.withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(30),
         ),
         child: Column(

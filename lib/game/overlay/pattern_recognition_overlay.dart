@@ -27,7 +27,7 @@ class PatternRecognitionOverlay extends StatelessWidget {
         Shadow(
           offset: const Offset(2, 2),
           blurRadius: 3,
-          color: Colors.black.withOpacity(0.2),
+          color: Colors.black.withValues(alpha: 0.2),
         ),
       ],
     );
@@ -58,139 +58,137 @@ class PatternRecognitionOverlay extends StatelessWidget {
             fit: BoxFit.cover,
           ),
         ),
-        child: SafeArea(
-          child: Scaffold(
-            backgroundColor: Colors.transparent,
-            body: Stack(
-              children: [
-                // Top Bar: Back Button
-                Positioned(
-                  top: isTablet ? 20 : 15,
-                  left: isTablet ? 20 : 15,
-                  child: GestureDetector(
-                    onTap: controller.handleBackButton,
-                    child: Image.asset(
-                      'assets/images/back_btn.png',
-                      height: isTablet ? 60 : 45,
-                    ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Stack(
+            children: [
+              // Top Bar: Back Button
+              Positioned(
+                top: isTablet ? 20 : 15,
+                left: isTablet ? 20 : 15,
+                child: GestureDetector(
+                  onTap: controller.handleBackButton,
+                  child: Image.asset(
+                    'assets/images/back_btn.png',
+                    height: isTablet ? 60 : 45,
                   ),
                 ),
+              ),
 
-                // Top Bar: Title
-                Positioned(
-                  top: isTablet ? 30 : 22,
-                  left: 0,
-                  right: 0,
+              // Top Bar: Title
+              Positioned(
+                top: isTablet ? 30 : 22,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Text(
+                    'Pattern Recognition',
+                    style: titleStyle,
+                  ),
+                ),
+              ),
+
+              // Top Bar: Score
+              Positioned(
+                top: isTablet ? 20 : 15,
+                right: isTablet ? 20 : 15,
+                child: Obx(() => Container(
+                  width: isTablet ? 200 : 160,
+                  height: isTablet ? 60 : 50,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/score_bg.png'),
+                      fit: BoxFit.fill,
+                    ),
+                  ),
                   child: Center(
                     child: Text(
-                      'Pattern Recognition',
-                      style: titleStyle,
+                      'Score-${controller.score.value}',
+                      style: scoreStyle,
                     ),
                   ),
-                ),
+                )),
+              ),
 
-                // Top Bar: Score
-                Positioned(
-                  top: isTablet ? 20 : 15,
-                  right: isTablet ? 20 : 15,
-                  child: Obx(() => Container(
-                    width: isTablet ? 200 : 160,
-                    height: isTablet ? 60 : 50,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/score_bg.png'),
-                        fit: BoxFit.fill,
-                      ),
+              // Game Content Area
+              Center(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // White background box
+                    Image.asset(
+                      'assets/images/pattern_recognition/Rectangle 70.png',
+                      width: size.width * (isTablet ? 0.8 : 0.60),
+                      height: size.height * (isTablet ? 0.6 : 0.65),
+                      fit: BoxFit.fill,
                     ),
-                    child: Center(
-                      child: Text(
-                        'Score-${controller.score.value}',
-                        style: scoreStyle,
-                      ),
-                    ),
-                  )),
-                ),
 
-                // Game Content Area
-                Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // White background box
-                      Image.asset(
-                        'assets/images/pattern_recognition/Rectangle 70.png',
-                        width: size.width * (isTablet ? 0.8 : 0.60),
-                        height: size.height * (isTablet ? 0.6 : 0.65),
-                        fit: BoxFit.fill,
-                      ),
+                    // Game elements inside the white box
+                    Obx(() => Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // "Complete the pattern!" text
+                        Text(
+                          'Complete the pattern!',
+                          style: instructionStyle,
+                        ),
+                        SizedBox(height: isTablet ? 30 : 20),
 
-                      // Game elements inside the white box
-                      Obx(() => Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // "Complete the pattern!" text
-                          Text(
-                            'Complete the pattern!',
-                            style: instructionStyle,
-                          ),
-                          SizedBox(height: isTablet ? 30 : 20),
-
-                          // Pattern Row
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ...controller.currentPattern
-                                  .map((color) => _buildColorBox(color, isTablet))
-                                  .toList(),
-                              // Question Mark Box
-                              Image.asset(
-                                'assets/images/pattern_recognition/box.png',
-                                height: isTablet ? 80 : 60,
-                                width: isTablet ? 80 : 60,
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: isTablet ? 40 : 25),
-
-                          // Options Row
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: controller.currentOptions
-                                .map((color) => _buildColorOption(
-                                color, isTablet, controller))
+                        // Pattern Row
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ...controller.currentPattern
+                                .map((color) => _buildColorBox(color, isTablet))
                                 .toList(),
-                          ),
-                        ],
-                      )),
-                    ],
-                  ),
+                            // Question Mark Box
+                            Image.asset(
+                              'assets/images/pattern_recognition/box.png',
+                              height: isTablet ? 80 : 60,
+                              width: isTablet ? 80 : 60,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: isTablet ? 40 : 25),
+
+                        // Options Row
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: controller.currentOptions
+                              .map((color) => _buildColorOption(
+                              color, isTablet, controller))
+                              .toList(),
+                        ),
+                      ],
+                    )),
+                  ],
                 ),
+              ),
 
-                // Success Popup
-                Obx(() {
-                  if (!controller.showSuccessPopup.value) {
-                    return const SizedBox.shrink();
-                  }
-                  return _buildSuccessPopup(controller, isTablet);
-                }),
+              // Success Popup
+              Obx(() {
+                if (!controller.showSuccessPopup.value) {
+                  return const SizedBox.shrink();
+                }
+                return _buildSuccessPopup(controller, isTablet);
+              }),
 
-                // Wrong Answer Popup
-                Obx(() {
-                  if (!controller.showWrongPopup.value) {
-                    return const SizedBox.shrink();
-                  }
-                  return _buildWrongPopup(controller, isTablet);
-                }),
+              // Wrong Answer Popup
+              Obx(() {
+                if (!controller.showWrongPopup.value) {
+                  return const SizedBox.shrink();
+                }
+                return _buildWrongPopup(controller, isTablet);
+              }),
 
-                // Completion Popup
-                Obx(() {
-                  if (!controller.showCompletionPopup.value) {
-                    return const SizedBox.shrink();
-                  }
-                  return _buildCompletionPopup(controller, isTablet, game);
-                }),
-              ],
-            ),
+              // Completion Popup
+              Obx(() {
+                if (!controller.showCompletionPopup.value) {
+                  return const SizedBox.shrink();
+                }
+                return _buildCompletionPopup(controller, isTablet, game);
+              }),
+            ],
           ),
         ),
       ),
@@ -224,7 +222,7 @@ class PatternRecognitionOverlay extends StatelessWidget {
           border: Border.all(color: Colors.white, width: 3),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 5,
               offset: const Offset(0, 3),
             )
@@ -241,7 +239,7 @@ class PatternRecognitionOverlay extends StatelessWidget {
       final opacity = controller.popupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -310,7 +308,7 @@ class PatternRecognitionOverlay extends StatelessWidget {
       final opacity = controller.popupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -382,7 +380,7 @@ class PatternRecognitionOverlay extends StatelessWidget {
       final opacity = controller.popupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -456,7 +454,7 @@ class PatternRecognitionOverlay extends StatelessWidget {
                               borderRadius: BorderRadius.circular(25),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),

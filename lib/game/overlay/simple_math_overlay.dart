@@ -146,7 +146,7 @@ class SimpleMathOverlay extends StatelessWidget {
                 border: Border.all(color: Colors.white, width: 3),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -301,7 +301,7 @@ class SimpleMathOverlay extends StatelessWidget {
                                 Shadow(
                                   offset: const Offset(1, 1),
                                   blurRadius: 2,
-                                  color: Colors.white.withOpacity(0.5), // White shadow for contrast
+                                  color: Colors.white.withValues(alpha: 0.5), // White shadow for contrast
                                 ),
                               ],
                             ),
@@ -328,8 +328,8 @@ class SimpleMathOverlay extends StatelessWidget {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: isCorrectAnswer
-                                    ? Colors.green.withOpacity(0.3)
-                                    : Colors.red.withOpacity(0.3),
+                                    ? Colors.green.withValues(alpha: 0.3)
+                                    : Colors.red.withValues(alpha: 0.3),
                                 border: Border.all(
                                   color: isCorrectAnswer ? Colors.green : Colors.red,
                                   width: 3,
@@ -387,7 +387,7 @@ class SimpleMathOverlay extends StatelessWidget {
       final opacity = controller.popupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -455,7 +455,7 @@ class SimpleMathOverlay extends StatelessWidget {
       final opacity = controller.popupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -530,7 +530,7 @@ class SimpleMathOverlay extends StatelessWidget {
       final opacity = controller.popupOpacity.value;
 
       return Container(
-        color: Colors.black.withOpacity(0.6 * opacity),
+        color: Colors.black.withValues(alpha: 0.6 * opacity),
         child: Center(
           child: Transform.scale(
             scale: scale,
@@ -612,7 +612,7 @@ class SimpleMathOverlay extends StatelessWidget {
                               borderRadius: BorderRadius.circular(25),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),

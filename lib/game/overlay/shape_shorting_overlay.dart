@@ -529,12 +529,14 @@ class ShapeSortingController extends GetxController {
     shuffledShapes.value = List.from(shapes)..shuffle();
   }
 
+  final List<String> _audioFiles = [
+    'success.mp3',
+    'celebration.mp3',
+  ];
+
   Future<void> _preloadAudio() async {
     try {
-      await FlameAudio.audioCache.loadAll([
-        'success.mp3',
-        'celebration.mp3',
-      ]);
+      await FlameAudio.audioCache.loadAll(_audioFiles);
     } catch (e) {
       print('⚠️ Error preloading audio: $e');
     }
@@ -624,6 +626,15 @@ class ShapeSortingController extends GetxController {
     score.value = 0;
     shuffledShapes.value = List.from(shapes)..shuffle();
     closeCompletionPopup();
+  }
+
+  @override
+  void onClose() {
+    for (final file in _audioFiles) {
+      FlameAudio.audioCache.clear(file);
+    }
+    print('✅ Cleared shape_shorting audio cache on close');
+    super.onClose();
   }
 }
 

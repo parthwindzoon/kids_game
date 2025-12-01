@@ -507,13 +507,13 @@ class NumberMemoryController extends GetxController {
     matchedPairs = 0;
     flippedIndices.clear();
   }
-
+  final List<String> _audioFiles = [
+    'success.mp3',
+    'celebration.mp3',
+  ];
   Future<void> _preloadAudio() async {
     try {
-      await FlameAudio.audioCache.loadAll([
-        'success.mp3',
-        'celebration.mp3',
-      ]);
+      await FlameAudio.audioCache.loadAll(_audioFiles);
     } catch (e) {
       print('⚠️ Error preloading audio: $e');
     }
@@ -633,6 +633,15 @@ class NumberMemoryController extends GetxController {
   void resetGame() {
     closeCompletionPopup();
     _initializeGame();
+  }
+
+  @override
+  void dispose() {
+    for (final file in _audioFiles) {
+      FlameAudio.audioCache.clear(file);
+    }
+    print('✅ Cleared number_memory audio cache dispose');
+    super.dispose();
   }
 }
 

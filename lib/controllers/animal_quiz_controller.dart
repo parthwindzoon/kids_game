@@ -55,11 +55,15 @@ class AnimalQuizController extends GetxController {
     _generateQuestions();
   }
 
+  List<String> _getAudioFiles() {
+    final audioFiles = ['success.mp3', 'wrong.mp3', 'celebration.mp3'];
+    // audioFiles.addAll(['success.mp3', 'wrong.mp3', 'celebration.mp3']);
+    return audioFiles;
+  }
+
   Future<void> _preloadAudio() async {
     try {
-      final audioFiles = animals.map((animal) => 'animals/${animal.audioFile}').toList();
-      audioFiles.addAll(['success.mp3', 'wrong.mp3', 'celebration.mp3']);
-      await FlameAudio.audioCache.loadAll(audioFiles);
+      await FlameAudio.audioCache.loadAll(_getAudioFiles()); // Use helper
       print('✅ All animal quiz audio files preloaded successfully');
     } catch (e) {
       print('⚠️ Error preloading audio: $e');
@@ -232,6 +236,14 @@ class AnimalQuizController extends GetxController {
 
   @override
   void onClose() {
+
+    // --- SOLUTION: Clear audio files from global cache ---
+    final audioFiles = _getAudioFiles();
+    for (final file in audioFiles) {
+      FlameAudio.audioCache.clear(file);
+    }
+    print('✅ Cleared animal_quiz audio cache');
+    // --- END SOLUTION ---
     super.onClose();
   }
 }

@@ -38,6 +38,12 @@ class ColorMatchingController extends GetxController {
     const Color(0xFF00BCD4), // Cyan
   ];
 
+  final List<String> _audioFiles = [
+    'success.mp3',
+    'wrong.mp3',
+    'celebration.mp3',
+  ];
+
   final int totalRounds = 10; // Complete game after 10 correct answers
   final Random random = Random();
 
@@ -50,11 +56,7 @@ class ColorMatchingController extends GetxController {
 
   Future<void> _preloadAudio() async {
     try {
-      await FlameAudio.audioCache.loadAll([
-        'success.mp3',
-        'wrong.mp3',
-        'celebration.mp3',
-      ]);
+      await FlameAudio.audioCache.loadAll(_audioFiles);
       print('✅ Audio files preloaded successfully');
     } catch (e) {
       print('⚠️ Error preloading audio: $e');
@@ -241,6 +243,11 @@ class ColorMatchingController extends GetxController {
 
   @override
   void onClose() {
+
+    for (final file in _audioFiles) {
+      FlameAudio.audioCache.clear(file);
+    }
+    print('✅ Cleared color_matching audio cache on close');
     super.onClose();
   }
 }

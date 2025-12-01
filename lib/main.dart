@@ -14,13 +14,15 @@ import 'screens/game/game_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
-  await MobileAds.instance.initialize();
+  //TODO: after live uncomment this
+  // await MobileAds.instance.initialize();
 
   // Initialize controllers
   Get.put(CharacterController());
   Get.put(CompanionController());
   Get.put(CoinController());
-  Get.put(AdService());
+  //TODO: after live uncomment this
+  // Get.put(AdService());
 
   // Force landscape orientation
   SystemChrome.setPreferredOrientations([

@@ -13,11 +13,11 @@ class CompanionComponent extends SpriteAnimationComponent
     with HasGameReference<TiledGame>, CollisionCallbacks {
   final Player player;
 
-  static const double _companionWidth = 42.0;
-  static const double _companionHeight = 42.0;
+  static const double _companionWidth = 36.0;
+  static const double _companionHeight = 36.0;
   static const double _minDistance = 60.0;
   static const double _maxDistance = 100.0;
-  static const double _followSpeed = 180.0;
+  static const double _followSpeed = 140.0;
 
   Vector2 velocity = Vector2.zero();
 

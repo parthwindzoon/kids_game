@@ -315,37 +315,17 @@ class LearnAlphabetsController extends GetxController {
     _preloadAudio();
   }
 
+  List<String> _getAudioFiles() {
+    // This creates a list of all audio file paths
+    return letterWords.entries.map((entry) {
+      return 'alphabets/${entry.key} for ${entry.value}.mp3';
+    }).toList();
+  }
+
   // Preload all audio files for better performance
   Future<void> _preloadAudio() async {
     try {
-      await FlameAudio.audioCache.loadAll([
-        'alphabets/A for Apple.mp3',
-        'alphabets/B for Banana.mp3',
-        'alphabets/C for Cat.mp3',
-        'alphabets/D for Dog.mp3',
-        'alphabets/E for Elephant.mp3',
-        'alphabets/F for Fox.mp3',
-        'alphabets/G for Giraffe.mp3',
-        'alphabets/H for Horse.mp3',
-        'alphabets/I for Icecream.mp3',
-        'alphabets/J for Jug.mp3',
-        'alphabets/K for Kite.mp3',
-        'alphabets/L for Lion.mp3',
-        'alphabets/M for Mango.mp3',
-        'alphabets/N for Notebook.mp3',
-        'alphabets/O for Owl.mp3',
-        'alphabets/P for Pig.mp3',
-        'alphabets/Q for Queen.mp3',
-        'alphabets/R for Rabbit.mp3',
-        'alphabets/S for Strawberry.mp3',
-        'alphabets/T for Tree.mp3',
-        'alphabets/U for Umbrella.mp3',
-        'alphabets/V for Violin.mp3',
-        'alphabets/W for Watermelon.mp3',
-        'alphabets/X for Xylophone.mp3',
-        'alphabets/Y for Yoyo.mp3',
-        'alphabets/Z for Zebra.mp3',
-      ]);
+      await FlameAudio.audioCache.loadAll(_getAudioFiles()); // Use helper
       print('✅ All alphabet audio files preloaded successfully');
     } catch (e) {
       print('⚠️ Error preloading audio: $e');
@@ -420,6 +400,13 @@ class LearnAlphabetsController extends GetxController {
 
   @override
   void dispose() {
+    // --- SOLUTION: Clear audio files from global cache ---
+    final audioFiles = _getAudioFiles();
+    for (final file in audioFiles) {
+      FlameAudio.audioCache.clear(file);
+    }
+    print('✅ Cleared learn_alphabets audio cache');
+    // --- END SOLUTION ---
     // Clean up audio cache if needed
     super.dispose();
   }

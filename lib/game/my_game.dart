@@ -3,7 +3,7 @@
 import 'package:flame/components.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
-import 'package:flame/input.dart';
+import 'package:flame/events.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,10 +12,10 @@ import 'components/player.dart';
 import 'components/companion_component.dart';
 import '../controllers/companion_controller.dart';
 
-class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandlerComponents {
+class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandlerComponents, DragCallbacks {
   late TiledComponent mapComponent;
   late Player player;
-  late JoystickComponent joystick;
+  JoystickComponent? joystick;
   CompanionComponent? companion;
 
   String? currentBuildingName;
@@ -51,16 +51,6 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     mapComponent = await TiledComponent.load('Main-Map.tmx', Vector2.all(64));
     world.add(mapComponent);
 
-    final knobPaint = Paint()..color = Colors.white.withValues(alpha: 0.5);
-    final backgroundPaint = Paint()..color = Colors.grey.withValues(alpha: 0.3);
-
-    joystick = JoystickComponent(
-      knob: CircleComponent(radius: 25, paint: knobPaint),
-      background: CircleComponent(radius: 60, paint: backgroundPaint),
-      margin: const EdgeInsets.only(left: 40, bottom: 40),
-      priority: 1000,
-    );
-
     final spawnPoint = _getPlayerSpawnPoint();
     player = Player(position: spawnPoint, joystick: joystick);
 
@@ -70,7 +60,6 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     // Load companion with proper error handling
     await _loadCompanion(spawnPoint);
 
-    camera.viewport.add(joystick);
     _setInitialZoom();
     camera.follow(player);
 
@@ -80,6 +69,43 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
     _startBackgroundMusic();
 
     print('✅ Game fully loaded - player and companion ready');
+  }
+
+  @override
+  void onDragStart(DragStartEvent event) {
+    if (joystick == null) {
+      joystick = JoystickComponent(
+        knob: CircleComponent(
+          radius: 25,
+          paint: Paint()..color = Colors.white.withValues(alpha: 0.5),
+        ),
+        background: CircleComponent(
+          radius: 60,
+          paint: Paint()..color = Colors.grey.withValues(alpha: 0.3),
+        ),
+        position: event.canvasPosition,
+        priority: 1000,
+      );
+      camera.viewport.add(joystick!);
+      player.setJoystick(joystick);
+    }
+    super.onDragStart(event);
+  }
+
+  @override
+  void onDragEnd(DragEndEvent event) {
+    if (joystick != null) {
+      joystick!.removeFromParent();
+      joystick = null;
+      player.setJoystick(null);
+    }
+    super.onDragEnd(event);
+  }
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    joystick?.onDragUpdate(event);
+    super.onDragUpdate(event);
   }
 
   // *** NEW METHOD: Set zoom based on screen size ***
@@ -286,6 +312,16 @@ class TiledGame extends FlameGame with HasCollisionDetection, HasKeyboardHandler
 
     // Stop background music when game is removed
     pauseBackgroundMusic();
+
+    // Remove joystick if exists
+    if (joystick != null) {
+      try {
+        camera.viewport.remove(joystick!);
+        joystick = null;
+      } catch (e) {
+        print('⚠️ Error removing joystick: $e');
+      }
+    }
 
     // Explicitly remove companion first
     if (companion != null) {

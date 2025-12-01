@@ -783,14 +783,14 @@ class CountingFunController extends GetxController {
     closeCompletionPopup();
     _generateLevel();
   }
-
+  final List<String> _audioFiles = [
+    'success.mp3',
+    'wrong.mp3',
+    'celebration.mp3',
+  ];
   Future<void> _preloadAudio() async {
     try {
-      await FlameAudio.audioCache.loadAll([
-        'success.mp3',
-        'wrong.mp3',
-        'celebration.mp3',
-      ]);
+      await FlameAudio.audioCache.loadAll(_audioFiles);
     } catch (e) {
       print('⚠️ Error preloading audio: $e');
     }
@@ -821,8 +821,13 @@ class CountingFunController extends GetxController {
   }
 
   @override
-  void onClose() {
+  void dispose() {
     _cachedPositions.clear();
-    super.onClose();
+
+    for (final file in _audioFiles) {
+      FlameAudio.audioCache.clear(file);
+    }
+    print('✅ Cleared counting_fun audio cache');
+    super.dispose();
   }
 }

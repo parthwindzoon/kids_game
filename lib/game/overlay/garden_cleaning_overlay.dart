@@ -464,13 +464,13 @@ class GardenCleaningController extends GetxController {
 
     animate();
   }
-
+  final List<String> _audioFiles = [
+    'success.mp3',
+    'celebration.mp3',
+  ];
   Future<void> _preloadAudio() async {
     try {
-      await FlameAudio.audioCache.loadAll([
-        'success.mp3',
-        'celebration.mp3',
-      ]);
+      await FlameAudio.audioCache.loadAll(_audioFiles);
     } catch (e) {
       print('⚠️ Error preloading audio: $e');
     }
@@ -592,9 +592,14 @@ class GardenCleaningController extends GetxController {
   }
 
   @override
-  void dispose() {
+  void onClose() {
     trashItems.clear();
-    super.dispose();
+
+    for (final file in _audioFiles) {
+      FlameAudio.audioCache.clear(file);
+    }
+    print('✅ Cleared garden_cleaning audio cache');
+    super.onClose();
   }
 }
 

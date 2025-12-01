@@ -11,14 +11,14 @@ import 'package:kids_game/game/my_game.dart';
 import '../../controllers/character_controller.dart';
 
 class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, CollisionCallbacks, KeyboardHandler {
-  static const double _speed = 200.0;
+  static const double _speed = 150.0;
   static const double _playerWidth = 42.0;
   static const double _playerHeight = 42.0;
 
   Vector2 direction = Vector2.zero();
   Vector2 velocity = Vector2.zero();
   final Set<LogicalKeyboardKey> _keysPressed = <LogicalKeyboardKey>{};
-  final JoystickComponent? joystick;
+  JoystickComponent? joystick;
 
   late SpriteAnimation idleAnimation;
   late SpriteAnimation walkAnimation;
@@ -36,6 +36,15 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
     position: position,
     anchor: Anchor.center,
   );
+
+  // Method to update joystick dynamically
+  void setJoystick(JoystickComponent? newJoystick) {
+    joystick = newJoystick;
+    // Reset direction when joystick is removed
+    if (joystick == null && _keysPressed.isEmpty) {
+      direction = Vector2.zero();
+    }
+  }
 
   @override
   Future<void> onLoad() async {
@@ -264,9 +273,11 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   }
 
   void _updateDirectionFromJoystick() {
-    if (joystick != null && joystick!.direction != JoystickDirection.idle) {
-      direction = joystick!.relativeDelta;
-    } else if (joystick != null && joystick!.direction == JoystickDirection.idle && _keysPressed.isEmpty) {
+    // Check if joystick exists and has intensity (is being used)
+    if (joystick != null && joystick!.intensity > 0) {
+      direction = joystick!.delta.normalized();
+    } else if (_keysPressed.isEmpty) {
+      // Only stop if no keys are pressed either
       direction = Vector2.zero();
     }
   }
@@ -275,6 +286,11 @@ class Player extends SpriteAnimationComponent with HasGameReference<TiledGame>, 
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     _keysPressed.clear();
     _keysPressed.addAll(keysPressed);
+
+    // Don't handle keyboard if joystick is active
+    if (joystick != null && joystick!.intensity > 0) {
+      return true;
+    }
 
     direction.setZero();
 

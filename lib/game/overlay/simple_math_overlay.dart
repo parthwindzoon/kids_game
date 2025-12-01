@@ -687,13 +687,15 @@ class SimpleMathController extends GetxController {
     _generateProblem();
   }
 
+  final List<String> _audioFiles = [
+    'success.mp3',
+    'wrong.mp3',
+    'celebration.mp3',
+  ];
+
   Future<void> _preloadAudio() async {
     try {
-      await FlameAudio.audioCache.loadAll([
-        'success.mp3',
-        'wrong.mp3',
-        'celebration.mp3',
-      ]);
+      await FlameAudio.audioCache.loadAll(_audioFiles);
     } catch (e) {
       print('⚠️ Error preloading audio: $e');
     }
@@ -897,8 +899,22 @@ class SimpleMathController extends GetxController {
     _generateProblem();
   }
 
+  // @override
+  // void onClose() {
+  //
+  //   for (final file in _audioFiles) {
+  //     FlameAudio.audioCache.clear(file);
+  //   }
+  //   print('✅ Cleared simple_math audio cache on close');
+  //   super.onClose();
+  // }
+
   @override
-  void onClose() {
-    super.onClose();
+  void dispose() {
+    for (final file in _audioFiles) {
+      FlameAudio.audioCache.clear(file);
+    }
+    print('✅ Cleared simple_math audio cache');
+    super.dispose();
   }
 }

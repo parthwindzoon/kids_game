@@ -384,11 +384,15 @@ class LearnAnimalsController extends GetxController {
     _preloadAudio();
   }
 
+  // --- SOLUTION: Helper to get all audio files ---
+  List<String> _getAudioFiles() {
+    return animals.map((animal) => 'animals/${animal.audioFile}').toList();
+  }
+
   // Preload all audio files for better performance
   Future<void> _preloadAudio() async {
     try {
-      final audioFiles = animals.map((animal) => 'animals/${animal.audioFile}').toList();
-      await FlameAudio.audioCache.loadAll(audioFiles);
+      await FlameAudio.audioCache.loadAll(_getAudioFiles()); // Use helper
       print('✅ All animal audio files preloaded successfully');
     } catch (e) {
       print('⚠️ Error preloading audio: $e');
@@ -467,7 +471,11 @@ class LearnAnimalsController extends GetxController {
 
   @override
   void dispose() {
-    // Clean up audio cache if needed
+    final audioFiles = _getAudioFiles();
+    for (final file in audioFiles) {
+      FlameAudio.audioCache.clear(file);
+    }
+    print('✅ Cleared animal_quiz audio cache');
     super.dispose();
   }
 }

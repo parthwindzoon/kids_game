@@ -343,14 +343,18 @@ class LearnNumbersController extends GetxController {
     _preloadAudio();
   }
 
+  List<String> _getAudioFiles() {
+    final audioFiles = <String>[];
+    for (int i = 1; i <= 40; i++) {
+      audioFiles.add('numbers/$i.mp3');
+    }
+    return audioFiles;
+  }
+
   // Preload audio files
   Future<void> _preloadAudio() async {
     try {
-      final audioFiles = <String>[];
-      for (int i = 1; i <= 40; i++) {
-        audioFiles.add('numbers/$i.mp3');
-      }
-      await FlameAudio.audioCache.loadAll(audioFiles);
+      await FlameAudio.audioCache.loadAll(_getAudioFiles()); // Use helper
       print('✅ All number audio files preloaded successfully');
     } catch (e) {
       print('⚠️ Error preloading audio: $e');
@@ -423,6 +427,14 @@ class LearnNumbersController extends GetxController {
 
   @override
   void dispose() {
+
+    // --- SOLUTION: Clear audio files from global cache ---
+    final audioFiles = _getAudioFiles();
+    for (final file in audioFiles) {
+      FlameAudio.audioCache.clear(file);
+    }
+    print('✅ Cleared learn_numbers audio cache');
+    // --- END SOLUTION ---
     // Clean up audio cache if needed
     super.dispose();
   }

@@ -43,6 +43,12 @@ class PopBalloonController extends GetxController with GetSingleTickerProviderSt
     '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'
   ];
 
+  final List<String> _audioFiles = [
+    'balloon_pop.mp3',
+    'success.mp3',
+    'celebration.mp3',
+  ];
+
   late AnimationController animationController;
   final Random random = Random();
 
@@ -59,11 +65,7 @@ class PopBalloonController extends GetxController with GetSingleTickerProviderSt
 
   Future<void> _preloadAudio() async {
     try {
-      await FlameAudio.audioCache.loadAll([
-        'balloon_pop.mp3',
-        'success.mp3',
-        'celebration.mp3',
-      ]);
+      await FlameAudio.audioCache.loadAll(_audioFiles);
     } catch (e) {
       print('⚠️ Error preloading audio: $e');
     }
@@ -175,6 +177,12 @@ class PopBalloonController extends GetxController with GetSingleTickerProviderSt
   void onClose() {
     _balloonAnimationTimer?.cancel();
     animationController.dispose();
+
+
+    for (final file in _audioFiles) {
+      FlameAudio.audioCache.clear(file);
+    }
+    print('✅ Cleared pop_balloon audio cache');
     super.onClose();
   }
 

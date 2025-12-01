@@ -29,7 +29,8 @@ class LuckySpinController extends GetxController
   static const String _lastSpinDateKey = 'last_spin_date';
 
   // --- NEW: Ad-related State ---
-  final AdService _adService = Get.find<AdService>();
+  //TODO: after live uncomment this
+  // final AdService _adService = Get.find<AdService>();
   final RxInt adSpinsWatched = 0.obs; // Tracks progress from 0 to 3
   final RxInt bonusSpinsAvailable = 0.obs; // Spins earned from ads
 
@@ -69,7 +70,8 @@ class LuckySpinController extends GetxController
   RxBool get hasAnySpin => (canSpin.value || bonusSpinsAvailable.value > 0).obs;
 
   /// Is the rewarded ad ready to be shown?
-  RxBool get isAdReady => _adService.isRewardedAdReady;
+  /// //TODO: after live uncomment this
+  // RxBool get isAdReady => _adService.isRewardedAdReady;
   // --- End NEW ---
 
   @override
@@ -112,14 +114,15 @@ class LuckySpinController extends GetxController
 
   // --- NEW: Ad Methods ---
   /// Called by the UI when the "Watch Ad" button is pressed.
-  void showAdForSpin() {
-    _adService.showRewardedAd(
-      onReward: () {
-        // This callback runs after the ad is successfully watched.
-        _onAdRewardGranted();
-      },
-    );
-  }
+  /// //TODO: after live uncomment this
+  // void showAdForSpin() {
+  //   _adService.showRewardedAd(
+  //     onReward: () {
+  //       // This callback runs after the ad is successfully watched.
+  //       _onAdRewardGranted();
+  //     },
+  //   );
+  // }
 
   /// Handles the logic after a reward is granted.
   void _onAdRewardGranted() {

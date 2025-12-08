@@ -7,6 +7,7 @@ import 'package:kids_game/controllers/character_controller.dart';
 import 'package:kids_game/controllers/companion_controller.dart';
 import 'package:kids_game/service/ad_service.dart';
 import 'controllers/coin_controller.dart';
+import 'screens/home/For Parents Page/for_parents_page.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/game/game_screen.dart';
@@ -15,14 +16,22 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
   //TODO: after live uncomment this
-  // await MobileAds.instance.initialize();
+  await MobileAds.instance.initialize();
+
+  final config = RequestConfiguration(
+    tagForChildDirectedTreatment: TagForChildDirectedTreatment.yes,
+    tagForUnderAgeOfConsent: TagForUnderAgeOfConsent.yes,
+    maxAdContentRating: MaxAdContentRating.g,
+  );
+
+  await MobileAds.instance.updateRequestConfiguration(config);
 
   // Initialize controllers
   Get.put(CharacterController());
   Get.put(CompanionController());
   Get.put(CoinController());
   //TODO: after live uncomment this
-  // Get.put(AdService());
+  Get.put(AdService());
 
   // Force landscape orientation
   SystemChrome.setPreferredOrientations([
@@ -64,6 +73,10 @@ class MyApp extends StatelessWidget {
           name: '/game',
           page: () => const GameScreen(),
           transition: Transition.fadeIn,
+        ),
+        GetPage(
+          name: '/for-parents',
+          page: () => const ForParentsPage(),
         ),
       ],
     );

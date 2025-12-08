@@ -44,6 +44,26 @@ class HomeScreen extends StatelessWidget {
                   child: _buildCoinCounter(isTablet),
                 )),
 
+                // FOR PARENTS button (from left, top-left corner)
+                Obx(() => AnimatedPositioned(
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeOutBack,
+                  left: controller.showSettings.value
+                      ? (isTablet ? 40 : 20)
+                      : -200, // start off-screen to the left
+                  top: isTablet ? 40 : 20,
+                  child: GestureDetector(
+                    onTap: () => Get.toNamed('/for-parents'),
+                    child: SizedBox(
+                      width: isTablet ? 180 : 130, // scales for iPad vs phone
+                      child: Image.asset(
+                        'assets/images/home/for_parents_btn.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                )),
+
                 // KIDS GAME Title (from top)
                 Obx(() => AnimatedPositioned(
                   duration: const Duration(milliseconds: 800),

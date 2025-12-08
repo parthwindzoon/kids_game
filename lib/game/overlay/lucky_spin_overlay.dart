@@ -220,9 +220,9 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
           if (spinning) {
             buttonText = 'Spinning...';
           } else if (controller.bonusSpinsAvailable.value > 0) {
-            buttonText = 'SPIN (${controller.bonusSpinsAvailable.value} LEFT)';
+            buttonText = 'SPIN';
           } else if (controller.canSpin.value) {
-            buttonText = 'SPIN (DAILY)';
+            buttonText = 'SPIN';
           }
           // ---
 
@@ -283,67 +283,67 @@ class _LuckySpinOverlayState extends State<LuckySpinOverlay> {
 
         // --- 2. WATCH AD BUTTON (NEW) ---
         //TODO: after live uncomment this
-        // Obx(() {
-        //   // Use the controller's logic to decide if button should show
-        //   if (!controller.canWatchAd.value) {
-        //     return const SizedBox.shrink();
-        //   }
-        //
-        //   final adIsReady = controller.isAdReady.value;
-        //
-        //   // --- NEW TEXT LOGIC ---
-        //   final adsWatched = controller.adSpinsWatched.value;
-        //   final adsNeeded = LuckySpinController.maxAdsPerSpin;
-        //   final buttonText = adIsReady
-        //       ? 'Watch Ad ($adsWatched/$adsNeeded)'
-        //       : 'Loading Ad...';
-        //   // ---
-        //
-        //   return GestureDetector(
-        //     onTap: adIsReady ? controller.showAdForSpin : null,
-        //     child: Container(
-        //       width: isTablet ? 220 : 180,
-        //       height: isTablet ? 60 : 50,
-        //       decoration: BoxDecoration(
-        //         gradient: !adIsReady
-        //             ? LinearGradient(
-        //           colors: [
-        //             Colors.grey.shade400,
-        //             Colors.grey.shade600,
-        //           ],
-        //         )
-        //             : const LinearGradient(
-        //           begin: Alignment.topCenter,
-        //           end: Alignment.bottomCenter,
-        //           colors: [
-        //             Color(0xFF4CAF50), // Green
-        //             Color(0xFFFFFFFF), // White
-        //           ],
-        //         ),
-        //         borderRadius: BorderRadius.circular(30),
-        //         boxShadow: [
-        //           BoxShadow(
-        //             color: Colors.black.withValues(alpha: 0.3),
-        //             blurRadius: 8,
-        //             offset: const Offset(0, 4),
-        //           ),
-        //         ],
-        //       ),
-        //       child: Center(
-        //         child: Text(
-        //           buttonText, // <-- Use the new button text
-        //           style: TextStyle(
-        //             fontFamily: 'AkayaKanadaka',
-        //             fontWeight: FontWeight.w800,
-        //             fontSize: isTablet ? 18 : 14,
-        //             letterSpacing: 1.2,
-        //             color: !adIsReady ? Colors.white : Colors.black87,
-        //           ),
-        //         ),
-        //       ),
-        //     ),
-        //   );
-        // }),
+        Obx(() {
+          // Use the controller's logic to decide if button should show
+          if (!controller.canWatchAd.value) {
+            return const SizedBox.shrink();
+          }
+
+          final adIsReady = controller.isAdReady.value;
+
+          // --- NEW TEXT LOGIC ---
+          final adsWatched = controller.adSpinsWatched.value;
+          final adsNeeded = LuckySpinController.maxAdsPerSpin;
+          final buttonText = adIsReady
+              ? 'Watch Ad ($adsWatched/$adsNeeded)'
+              : 'Loading Ad...';
+          // ---
+
+          return GestureDetector(
+            onTap: adIsReady ? controller.showAdForSpin : null,
+            child: Container(
+              width: isTablet ? 220 : 180,
+              height: isTablet ? 60 : 50,
+              decoration: BoxDecoration(
+                gradient: !adIsReady
+                    ? LinearGradient(
+                  colors: [
+                    Colors.grey.shade400,
+                    Colors.grey.shade600,
+                  ],
+                )
+                    : const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF4CAF50), // Green
+                    Color(0xFFFFFFFF), // White
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  buttonText, // <-- Use the new button text
+                  style: TextStyle(
+                    fontFamily: 'AkayaKanadaka',
+                    fontWeight: FontWeight.w800,
+                    fontSize: isTablet ? 18 : 14,
+                    letterSpacing: 1.2,
+                    color: !adIsReady ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
       ],
     );
   }

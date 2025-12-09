@@ -81,7 +81,6 @@ class BuildingPopupOverlay extends StatelessWidget {
                       // If it's a pet shop building, open pet shop
                       game.overlays.add('pet_shop');
                     } else {
-                      print('i am here!');
                       // For other buildings, open mini games overlay
                       game.overlays.add('minigames_overlay');
                     }

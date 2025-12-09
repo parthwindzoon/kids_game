@@ -1,23 +1,29 @@
 // lib/game/overlay/banner_ads_overlay.dart
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../my_game.dart';
 import '../../service/ad_service.dart';
 
-class BannerAdsOverlay extends StatelessWidget {
+class BannerAdsController extends GetxController {
   final TiledGame game;
+  final RxBool hasActiveOverlay = false.obs;
+  Timer? _checkTimer;
 
-  const BannerAdsOverlay({super.key, required this.game});
+  BannerAdsController(this.game);
 
   @override
-  Widget build(BuildContext context) {
-    final adService = Get.find<AdService>();
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.shortestSide > 600;
+  void onInit() {
+    super.onInit();
+    // Check overlay state periodically
+    _checkTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      _checkOverlays();
+    });
+  }
 
-    // Only show ads when no overlays are active (main map only)
-    final hasActiveOverlay = game.overlays.isActive('building_popup') ||
+  void _checkOverlays() {
+    final isActive = game.overlays.isActive('building_popup') ||
         game.overlays.isActive('minigames_overlay') ||
         game.overlays.isActive('lucky_spin') ||
         game.overlays.isActive('learn_alphabets') ||
@@ -34,23 +40,58 @@ class BannerAdsOverlay extends StatelessWidget {
         game.overlays.isActive('simple_math') ||
         game.overlays.isActive('animal_quiz') ||
         game.overlays.isActive('image_selection_overlay') ||
-        game.overlays.isActive('coloring_page_overlay');
+        game.overlays.isActive('coloring_page_overlay') ||
+        game.overlays.isActive('home_button');
 
-    if (hasActiveOverlay) {
-      print("i am herere rerer rere==================================");
-      return const SizedBox.shrink(); // Hide ads when overlays are shown
+    if (hasActiveOverlay.value != isActive) {
+      hasActiveOverlay.value = isActive;
+      if (isActive) {
+        print("🚫 Hiding banner ads - active overlay detected");
+      } else {
+        print("✅ Showing banner ads - no active overlay");
+      }
     }
+  }
+
+  @override
+  void onClose() {
+    _checkTimer?.cancel();
+    super.onClose();
+  }
+}
+
+class BannerAdsOverlay extends StatelessWidget {
+  final TiledGame game;
+
+  const BannerAdsOverlay({super.key, required this.game});
+
+  @override
+  Widget build(BuildContext context) {
+    final adService = Get.find<AdService>();
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.shortestSide > 600;
+
+    // Create controller with unique tag to avoid conflicts
+    final controller = Get.put(
+      BannerAdsController(game),
+      tag: 'banner_ads_${game.hashCode}',
+    );
 
     return Obx(() {
+      // Check if any overlay is active
+      if (controller.hasActiveOverlay.value) {
+        return const SizedBox.shrink();
+      }
+
       final ad1Widget = adService.getBannerAd1Widget();
       final ad2Widget = adService.getBannerAd2Widget();
 
-      // ✅ If BOTH ads fail to load, hide the entire container
+      // If BOTH ads fail to load, hide the entire container
       if (ad1Widget == null && ad2Widget == null) {
         return const SizedBox.shrink();
       }
 
-      // ✅ If at least ONE ad loaded, show the container
+      // If at least ONE ad loaded, show the container
       return Positioned(
         top: 0,
         left: 0,

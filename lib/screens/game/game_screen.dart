@@ -24,6 +24,8 @@ import '../../game/overlay/minigames_overlay.dart';
 import '../../game/overlay/pattern_recognition_overlay.dart';
 import '../../game/overlay/pop_balloon_overlay.dart';
 import '../../game/overlay/shape_shorting_overlay.dart';
+import '../../game/overlay/banner_ads_overlay.dart'; // NEW IMPORT
+import '../../service/ad_service.dart'; // NEW IMPORT
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -35,10 +37,12 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   TiledGame? _game;
   bool _isGameInitialized = false;
+  late AdService _adService; // NEW
 
   @override
   void initState() {
     super.initState();
+    _adService = Get.find<AdService>(); // NEW
     _initializeGame();
   }
 
@@ -48,6 +52,13 @@ class _GameScreenState extends State<GameScreen> {
 
     if (_game != null && _isGameInitialized) {
       try {
+        // Stop all audio before removing game
+        try {
+          // FlameAudio.bgm.stop(); // Uncomment if needed
+        } catch (e) {
+          print('⚠️ Error stopping audio: $e');
+        }
+
         // Remove game
         _game!.onRemove();
         _game = null;
@@ -66,7 +77,6 @@ class _GameScreenState extends State<GameScreen> {
     super.dispose();
   }
 
-  // ✅ ADD THIS NEW METHOD
   Widget _buildLoadingScreen(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isTablet = size.shortestSide > 600;
@@ -97,7 +107,7 @@ class _GameScreenState extends State<GameScreen> {
                     Shadow(
                       offset: const Offset(2, 2),
                       blurRadius: 4,
-                      color: Colors.black.withValues(alpha: 0.5),
+                      color: Colors.black.withOpacity(0.5),
                     ),
                   ],
                 ),
@@ -216,6 +226,10 @@ class _GameScreenState extends State<GameScreen> {
               },
             ),
 
+            // NEW: Banner Ads at the top (only visible on main map)
+            BannerAdsOverlay(game: _game!),
+
+            // Coin popup
             if (Get.isRegistered<CoinController>())
               Get.find<CoinController>().buildCoinPopup(),
           ],

@@ -12,7 +12,7 @@ class HomeButtonOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: 20,
+      top: 60,
       right: 20,
       child: GestureDetector(
         onTap: () {

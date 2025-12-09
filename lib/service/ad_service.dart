@@ -1,3 +1,5 @@
+// lib/service/ad_service.dart
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -6,9 +8,12 @@ import 'dart:io';
 
 class AdService extends GetxService {
   RewardedAd? _rewardedAd;
-  BannerAd? _bannerAd;
+  BannerAd? _bannerAd1; // First banner
+  BannerAd? _bannerAd2; // Second banner
+
   final RxBool isRewardedAdReady = false.obs;
-  final RxBool isBannerAdReady = false.obs;
+  final RxBool isBannerAd1Ready = false.obs; // First banner state
+  final RxBool isBannerAd2Ready = false.obs; // Second banner state
 
   static const AdRequest _kidSafeAdRequest = AdRequest(
     nonPersonalizedAds: true,
@@ -17,24 +22,20 @@ class AdService extends GetxService {
   // Use test ad unit IDs for development
   static String get rewardedAdUnitId {
     if (kDebugMode) {
-    if (Platform.isAndroid) {
-      print('ANDROID DEBUG<><><>><><>><<>><><><><><><><><><><><>');
-      return 'ca-app-pub-3940256099942544/5224354917';
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/1712485313';
+      if (Platform.isAndroid) {
+        print('ANDROID DEBUG<><><>><><>><<>><><><><><><><><><><><>');
+        return 'ca-app-pub-3940256099942544/5224354917';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/1712485313';
+      } else {
+        throw UnsupportedError("Unsupported Platform.");
+      }
     } else {
-      // For non-mobile platforms
-      throw UnsupportedError("Unsupported Platform.");
-    }
-    } else {
-      // REPLACE THESE WITH YOUR REAL AD UNIT IDs FOR PRODUCTION
       if (Platform.isAndroid) {
         print('ANDROID release<><><>><><>><<>><><><><><><><><><><><>');
-        // return 'ca-app-pub-3940256099942544/5224354917';
-        return 'ca-app-pub-4288009468041362/2153137575';  //real  change for new
+        return 'ca-app-pub-4288009468041362/2153137575';
       } else if (Platform.isIOS) {
-        // return 'ca-app-pub-3940256099942544/1712485313';
-        return 'ca-app-pub-4288009468041362/4377536738';  //real change for new
+        return 'ca-app-pub-4288009468041362/4377536738';
       } else {
         throw UnsupportedError("Unsupported Platform.");
       }
@@ -42,10 +43,8 @@ class AdService extends GetxService {
   }
 
   // Banner ad unit IDs
-  static String get bannerAdUnitId {
-    // Use test ads in debug mode, real ads in release mode
+  static String get bannerAdUnitId1 {
     if (kDebugMode) {
-      // Test banner ad unit IDs
       if (Platform.isAndroid) {
         return 'ca-app-pub-3940256099942544/6300978111';
       } else if (Platform.isIOS) {
@@ -54,13 +53,29 @@ class AdService extends GetxService {
         throw UnsupportedError("Unsupported Platform.");
       }
     } else {
-      // REPLACE THESE WITH YOUR REAL AD UNIT IDs FOR PRODUCTION
       if (Platform.isAndroid) {
-        // return 'ca-app-pub-3940256099942544/6300978111';
-        return 'ca-app-pub-4288009468041362/2405801904';  //real change for new
+        return 'ca-app-pub-4288009468041362/2405801904';
       } else if (Platform.isIOS) {
-        // return 'ca-app-pub-3940256099942544/2934735716';
-        return 'ca-app-pub-4288009468041362/9901148542';  //real change for new
+        return 'ca-app-pub-4288009468041362/9901148542';
+      } else {
+        throw UnsupportedError("Unsupported Platform.");
+      }
+    }
+  }
+  static String get bannerAdUnitId2 {
+    if (kDebugMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      } else {
+        throw UnsupportedError("Unsupported Platform.");
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-4288009468041362/7642650864';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-4288009468041362/4960647207';
       } else {
         throw UnsupportedError("Unsupported Platform.");
       }
@@ -86,63 +101,127 @@ class AdService extends GetxService {
     );
   }
 
-  // Method to load a banner ad
-  void loadBannerAd() {
-    _bannerAd = BannerAd(
-      adUnitId: bannerAdUnitId,
+  // Method to load first banner ad
+  void loadBannerAd1() {
+    _bannerAd1 = BannerAd(
+      adUnitId: bannerAdUnitId1,
       size: AdSize.banner,
       request: _kidSafeAdRequest,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          isBannerAdReady.value = true;
-          debugPrint('Banner ad loaded.');
+          isBannerAd1Ready.value = true;
+          debugPrint('Banner ad 1 loaded.');
         },
         onAdFailedToLoad: (ad, error) {
-          isBannerAdReady.value = false;
+          isBannerAd1Ready.value = false;
           ad.dispose();
-          debugPrint('Failed to load a banner ad: ${error.message}');
+          debugPrint('Failed to load banner ad 1: ${error.message}');
+          // Retry after 30 seconds
+          Future.delayed(const Duration(seconds: 30), () {
+            if (!isBannerAd1Ready.value) {
+              loadBannerAd1();
+            }
+          });
         },
         onAdOpened: (ad) {
-          debugPrint('Banner ad opened.');
+          debugPrint('Banner ad 1 opened.');
         },
         onAdClosed: (ad) {
-          debugPrint('Banner ad closed.');
+          debugPrint('Banner ad 1 closed.');
         },
       ),
     );
 
-    _bannerAd!.load();
+    _bannerAd1!.load();
   }
 
-  // Method to get the banner ad widget
-  Widget? getBannerAdWidget() {
-    if (_bannerAd != null && isBannerAdReady.value) {
+  // Method to load second banner ad
+  void loadBannerAd2() {
+    _bannerAd2 = BannerAd(
+      adUnitId: bannerAdUnitId2,
+      size: AdSize.banner,
+      request: _kidSafeAdRequest,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          isBannerAd2Ready.value = true;
+          debugPrint('Banner ad 2 loaded.');
+        },
+        onAdFailedToLoad: (ad, error) {
+          isBannerAd2Ready.value = false;
+          ad.dispose();
+          debugPrint('Failed to load banner ad 2: ${error.message}');
+          // Retry after 30 seconds
+          Future.delayed(const Duration(seconds: 30), () {
+            if (!isBannerAd2Ready.value) {
+              loadBannerAd2();
+            }
+          });
+        },
+        onAdOpened: (ad) {
+          debugPrint('Banner ad 2 opened.');
+        },
+        onAdClosed: (ad) {
+          debugPrint('Banner ad 2 closed.');
+        },
+      ),
+    );
+
+    _bannerAd2!.load();
+  }
+
+  // Method to get the first banner ad widget
+  Widget? getBannerAd1Widget() {
+    if (_bannerAd1 != null && isBannerAd1Ready.value) {
       return Container(
         alignment: Alignment.center,
-        width: _bannerAd!.size.width.toDouble(),
-        height: _bannerAd!.size.height.toDouble(),
-        child: AdWidget(ad: _bannerAd!),
+        width: _bannerAd1!.size.width.toDouble(),
+        height: _bannerAd1!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd1!),
       );
     }
     return null;
   }
 
-  // Method to dispose banner ad
-  void disposeBannerAd() {
-    _bannerAd?.dispose();
-    _bannerAd = null;
-    isBannerAdReady.value = false;
+  // Method to get the second banner ad widget
+  Widget? getBannerAd2Widget() {
+    if (_bannerAd2 != null && isBannerAd2Ready.value) {
+      return Container(
+        alignment: Alignment.center,
+        width: _bannerAd2!.size.width.toDouble(),
+        height: _bannerAd2!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd2!),
+      );
+    }
+    return null;
   }
 
+  // Method to dispose first banner ad
+  void disposeBannerAd1() {
+    _bannerAd1?.dispose();
+    _bannerAd1 = null;
+    isBannerAd1Ready.value = false;
+  }
+
+  // Method to dispose second banner ad
+  void disposeBannerAd2() {
+    _bannerAd2?.dispose();
+    _bannerAd2 = null;
+    isBannerAd2Ready.value = false;
+  }
+
+  // Method to dispose all banner ads
+  void disposeAllBannerAds() {
+    disposeBannerAd1();
+    disposeBannerAd2();
+  }
 
   void showRewardedAd({required VoidCallback onReward}) {
     if (!isRewardedAdReady.value || _rewardedAd == null) {
       debugPrint('Tried to show ad but it was not ready.');
-      loadRewardedAd(); // Try to load another one for next time
+      loadRewardedAd();
       return;
     }
 
-    // Track if reward was earned to handle proper game resume
     bool rewardEarned = false;
 
     _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
@@ -151,18 +230,17 @@ class AdService extends GetxService {
         isRewardedAdReady.value = false;
         debugPrint('Ad dismissed. Reward earned: $rewardEarned');
 
-        // FIXED: Only call onReward if user actually earned the reward
         if (rewardEarned) {
           onReward();
         }
 
-        loadRewardedAd(); // Pre-load the next ad
+        loadRewardedAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
         isRewardedAdReady.value = false;
         debugPrint('Failed to show the ad: $error');
-        loadRewardedAd(); // Pre-load the next ad
+        loadRewardedAd();
       },
     );
 
@@ -170,8 +248,6 @@ class AdService extends GetxService {
       onUserEarnedReward: (ad, reward) {
         debugPrint('User earned reward: ${reward.amount} ${reward.type}');
         rewardEarned = true;
-        // Note: Don't call onReward here immediately, wait for ad dismissal
-        // This ensures proper timing and prevents multiple calls
       },
     );
     _rewardedAd = null;
@@ -180,15 +256,16 @@ class AdService extends GetxService {
   @override
   void onInit() {
     super.onInit();
-    // Load both types of ads on initialization
+    // Load all ads on initialization
     loadRewardedAd();
-    loadBannerAd();
+    loadBannerAd1();
+    loadBannerAd2();
   }
 
   @override
   void onClose() {
     _rewardedAd?.dispose();
-    disposeBannerAd();
+    disposeAllBannerAds();
     super.onClose();
   }
 }
